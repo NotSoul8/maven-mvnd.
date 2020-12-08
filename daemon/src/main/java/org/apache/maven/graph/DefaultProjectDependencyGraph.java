@@ -74,8 +74,23 @@ public class DefaultProjectDependencyGraph
      */
     public DefaultProjectDependencyGraph(Collection<MavenProject> projects)
             throws CycleDetectedException, DuplicateProjectException {
+        this(projects, projects);
+    }
+
+    /**
+     * Creates a new project dependency graph based on the specified projects.
+     *
+     * @param  allProjects               All collected projects.
+     * @param  projects                  The projects to create the dependency graph with.
+     * @throws DuplicateProjectException
+     * @throws CycleDetectedException
+     * @since                            3.5.0
+     */
+    public DefaultProjectDependencyGraph(Collection<MavenProject> allProjects,
+            Collection<MavenProject> projects)
+            throws CycleDetectedException, DuplicateProjectException {
         super();
-        this.allProjects = Collections.unmodifiableList(new ArrayList<>(projects));
+        this.allProjects = Collections.unmodifiableList(new ArrayList<>(allProjects));
         this.sorter = new ProjectSorter(projects);
         this.order = new HashMap<>();
         this.projects = new HashMap<>();

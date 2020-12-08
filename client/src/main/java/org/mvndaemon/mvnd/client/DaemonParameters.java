@@ -205,14 +205,15 @@ public class DaemonParameters {
     }
 
     public Path multiModuleProjectDirectory() {
-        return multiModuleProjectDirectory(userDir());
+        return value(Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY)
+                .orSystemProperty()
+                .orDefault(() -> findDefaultMultimoduleProjectDirectory(userDir()))
+                .asPath()
+                .toAbsolutePath().normalize();
     }
 
     public Path multiModuleProjectDirectory(Path projectDir) {
-        return value(Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY)
-                .orSystemProperty()
-                .orDefault(() -> findDefaultMultimoduleProjectDirectory(projectDir))
-                .asPath()
+        return Path.of(findDefaultMultimoduleProjectDirectory(projectDir))
                 .toAbsolutePath().normalize();
     }
 
@@ -308,7 +309,8 @@ public class DaemonParameters {
      * @return            a new {@link DaemonParameters} with {@code userDir} set to the given {@code newUserDir}
      */
     public DaemonParameters cd(Path newUserDir) {
-        return derive(b -> b.put(Environment.USER_DIR, newUserDir));
+        return derive(b -> b.put(Environment.USER_DIR, newUserDir)
+                .put(Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY, newUserDir));
     }
 
     public DaemonParameters withJdkJavaOpts(String opts) {
