@@ -42,10 +42,10 @@ public abstract class BuildEventListener {
         public void mojoStarted(ExecutionEvent event) {
         }
 
-        public void finish(int exitCode) throws Exception {
+        public void finish(int exitCode) {
         }
 
-        public void fail(Throwable t) throws Exception {
+        public void fail(Throwable t) {
         }
 
         public void log(String msg) {
@@ -77,9 +77,9 @@ public abstract class BuildEventListener {
 
     public abstract void mojoStarted(ExecutionEvent event);
 
-    public abstract void finish(int exitCode) throws Exception;
+    public abstract void finish(int exitCode);
 
-    public abstract void fail(Throwable t) throws Exception;
+    public abstract void fail(Throwable t);
 
     public abstract void log(String msg);
 

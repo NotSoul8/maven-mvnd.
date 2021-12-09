@@ -28,7 +28,7 @@ public class DaemonMavenCliTest {
     void testChdir() throws Exception {
         File d = new File("target/tstDir").getAbsoluteFile();
         d.mkdirs();
-        DaemonMavenCli.chDir(d.toString());
+        EnvHelper.chDir(d.toString());
         assertEquals(new File(d, "test").getAbsolutePath(), new File("test").getAbsolutePath());
         assertEquals(d.toPath().resolve("test").toAbsolutePath().toString(),
                 Paths.get("test").toAbsolutePath().toString());
@@ -37,7 +37,7 @@ public class DaemonMavenCliTest {
     @Test
     @Disabled
     void testCygwin() throws Exception {
-        assertEquals("/cygdrive/c/work/tmp/", DaemonMavenCli.toCygwin("C:\\work\\tmp\\"));
+        assertEquals("/cygdrive/c/work/tmp/", EnvHelper.toCygwin("C:\\work\\tmp\\"));
     }
 
 }

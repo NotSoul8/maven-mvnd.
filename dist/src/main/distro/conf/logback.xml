@@ -32,7 +32,7 @@
     </encoder>
   </appender>
 
-  <logger name="org.mvndaemon.mvnd.daemon" level="DEBUG" additivity="false">
+  <logger name="org.mvndaemon.mvnd.daemon" additivity="false">
     <appender-ref ref="DAEMON" />
   </logger>
 
@@ -41,5 +41,8 @@
   <!-- suppress annoying @threadSafe and checksum failure warning messages -->
   <logger name="org.apache.maven.lifecycle.internal.builder.BuilderCommon" level="ERROR" />
   <logger name="org.eclipse.aether.internal.impl.WarnChecksumPolicy" level="ERROR" />
+
+  <root level="INFO">
+  </root>
 
 </configuration>

@@ -117,12 +117,12 @@ public class ClientDispatcher extends BuildEventListener {
                 execution.getExecutionId()));
     }
 
-    public void finish(int exitCode) throws Exception {
+    public void finish(int exitCode) {
         queue.add(new Message.BuildFinished(exitCode));
         queue.add(Message.BareMessage.STOP_SINGLETON);
     }
 
-    public void fail(Throwable t) throws Exception {
+    public void fail(Throwable t) {
         queue.add(new BuildException(t));
         queue.add(Message.BareMessage.STOP_SINGLETON);
     }
