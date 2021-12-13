@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.cli;
+package org.mvndaemon.mvnd.cli;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -38,6 +38,10 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.apache.maven.Maven;
+import org.apache.maven.cli.CLIManager;
+import org.apache.maven.cli.CLIReportingUtils;
+import org.apache.maven.cli.CliRequest;
+import org.apache.maven.cli.MavenCli;
 import org.apache.maven.cli.configuration.ConfigurationProcessor;
 import org.apache.maven.cli.event.ExecutionEventLogger;
 import org.apache.maven.cli.internal.extension.model.CoreExtension;
@@ -63,8 +67,10 @@ import org.mvndaemon.mvnd.cache.invalidating.InvalidatingExtensionRealmCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginArtifactsCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginRealmCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingProjectArtifactsCache;
+import org.mvndaemon.mvnd.cli.MvndHelpFormatter;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.Os;
+import org.mvndaemon.mvnd.cli.EnvHelper;
 import org.mvndaemon.mvnd.logging.internal.Slf4jLoggerManager;
 import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 import org.mvndaemon.mvnd.logging.smart.LoggingExecutionListener;
@@ -125,9 +131,9 @@ public class DaemonMavenCli extends MavenCli {
         this.buildEventListener = buildEventListener;
         try {
             CliRequest req = new CliRequest(null, null);
-            req.args = arguments.toArray(new String[0]);
-            req.workingDirectory = new File(workingDirectory).getCanonicalPath();
-            req.multiModuleProjectDirectory = new File(projectDirectory);
+            req.setArgs(arguments.toArray(new String[0]));
+            req.setWorkingDirectory(new File(workingDirectory).getCanonicalPath());
+            req.setMultiModuleProjectDirectory(new File(projectDirectory));
             Properties props = (Properties) System.getProperties().clone();
             try {
                 return doMain(req);
@@ -143,17 +149,17 @@ public class DaemonMavenCli extends MavenCli {
 
     protected void initialize(CliRequest cliRequest)
             throws ExitException {
-        cliRequest.classWorld = classWorld;
+        cliRequest.setClassWorld(classWorld);
 
-        if (cliRequest.workingDirectory == null) {
-            cliRequest.workingDirectory = System.getProperty("user.dir");
+        if (cliRequest.getWorkingDirectory() == null) {
+            cliRequest.setWorkingDirectory(System.getProperty("user.dir"));
         }
 
-        if (cliRequest.multiModuleProjectDirectory == null) {
+        if (cliRequest.getMultiModuleProjectDirectory() == null) {
             printErr(String.format("-D%s system property is not set.", MULTIMODULE_PROJECT_DIRECTORY));
             throw new ExitException(1);
         }
-        System.setProperty(MULTIMODULE_PROJECT_DIRECTORY, cliRequest.multiModuleProjectDirectory.toString());
+        System.setProperty(MULTIMODULE_PROJECT_DIRECTORY, cliRequest.getMultiModuleProjectDirectory().toString());
 
         //
         // Make sure the Maven home directory is an absolute path to save us from confusion with say drive-relative
@@ -165,7 +171,7 @@ public class DaemonMavenCli extends MavenCli {
             System.setProperty("maven.home", new File(mvndHome + "/mvn").getAbsolutePath());
         }
 
-        EnvHelper.environment(cliRequest.workingDirectory, clientEnv, slf4jLogger::warn);
+        EnvHelper.environment(cliRequest.getWorkingDirectory(), clientEnv, slf4jLogger::warn);
     }
 
     protected void cli(CliRequest cliRequest)
@@ -175,7 +181,7 @@ public class DaemonMavenCli extends MavenCli {
         List<String> args = new ArrayList<>();
         CommandLine mavenConfig = null;
         try {
-            File configFile = new File(cliRequest.multiModuleProjectDirectory, MVN_MAVEN_CONFIG);
+            File configFile = new File(cliRequest.getMultiModuleProjectDirectory(), MVN_MAVEN_CONFIG);
 
             if (configFile.isFile()) {
                 for (String arg : new String(Files.readAllBytes(configFile.toPath())).split("\\s+")) {
@@ -198,9 +204,9 @@ public class DaemonMavenCli extends MavenCli {
 
         try {
             if (mavenConfig == null) {
-                cliRequest.commandLine = cliManager.parse(cliRequest.args);
+                cliRequest.setCommandLine(cliManager.parse(cliRequest.getArgs()));
             } else {
-                cliRequest.commandLine = cliMerge(cliManager.parse(cliRequest.args), mavenConfig);
+                cliRequest.setCommandLine(cliMerge(cliManager.parse(cliRequest.getArgs()), mavenConfig));
             }
         } catch (ParseException e) {
             buildEventListener.log("Unable to parse command line options: " + e.getMessage());
@@ -210,7 +216,7 @@ public class DaemonMavenCli extends MavenCli {
     }
 
     protected void help(CliRequest cliRequest) throws Exception {
-        if (cliRequest.commandLine.hasOption(CLIManager.HELP)) {
+        if (cliRequest.getCommandLine().hasOption(CLIManager.HELP)) {
             buildEventListener.log(MvndHelpFormatter.displayHelp(newCLIManager()));
             throw new ExitException(0);
         }
@@ -218,9 +224,9 @@ public class DaemonMavenCli extends MavenCli {
 
     protected CLIManager newCLIManager() {
         CLIManager cliManager = new CLIManager();
-        cliManager.options.addOption(Option.builder(RESUME).longOpt("resume").desc("Resume reactor from " +
+        cliManager.getOptions().addOption(Option.builder(RESUME).longOpt("resume").desc("Resume reactor from " +
                 "the last failed project, using the resume.properties file in the build directory").build());
-        cliManager.options.addOption(Option.builder().longOpt(RAW_STREAMS).desc("Do not decorate output and " +
+        cliManager.getOptions().addOption(Option.builder().longOpt(RAW_STREAMS).desc("Do not decorate output and " +
                 "error streams").build());
         return cliManager;
     }
@@ -241,9 +247,9 @@ public class DaemonMavenCli extends MavenCli {
         } catch (Exception e) {
             throw new RuntimeException("Error configuring logging", e);
         }
-        if (cliRequest.verbose) {
+        if (cliRequest.isVerbose()) {
             rootLogger.setLevel(Level.DEBUG);
-        } else if (cliRequest.quiet) {
+        } else if (cliRequest.isQuiet()) {
             rootLogger.setLevel(Level.ERROR);
         }
 
@@ -255,8 +261,8 @@ public class DaemonMavenCli extends MavenCli {
         }
 
         // LOG STREAMS
-        if (!cliRequest.commandLine.hasOption(CLIManager.LOG_FILE)
-                && !cliRequest.commandLine.hasOption(RAW_STREAMS)) {
+        if (!cliRequest.getCommandLine().hasOption(CLIManager.LOG_FILE)
+                && !cliRequest.getCommandLine().hasOption(RAW_STREAMS)) {
             Logger stdout = context.getLogger("stdout");
             Logger stderr = context.getLogger("stderr");
             stdout.setLevel(Level.INFO);
@@ -284,9 +290,9 @@ public class DaemonMavenCli extends MavenCli {
     protected PlexusContainer container(CliRequest cliRequest) {
         Map<String, Object> data = new HashMap<>();
         data.put("plexus", container);
-        data.put("workingDirectory", cliRequest.workingDirectory);
-        data.put("systemProperties", cliRequest.systemProperties);
-        data.put("userProperties", cliRequest.userProperties);
+        data.put("workingDirectory", cliRequest.getWorkingDirectory());
+        data.put("systemProperties", cliRequest.getSystemProperties());
+        data.put("userProperties", cliRequest.getUserProperties());
         data.put("versionProperties", CLIReportingUtils.getBuildProperties());
         eventSpyDispatcher.init(() -> data);
         return null;
@@ -321,7 +327,7 @@ public class DaemonMavenCli extends MavenCli {
     }
 
     @Override
-    protected List<CoreExtension> loadCoreExtensionsDescriptors(File multiModuleProjectDirectory) {
+    protected List<CoreExtension> loadCoreExtensions(File multiModuleProjectDirectory) {
         return Stream
                 .of(Environment.MVND_CORE_EXTENSIONS.asString().split(";"))
                 .filter(s -> s != null && !s.isEmpty())
@@ -342,9 +348,9 @@ public class DaemonMavenCli extends MavenCli {
     @Override
     protected void encryption(CliRequest cliRequest) {
         // TODO
-        if (cliRequest.commandLine.hasOption(CLIManager.ENCRYPT_MASTER_PASSWORD)) {
+        if (cliRequest.getCommandLine().hasOption(CLIManager.ENCRYPT_MASTER_PASSWORD)) {
             throw new UnsupportedOperationException("Unsupported option: " + CLIManager.ENCRYPT_MASTER_PASSWORD);
-        } else if (cliRequest.commandLine.hasOption(CLIManager.ENCRYPT_PASSWORD)) {
+        } else if (cliRequest.getCommandLine().hasOption(CLIManager.ENCRYPT_PASSWORD)) {
             throw new UnsupportedOperationException("Unsupported option: " + CLIManager.ENCRYPT_PASSWORD);
         }
     }

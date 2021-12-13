@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.maven.cli;
+package org.mvndaemon.mvnd.cli;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -26,6 +26,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.maven.cli.CLIManager;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.OptionType;
 
@@ -54,8 +55,8 @@ public class MvndHelpFormatter {
             out.println();
             PrintWriter pw = new PrintWriter(out);
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp(pw, terminalWidth, "mvnd [options] [<goal(s)>] [<phase(s)>]", "\nOptions:", cliManager.options,
-                    1, 3, "\n", false);
+            formatter.printHelp(pw, terminalWidth, "mvnd [options] [<goal(s)>] [<phase(s)>]", "\nOptions:",
+                    cliManager.getOptions(), 1, 3, "\n", false);
             pw.flush();
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
