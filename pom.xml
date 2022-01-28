@@ -245,6 +245,11 @@
                 <artifactId>mvnd-helper-agent</artifactId>
                 <version>0.7.2-SNAPSHOT</version>
             </dependency>
+            <dependency>
+                <groupId>org.mvndaemon.mvnd</groupId>
+                <artifactId>mvnd-synccontext</artifactId>
+                <version>0.7.2-SNAPSHOT</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.jline</groupId>
@@ -367,11 +372,18 @@ limitations under the License.</inlineHeader>
                     <artifactId>formatter-maven-plugin</artifactId>
                     <version>${formatter-maven-plugin.version}</version>
                     <configuration>
-                        <configFile>${maven.multiModuleProjectDirectory}/build/eclipse-formatter-config.xml</configFile>
+                        <configFile>config/eclipse-formatter-config.xml</configFile>
                         <skip>${format.skip}</skip>
                         <lineEnding>KEEP</lineEnding>
                         <cachedir>${project.build.directory}/cache</cachedir>
                     </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.maven.shared</groupId>
+                            <artifactId>maven-shared-resources</artifactId>
+                            <version>5-SNAPSHOT</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>net.revelc.code</groupId>
