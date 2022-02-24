@@ -29,7 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public abstract class Message {
+public abstract class Message
+{
+
     public static final int BUILD_REQUEST = 1;
     public static final int BUILD_STARTED = 2;
     public static final int BUILD_FINISHED = 3;
@@ -61,42 +63,46 @@ public abstract class Message {
 
     final int type;
 
-    Message(int type) {
+    Message( int type )
+    {
         this.type = type;
     }
 
-    public static Message read(DataInputStream input) throws IOException {
+    public static Message read( DataInputStream input ) throws IOException
+    {
         int type = input.read();
-        if (type < 0) {
+        if ( type < 0 )
+        {
             return null;
         }
-        switch (type) {
+        switch ( type )
+        {
         case BUILD_REQUEST:
-            return BuildRequest.read(input);
+            return BuildRequest.read( input );
         case BUILD_STARTED:
-            return BuildStarted.read(input);
+            return BuildStarted.read( input );
         case BUILD_FINISHED:
-            return BuildFinished.read(input);
+            return BuildFinished.read( input );
         case MOJO_STARTED:
-            return MojoStartedEvent.read(input);
+            return MojoStartedEvent.read( input );
         case PROJECT_LOG_MESSAGE:
         case DISPLAY:
-            return ProjectEvent.read(type, input);
+            return ProjectEvent.read( type, input );
         case BUILD_EXCEPTION:
-            return BuildException.read(input);
+            return BuildException.read( input );
         case KEEP_ALIVE:
             return BareMessage.KEEP_ALIVE_SINGLETON;
         case STOP:
             return BareMessage.STOP_SINGLETON;
         case PROMPT:
-            return Prompt.read(input);
+            return Prompt.read( input );
         case PROMPT_RESPONSE:
-            return PromptResponse.read(input);
+            return PromptResponse.read( input );
         case PROJECT_STARTED:
         case PROJECT_STOPPED:
         case BUILD_STATUS:
         case BUILD_LOG_MESSAGE:
-            return StringMessage.read(type, input);
+            return StringMessage.read( type, input );
         case CANCEL_BUILD:
             return BareMessage.CANCEL_BUILD_SINGLETON;
         case TRANSFER_INITIATED:
@@ -105,24 +111,27 @@ public abstract class Message {
         case TRANSFER_CORRUPTED:
         case TRANSFER_SUCCEEDED:
         case TRANSFER_FAILED:
-            return TransferEvent.read(type, input);
+            return TransferEvent.read( type, input );
         case EXECUTION_FAILURE:
-            return ExecutionFailureEvent.read(input);
+            return ExecutionFailureEvent.read( input );
         case PRINT_OUT:
         case PRINT_ERR:
-            return StringMessage.read(type, input);
+            return StringMessage.read( type, input );
         }
-        throw new IllegalStateException("Unexpected message type: " + type);
+        throw new IllegalStateException( "Unexpected message type: " + type );
     }
 
     final long timestamp = System.nanoTime();
 
-    public static Comparator<Message> getMessageComparator() {
-        return Comparator.comparingInt(Message::getClassOrder).thenComparingLong(Message::timestamp);
+    public static Comparator<Message> getMessageComparator()
+    {
+        return Comparator.comparingInt( Message::getClassOrder ).thenComparingLong( Message::timestamp );
     }
 
-    public static int getClassOrder(Message m) {
-        switch (m.getType()) {
+    public static int getClassOrder( Message m )
+    {
+        switch ( m.getType() )
+        {
         case KEEP_ALIVE:
         case BUILD_REQUEST:
             return 0;
@@ -162,49 +171,59 @@ public abstract class Message {
         case STOP:
             return 99;
         default:
-            throw new IllegalStateException("Unexpected message type " + m.getType() + ": " + m);
+            throw new IllegalStateException( "Unexpected message type " + m.getType() + ": " + m );
         }
     }
 
-    public long timestamp() {
+    public long timestamp()
+    {
         return timestamp;
     }
 
-    public void write(DataOutputStream output) throws IOException {
-        output.write(type);
+    public void write( DataOutputStream output ) throws IOException
+    {
+        output.write( type );
     }
 
-    static void writeStringList(DataOutputStream output, List<String> value) throws IOException {
-        output.writeInt(value.size());
-        for (String v : value) {
-            writeUTF(output, v);
+    static void writeStringList( DataOutputStream output, List<String> value ) throws IOException
+    {
+        output.writeInt( value.size() );
+        for ( String v : value )
+        {
+            writeUTF( output, v );
         }
     }
 
-    static void writeStringMap(DataOutputStream output, Map<String, String> value) throws IOException {
-        output.writeInt(value.size());
-        for (Map.Entry<String, String> e : value.entrySet()) {
-            writeUTF(output, e.getKey());
-            writeUTF(output, e.getValue());
+    static void writeStringMap( DataOutputStream output, Map<String, String> value ) throws IOException
+    {
+        output.writeInt( value.size() );
+        for ( Map.Entry<String, String> e : value.entrySet() )
+        {
+            writeUTF( output, e.getKey() );
+            writeUTF( output, e.getValue() );
         }
     }
 
-    static List<String> readStringList(DataInputStream input) throws IOException {
+    static List<String> readStringList( DataInputStream input ) throws IOException
+    {
         ArrayList<String> l = new ArrayList<>();
         int nb = input.readInt();
-        for (int i = 0; i < nb; i++) {
-            l.add(readUTF(input));
+        for ( int i = 0; i < nb; i++ )
+        {
+            l.add( readUTF( input ) );
         }
         return l;
     }
 
-    static Map<String, String> readStringMap(DataInputStream input) throws IOException {
+    static Map<String, String> readStringMap( DataInputStream input ) throws IOException
+    {
         LinkedHashMap<String, String> m = new LinkedHashMap<>();
         int nb = input.readInt();
-        for (int i = 0; i < nb; i++) {
-            String k = readUTF(input);
-            String v = readUTF(input);
-            m.put(k, v);
+        for ( int i = 0; i < nb; i++ )
+        {
+            String k = readUTF( input );
+            String v = readUTF( input );
+            m.put( k, v );
         }
         return m;
     }
@@ -212,146 +231,188 @@ public abstract class Message {
     private static final String INVALID_BYTE = "Invalid byte";
     private static final int UTF_BUFS_CHAR_CNT = 256;
     private static final int UTF_BUFS_BYTE_CNT = UTF_BUFS_CHAR_CNT * 3;
-    private static final ThreadLocal<byte[]> BUF_TLS = ThreadLocal.withInitial(() -> new byte[UTF_BUFS_BYTE_CNT]);
+    private static final ThreadLocal<byte[]> BUF_TLS = ThreadLocal.withInitial( () -> new byte[UTF_BUFS_BYTE_CNT] );
 
-    static String readUTF(DataInputStream input) throws IOException {
+    static String readUTF( DataInputStream input ) throws IOException
+    {
         byte[] byteBuf = BUF_TLS.get();
         int len = input.readInt();
-        if (len == -1) {
+        if ( len == -1 )
+        {
             return null;
         }
         final char[] chars = new char[len];
         int i = 0, cnt = 0, charIdx = 0;
-        while (charIdx < len) {
-            if (i == cnt) {
-                cnt = input.read(byteBuf, 0, Math.min(UTF_BUFS_BYTE_CNT, len - charIdx));
-                if (cnt < 0) {
+        while ( charIdx < len )
+        {
+            if ( i == cnt )
+            {
+                cnt = input.read( byteBuf, 0, Math.min( UTF_BUFS_BYTE_CNT, len - charIdx ) );
+                if ( cnt < 0 )
+                {
                     throw new EOFException();
                 }
                 i = 0;
             }
             final int a = byteBuf[i++] & 0xff;
-            if (a < 0x80) {
+            if ( a < 0x80 )
+            {
                 // low bit clear
-                chars[charIdx++] = (char) a;
-            } else if (a < 0xc0) {
-                throw new UTFDataFormatException(INVALID_BYTE);
-            } else if (a < 0xe0) {
-                if (i == cnt) {
-                    cnt = input.read(byteBuf, 0, Math.min(UTF_BUFS_BYTE_CNT, len - charIdx));
-                    if (cnt < 0) {
+                chars[charIdx++] = ( char ) a;
+            }
+            else if ( a < 0xc0 )
+            {
+                throw new UTFDataFormatException( INVALID_BYTE );
+            }
+            else if ( a < 0xe0 )
+            {
+                if ( i == cnt )
+                {
+                    cnt = input.read( byteBuf, 0, Math.min( UTF_BUFS_BYTE_CNT, len - charIdx ) );
+                    if ( cnt < 0 )
+                    {
                         throw new EOFException();
                     }
                     i = 0;
                 }
                 final int b = byteBuf[i++] & 0xff;
-                if ((b & 0xc0) != 0x80) {
-                    throw new UTFDataFormatException(INVALID_BYTE);
+                if ( ( b & 0xc0 ) != 0x80 )
+                {
+                    throw new UTFDataFormatException( INVALID_BYTE );
                 }
-                chars[charIdx++] = (char) ((a & 0x1f) << 6 | b & 0x3f);
-            } else if (a < 0xf0) {
-                if (i == cnt) {
-                    cnt = input.read(byteBuf, 0, Math.min(UTF_BUFS_BYTE_CNT, len - charIdx));
-                    if (cnt < 0) {
+                chars[charIdx++] = ( char ) ( ( a & 0x1f ) << 6 | b & 0x3f );
+            }
+            else if ( a < 0xf0 )
+            {
+                if ( i == cnt )
+                {
+                    cnt = input.read( byteBuf, 0, Math.min( UTF_BUFS_BYTE_CNT, len - charIdx ) );
+                    if ( cnt < 0 )
+                    {
                         throw new EOFException();
                     }
                     i = 0;
                 }
                 final int b = byteBuf[i++] & 0xff;
-                if ((b & 0xc0) != 0x80) {
-                    throw new UTFDataFormatException(INVALID_BYTE);
+                if ( ( b & 0xc0 ) != 0x80 )
+                {
+                    throw new UTFDataFormatException( INVALID_BYTE );
                 }
-                if (i == cnt) {
-                    cnt = input.read(byteBuf, 0, Math.min(UTF_BUFS_BYTE_CNT, len - charIdx));
-                    if (cnt < 0) {
+                if ( i == cnt )
+                {
+                    cnt = input.read( byteBuf, 0, Math.min( UTF_BUFS_BYTE_CNT, len - charIdx ) );
+                    if ( cnt < 0 )
+                    {
                         throw new EOFException();
                     }
                     i = 0;
                 }
                 final int c = byteBuf[i++] & 0xff;
-                if ((c & 0xc0) != 0x80) {
-                    throw new UTFDataFormatException(INVALID_BYTE);
+                if ( ( c & 0xc0 ) != 0x80 )
+                {
+                    throw new UTFDataFormatException( INVALID_BYTE );
                 }
-                chars[charIdx++] = (char) ((a & 0x0f) << 12 | (b & 0x3f) << 6 | c & 0x3f);
-            } else {
-                throw new UTFDataFormatException(INVALID_BYTE);
+                chars[charIdx++] = ( char ) ( ( a & 0x0f ) << 12 | ( b & 0x3f ) << 6 | c & 0x3f );
+            }
+            else
+            {
+                throw new UTFDataFormatException( INVALID_BYTE );
             }
         }
-        return String.valueOf(chars);
+        return String.valueOf( chars );
     }
 
-    static void writeUTF(DataOutputStream output, String s) throws IOException {
+    static void writeUTF( DataOutputStream output, String s ) throws IOException
+    {
         byte[] byteBuf = BUF_TLS.get();
-        if (s == null) {
-            output.writeInt(-1);
+        if ( s == null )
+        {
+            output.writeInt( -1 );
             return;
         }
         final int length = s.length();
-        output.writeInt(length);
+        output.writeInt( length );
         int strIdx = 0;
         int byteIdx = 0;
-        while (strIdx < length) {
-            final char c = s.charAt(strIdx++);
-            if (c > 0 && c <= 0x7f) {
-                byteBuf[byteIdx++] = (byte) c;
-            } else if (c <= 0x07ff) {
-                byteBuf[byteIdx++] = (byte) (0xc0 | 0x1f & c >> 6);
-                byteBuf[byteIdx++] = (byte) (0x80 | 0x3f & c);
-            } else {
-                byteBuf[byteIdx++] = (byte) (0xe0 | 0x0f & c >> 12);
-                byteBuf[byteIdx++] = (byte) (0x80 | 0x3f & c >> 6);
-                byteBuf[byteIdx++] = (byte) (0x80 | 0x3f & c);
+        while ( strIdx < length )
+        {
+            final char c = s.charAt( strIdx++ );
+            if ( c > 0 && c <= 0x7f )
+            {
+                byteBuf[byteIdx++] = ( byte ) c;
             }
-            if (byteIdx > UTF_BUFS_BYTE_CNT - 4) {
-                output.write(byteBuf, 0, byteIdx);
+            else if ( c <= 0x07ff )
+            {
+                byteBuf[byteIdx++] = ( byte ) ( 0xc0 | 0x1f & c >> 6 );
+                byteBuf[byteIdx++] = ( byte ) ( 0x80 | 0x3f & c );
+            }
+            else
+            {
+                byteBuf[byteIdx++] = ( byte ) ( 0xe0 | 0x0f & c >> 12 );
+                byteBuf[byteIdx++] = ( byte ) ( 0x80 | 0x3f & c >> 6 );
+                byteBuf[byteIdx++] = ( byte ) ( 0x80 | 0x3f & c );
+            }
+            if ( byteIdx > UTF_BUFS_BYTE_CNT - 4 )
+            {
+                output.write( byteBuf, 0, byteIdx );
                 byteIdx = 0;
             }
         }
-        if (byteIdx > 0) {
-            output.write(byteBuf, 0, byteIdx);
+        if ( byteIdx > 0 )
+        {
+            output.write( byteBuf, 0, byteIdx );
         }
     }
 
-    public static class BuildRequest extends Message {
+    public static class BuildRequest extends Message
+    {
+
         final List<String> args;
         final String workingDir;
         final String projectDir;
         final Map<String, String> env;
 
-        public static Message read(DataInputStream input) throws IOException {
-            List<String> args = readStringList(input);
-            String workingDir = readUTF(input);
-            String projectDir = readUTF(input);
-            Map<String, String> env = readStringMap(input);
-            return new BuildRequest(args, workingDir, projectDir, env);
+        public static Message read( DataInputStream input ) throws IOException
+        {
+            List<String> args = readStringList( input );
+            String workingDir = readUTF( input );
+            String projectDir = readUTF( input );
+            Map<String, String> env = readStringMap( input );
+            return new BuildRequest( args, workingDir, projectDir, env );
         }
 
-        public BuildRequest(List<String> args, String workingDir, String projectDir, Map<String, String> env) {
-            super(BUILD_REQUEST);
+        public BuildRequest( List<String> args, String workingDir, String projectDir, Map<String, String> env )
+        {
+            super( BUILD_REQUEST );
             this.args = args;
             this.workingDir = workingDir;
             this.projectDir = projectDir;
             this.env = env;
         }
 
-        public List<String> getArgs() {
+        public List<String> getArgs()
+        {
             return args;
         }
 
-        public String getWorkingDir() {
+        public String getWorkingDir()
+        {
             return workingDir;
         }
 
-        public String getProjectDir() {
+        public String getProjectDir()
+        {
             return projectDir;
         }
 
-        public Map<String, String> getEnv() {
+        public Map<String, String> getEnv()
+        {
             return env;
         }
 
         @Override
-        public String toString() {
+        public String toString()
+        {
             return "BuildRequest{" +
                     "args=" + args +
                     ", workingDir='" + workingDir + '\'' +
@@ -361,87 +422,105 @@ public abstract class Message {
         }
 
         @Override
-        public void write(DataOutputStream output) throws IOException {
-            super.write(output);
-            writeStringList(output, args);
-            writeUTF(output, workingDir);
-            writeUTF(output, projectDir);
-            writeStringMap(output, env);
+        public void write( DataOutputStream output ) throws IOException
+        {
+            super.write( output );
+            writeStringList( output, args );
+            writeUTF( output, workingDir );
+            writeUTF( output, projectDir );
+            writeStringMap( output, env );
         }
     }
 
-    public static class BuildFinished extends Message {
+    public static class BuildFinished extends Message
+    {
+
         final int exitCode;
 
-        public static Message read(DataInputStream input) throws IOException {
+        public static Message read( DataInputStream input ) throws IOException
+        {
             int exitCode = input.readInt();
-            return new BuildFinished(exitCode);
+            return new BuildFinished( exitCode );
         }
 
-        public BuildFinished(int exitCode) {
-            super(BUILD_FINISHED);
+        public BuildFinished( int exitCode )
+        {
+            super( BUILD_FINISHED );
             this.exitCode = exitCode;
         }
 
         @Override
-        public String toString() {
+        public String toString()
+        {
             return "BuildFinished{exitCode=" + exitCode + '}';
         }
 
         @Override
-        public void write(DataOutputStream output) throws IOException {
-            super.write(output);
-            output.writeInt(exitCode);
+        public void write( DataOutputStream output ) throws IOException
+        {
+            super.write( output );
+            output.writeInt( exitCode );
         }
 
-        public int getExitCode() {
+        public int getExitCode()
+        {
             return exitCode;
         }
     }
 
-    public static class BuildException extends Message {
+    public static class BuildException extends Message
+    {
+
         final String message;
         final String className;
         final String stackTrace;
 
-        public static Message read(DataInputStream input) throws IOException {
-            String message = readUTF(input);
-            String className = readUTF(input);
-            String stackTrace = readUTF(input);
-            return new BuildException(message, className, stackTrace);
+        public static Message read( DataInputStream input ) throws IOException
+        {
+            String message = readUTF( input );
+            String className = readUTF( input );
+            String stackTrace = readUTF( input );
+            return new BuildException( message, className, stackTrace );
         }
 
-        public BuildException(Throwable t) {
-            this(t.getMessage(), t.getClass().getName(), getStackTrace(t));
+        public BuildException( Throwable t )
+        {
+            this( t.getMessage(), t.getClass().getName(), getStackTrace( t ) );
         }
 
-        public static String getStackTrace(Throwable t) {
+        public static String getStackTrace( Throwable t )
+        {
             StringWriter sw = new StringWriter();
-            t.printStackTrace(new PrintWriter(sw, true));
+            t.printStackTrace( new PrintWriter( sw, true ) );
             return sw.toString();
         }
 
-        public BuildException(String message, String className, String stackTrace) {
-            super(BUILD_EXCEPTION);
+        public BuildException( String message, String className, String stackTrace )
+        {
+            super( BUILD_EXCEPTION );
             this.message = message;
             this.className = className;
             this.stackTrace = stackTrace;
         }
 
-        public String getMessage() {
+        public String getMessage()
+        {
             return message;
         }
 
-        public String getClassName() {
+        public String getClassName()
+        {
             return className;
         }
 
-        public String getStackTrace() {
+        public String getStackTrace()
+        {
             return stackTrace;
         }
 
         @Override
-        public String toString() {
+        public String toString()
+        {
             return "BuildException{" +
                     "message='" + message + '\'' +
                     ", className='" + className + '\'' +
@@ -450,64 +529,77 @@ public abstract class Message {
         }
 
         @Override
-        public void write(DataOutputStream output) throws IOException {
-            super.write(output);
-            writeUTF(output, message);
-            writeUTF(output, className);
-            writeUTF(output, stackTrace);
+        public void write( DataOutputStream output ) throws IOException
+        {
+            super.write( output );
+            writeUTF( output, message );
+            writeUTF( output, className );
+            writeUTF( output, stackTrace );
         }
     }
 
-    public static class ProjectEvent extends Message {
+    public static class ProjectEvent extends Message
+    {
+
         final String projectId;
         final String message;
 
-        public static Message read(int type, DataInputStream input) throws IOException {
-            String projectId = readUTF(input);
-            String message = readUTF(input);
-            return new ProjectEvent(type, projectId, message);
+        public static Message read( int type, DataInputStream input ) throws IOException
+        {
+            String projectId = readUTF( input );
+            String message = readUTF( input );
+            return new ProjectEvent( type, projectId, message );
         }
 
-        private ProjectEvent(int type, String projectId, String message) {
-            super(type);
-            this.projectId = Objects.requireNonNull(projectId, "projectId cannot be null");
-            this.message = Objects.requireNonNull(message, "message cannot be null");
+        private ProjectEvent( int type, String projectId, String message )
+        {
+            super( type );
+            this.projectId = Objects.requireNonNull( projectId, "projectId cannot be null" );
+            this.message = Objects.requireNonNull( message, "message cannot be null" );
         }
 
-        public String getProjectId() {
+        public String getProjectId()
+        {
             return projectId;
         }
 
-        public String getMessage() {
+        public String getMessage()
+        {
             return message;
         }
 
         @Override
-        public String toString() {
+        public String toString()
+        {
             return mnemonic() + "{" +
                     "projectId='" + projectId + '\'' +
                     ", message='" + message + '\'' +
                     '}';
         }
 
-        private String mnemonic() {
-            switch (type) {
+        private String mnemonic()
+        {
+            switch ( type )
+            {
             case PROJECT_LOG_MESSAGE:
                 return "ProjectLogMessage";
             default:
-                throw new IllegalStateException("Unexpected type " + type);
+                throw new IllegalStateException( "Unexpected type " + type );
             }
         }
 
         @Override
-        public void write(DataOutputStream output) throws IOException {
-            super.write(output);
-            writeUTF(output, projectId);
-            writeUTF(output, message);
+        public void write( DataOutputStream output ) throws IOException
+        {
+            super.write( output );
+            writeUTF( output, projectId );
+            writeUTF( output, message );
         }
     }
 
-    public static class MojoStartedEvent extends Message {
+    public static class MojoStartedEvent extends Message
+    {
+
         final String artifactId;
         final String pluginGroupId;
         final String pluginArtifactId;
@@ -515,53 +607,63 @@ public abstract class Message {
         final String mojo;
         final String executionId;
 
-        public static MojoStartedEvent read(DataInputStream input) throws IOException {
-            final String artifactId = readUTF(input);
-            final String pluginGroupId = readUTF(input);
-            final String pluginArtifactId = readUTF(input);
-            final String pluginVersion = readUTF(input);
-            final String mojo = readUTF(input);
-            final String executionId = readUTF(input);
-            return new MojoStartedEvent(artifactId, pluginGroupId, pluginArtifactId, pluginVersion, mojo, executionId);
+        public static MojoStartedEvent read( DataInputStream input ) throws IOException
+        {
+            final String artifactId = readUTF( input );
+            final String pluginGroupId = readUTF( input );
+            final String pluginArtifactId = readUTF( input );
+            final String pluginVersion = readUTF( input );
+            final String mojo = readUTF( input );
+            final String executionId = readUTF( input );
+            return new MojoStartedEvent( artifactId, pluginGroupId, pluginArtifactId, pluginVersion, mojo,
+                    executionId );
         }
 
-        public MojoStartedEvent(String artifactId, String pluginGroupId, String pluginArtifactId,
-                String pluginVersion, String mojo, String executionId) {
-            super(Message.MOJO_STARTED);
-            this.artifactId = Objects.requireNonNull(artifactId, "artifactId cannot be null");
-            this.pluginGroupId = Objects.requireNonNull(pluginGroupId, "pluginGroupId cannot be null");
-            this.pluginArtifactId = Objects.requireNonNull(pluginArtifactId, "pluginArtifactId cannot be null");
-            this.pluginVersion = Objects.requireNonNull(pluginVersion, "pluginVersion cannot be null");
-            this.mojo = Objects.requireNonNull(mojo, "mojo cannot be null");
-            this.executionId = Objects.requireNonNull(executionId, "executionId cannot be null");
+        public MojoStartedEvent( String artifactId, String pluginGroupId, String pluginArtifactId,
+                String pluginVersion, String mojo, String executionId )
+        {
+            super( Message.MOJO_STARTED );
+            this.artifactId = Objects.requireNonNull( artifactId, "artifactId cannot be null" );
+            this.pluginGroupId = Objects.requireNonNull( pluginGroupId, "pluginGroupId cannot be null" );
+            this.pluginArtifactId = Objects.requireNonNull( pluginArtifactId, "pluginArtifactId cannot be null" );
+            this.pluginVersion = Objects.requireNonNull( pluginVersion, "pluginVersion cannot be null" );
+            this.mojo = Objects.requireNonNull( mojo, "mojo cannot be null" );
+            this.executionId = Objects.requireNonNull( executionId, "executionId cannot be null" );
         }
 
-        public String getArtifactId() {
+        public String getArtifactId()
+        {
             return artifactId;
         }
 
-        public String getPluginGroupId() {
+        public String getPluginGroupId()
+        {
             return pluginGroupId;
         }
 
-        public String getPluginArtifactId() {
+        public String getPluginArtifactId()
+        {
             return pluginArtifactId;
         }
 
-        public String getPluginVersion() {
+        public String getPluginVersion()
+        {
             return pluginVersion;
         }
 
-        public String getExecutionId() {
+        public String getExecutionId()
+        {
             return executionId;
         }
 
-        public String getMojo() {
+        public String getMojo()
+        {
             return mojo;
         }
 
         @Override
-        public String toString() {
+        public String toString()
+        {
             return "MojoStarted{" +
                     "artifactId='" + artifactId + '\'' +
                     ", pluginGroupId='" + pluginGroupId + '\'' +
@@ -573,87 +675,101 @@ public abstract class Message {
         }
 
         @Override
-        public void write(DataOutputStream output) throws IOException {
-            super.write(output);
-            writeUTF(output, artifactId);
-            writeUTF(output, pluginGroupId);
-            writeUTF(output, pluginArtifactId);
-            writeUTF(output, pluginVersion);
-            writeUTF(output, mojo);
-            writeUTF(output, executionId);
+        public void write( DataOutputStream output ) throws IOException
+        {
+            super.write( output );
+            writeUTF( output, artifactId );
+            writeUTF( output, pluginGroupId );
+            writeUTF( output, pluginArtifactId );
+            writeUTF( output, pluginVersion );
+            writeUTF( output, mojo );
+            writeUTF( output, executionId );
         }
     }
 
-    public static class BuildStarted extends Message {
+    public static class BuildStarted extends Message
+    {
 
         final String projectId;
         final int projectCount;
         final int maxThreads;
         final int artifactIdDisplayLength;
 
-        public static BuildStarted read(DataInputStream input) throws IOException {
-            final String projectId = readUTF(input);
+        public static BuildStarted read( DataInputStream input ) throws IOException
+        {
+            final String projectId = readUTF( input );
             final int projectCount = input.readInt();
             final int maxThreads = input.readInt();
             final int artifactIdDisplayLength = input.readInt();
-            return new BuildStarted(projectId, projectCount, maxThreads, artifactIdDisplayLength);
+            return new BuildStarted( projectId, projectCount, maxThreads, artifactIdDisplayLength );
         }
 
-        public BuildStarted(String projectId, int projectCount, int maxThreads, int artifactIdDisplayLength) {
-            super(BUILD_STARTED);
+        public BuildStarted( String projectId, int projectCount, int maxThreads, int artifactIdDisplayLength )
+        {
+            super( BUILD_STARTED );
             this.projectId = projectId;
             this.projectCount = projectCount;
             this.maxThreads = maxThreads;
             this.artifactIdDisplayLength = artifactIdDisplayLength;
         }
 
-        public String getProjectId() {
+        public String getProjectId()
+        {
             return projectId;
         }
 
-        public int getProjectCount() {
+        public int getProjectCount()
+        {
             return projectCount;
         }
 
-        public int getMaxThreads() {
+        public int getMaxThreads()
+        {
             return maxThreads;
         }
 
-        public int getArtifactIdDisplayLength() {
+        public int getArtifactIdDisplayLength()
+        {
             return artifactIdDisplayLength;
         }
 
         @Override
-        public String toString() {
+        public String toString()
+        {
             return "BuildStarted{" +
                     "projectId='" + projectId + "', projectCount=" + projectCount +
                     ", maxThreads=" + maxThreads + ", artifactIdDisplayLength=" + artifactIdDisplayLength + "}";
         }
 
         @Override
-        public void write(DataOutputStream output) throws IOException {
-            super.write(output);
-            writeUTF(output, projectId);
-            output.writeInt(projectCount);
-            output.writeInt(maxThreads);
-            output.writeInt(artifactIdDisplayLength);
+        public void write( DataOutputStream output ) throws IOException
+        {
+            super.write( output );
+            writeUTF( output, projectId );
+            output.writeInt( projectCount );
+            output.writeInt( maxThreads );
+            output.writeInt( artifactIdDisplayLength );
         }
 
     }
 
-    public static class BareMessage extends Message {
+    public static class BareMessage extends Message
+    {
 
-        public static final BareMessage KEEP_ALIVE_SINGLETON = new BareMessage(KEEP_ALIVE);
-        public static final BareMessage STOP_SINGLETON = new BareMessage(STOP);
-        public static final BareMessage CANCEL_BUILD_SINGLETON = new BareMessage(CANCEL_BUILD);
+        public static final BareMessage KEEP_ALIVE_SINGLETON = new BareMessage( KEEP_ALIVE );
+        public static final BareMessage STOP_SINGLETON = new BareMessage( STOP );
+        public static final BareMessage CANCEL_BUILD_SINGLETON = new BareMessage( CANCEL_BUILD );
 
-        private BareMessage(int type) {
-            super(type);
+        private BareMessage( int type )
+        {
+            super( type );
         }
 
         @Override
-        public String toString() {
-            switch (type) {
+        public String toString()
+        {
+            switch ( type )
+            {
             case KEEP_ALIVE:
                 return "KeepAlive";
             case BUILD_FINISHED:
@@ -663,43 +779,51 @@ public abstract class Message {
             case CANCEL_BUILD:
                 return "BuildCanceled";
             default:
-                throw new IllegalStateException("Unexpected type " + type);
+                throw new IllegalStateException( "Unexpected type " + type );
             }
         }
 
     }
 
-    public static class StringMessage extends Message {
+    public static class StringMessage extends Message
+    {
 
         final String message;
 
-        public static StringMessage read(int type, DataInputStream input) throws IOException {
-            String message = readUTF(input);
-            return new StringMessage(type, message);
+        public static StringMessage read( int type, DataInputStream input ) throws IOException
+        {
+            String message = readUTF( input );
+            return new StringMessage( type, message );
         }
 
-        private StringMessage(int type, String message) {
-            super(type);
+        private StringMessage( int type, String message )
+        {
+            super( type );
             this.message = message;
         }
 
-        public String getMessage() {
+        public String getMessage()
+        {
             return message;
         }
 
         @Override
-        public void write(DataOutputStream output) throws IOException {
-            super.write(output);
-            writeUTF(output, message);
+        public void write( DataOutputStream output ) throws IOException
+        {
+            super.write( output );
+            writeUTF( output, message );
         }
 
         @Override
-        public String toString() {
+        public String toString()
+        {
             return mnemonic() + "{payload='" + message + "'}";
         }
 
-        private String mnemonic() {
-            switch (type) {
+        private String mnemonic()
+        {
+            switch ( type )
+            {
             case PROJECT_STARTED:
                 return "ProjectStarted";
             case PROJECT_STOPPED:
@@ -717,53 +841,61 @@ public abstract class Message {
             case PRINT_ERR:
                 return "PrintErr";
             default:
-                throw new IllegalStateException("Unexpected type " + type);
+                throw new IllegalStateException( "Unexpected type " + type );
             }
         }
 
     }
 
-    public static class Prompt extends Message {
+    public static class Prompt extends Message
+    {
 
         final String projectId;
         final String uid;
         final String message;
         final boolean password;
 
-        public static Prompt read(DataInputStream input) throws IOException {
-            String projectId = Message.readUTF(input);
-            String uid = Message.readUTF(input);
-            String message = Message.readUTF(input);
+        public static Prompt read( DataInputStream input ) throws IOException
+        {
+            String projectId = Message.readUTF( input );
+            String uid = Message.readUTF( input );
+            String message = Message.readUTF( input );
             boolean password = input.readBoolean();
-            return new Prompt(projectId, uid, message, password);
+            return new Prompt( projectId, uid, message, password );
         }
 
-        public Prompt(String projectId, String uid, String message, boolean password) {
-            super(PROMPT);
+        public Prompt( String projectId, String uid, String message, boolean password )
+        {
+            super( PROMPT );
             this.projectId = projectId;
             this.uid = uid;
             this.message = message;
             this.password = password;
         }
 
-        public String getProjectId() {
+        public String getProjectId()
+        {
             return projectId;
         }
 
-        public String getUid() {
+        public String getUid()
+        {
             return uid;
         }
 
-        public String getMessage() {
+        public String getMessage()
+        {
             return message;
         }
 
-        public boolean isPassword() {
+        public boolean isPassword()
+        {
             return password;
         }
 
         @Override
-        public String toString() {
+        public String toString()
+        {
             return "Prompt{" +
                     "projectId='" + projectId + '\'' +
                     ", uid='" + uid + '\'' +
@@ -773,54 +905,63 @@ public abstract class Message {
         }
 
         @Override
-        public void write(DataOutputStream output) throws IOException {
-            super.write(output);
-            writeUTF(output, projectId);
-            writeUTF(output, uid);
-            writeUTF(output, message);
-            output.writeBoolean(password);
+        public void write( DataOutputStream output ) throws IOException
+        {
+            super.write( output );
+            writeUTF( output, projectId );
+            writeUTF( output, uid );
+            writeUTF( output, message );
+            output.writeBoolean( password );
         }
 
-        public PromptResponse response(String message) {
-            return new PromptResponse(projectId, uid, message);
+        public PromptResponse response( String message )
+        {
+            return new PromptResponse( projectId, uid, message );
         }
 
     }
 
-    public static class PromptResponse extends Message {
+    public static class PromptResponse extends Message
+    {
 
         final String projectId;
         final String uid;
         final String message;
 
-        public static Message read(DataInputStream input) throws IOException {
-            String projectId = Message.readUTF(input);
-            String uid = Message.readUTF(input);
-            String message = Message.readUTF(input);
-            return new PromptResponse(projectId, uid, message);
+        public static Message read( DataInputStream input ) throws IOException
+        {
+            String projectId = Message.readUTF( input );
+            String uid = Message.readUTF( input );
+            String message = Message.readUTF( input );
+            return new PromptResponse( projectId, uid, message );
         }
 
-        private PromptResponse(String projectId, String uid, String message) {
-            super(PROMPT_RESPONSE);
+        private PromptResponse( String projectId, String uid, String message )
+        {
+            super( PROMPT_RESPONSE );
             this.projectId = projectId;
             this.uid = uid;
             this.message = message;
         }
 
-        public String getProjectId() {
+        public String getProjectId()
+        {
             return projectId;
         }
 
-        public String getUid() {
+        public String getUid()
+        {
             return uid;
         }
 
-        public String getMessage() {
+        public String getMessage()
+        {
             return message;
         }
 
         @Override
-        public String toString() {
+        public String toString()
+        {
             return "PromptResponse{" +
                     "projectId='" + projectId + '\'' +
                     ", uid='" + uid + '\'' +
@@ -829,41 +970,48 @@ public abstract class Message {
         }
 
         @Override
-        public void write(DataOutputStream output) throws IOException {
-            super.write(output);
-            writeUTF(output, projectId);
-            writeUTF(output, uid);
-            writeUTF(output, message);
+        public void write( DataOutputStream output ) throws IOException
+        {
+            super.write( output );
+            writeUTF( output, projectId );
+            writeUTF( output, uid );
+            writeUTF( output, message );
         }
     }
 
-    public static class ExecutionFailureEvent extends Message {
+    public static class ExecutionFailureEvent extends Message
+    {
 
         final String projectId;
         final boolean halted;
         final String exception;
 
-        private ExecutionFailureEvent(String projectId, boolean halted, String exception) {
-            super(EXECUTION_FAILURE);
+        private ExecutionFailureEvent( String projectId, boolean halted, String exception )
+        {
+            super( EXECUTION_FAILURE );
             this.projectId = projectId;
             this.halted = halted;
             this.exception = exception;
         }
 
-        public String getProjectId() {
+        public String getProjectId()
+        {
             return projectId;
         }
 
-        public boolean isHalted() {
+        public boolean isHalted()
+        {
             return halted;
         }
 
-        public String getException() {
+        public String getException()
+        {
             return exception;
         }
 
         @Override
-        public String toString() {
+        public String toString()
+        {
             return "ExecutionFailure{" +
                     "projectId='" + projectId + '\'' +
                     ", halted=" + halted +
@@ -872,22 +1020,25 @@ public abstract class Message {
         }
 
         @Override
-        public void write(DataOutputStream output) throws IOException {
-            super.write(output);
-            writeUTF(output, projectId);
-            output.writeBoolean(halted);
-            writeUTF(output, exception);
+        public void write( DataOutputStream output ) throws IOException
+        {
+            super.write( output );
+            writeUTF( output, projectId );
+            output.writeBoolean( halted );
+            writeUTF( output, exception );
         }
 
-        public static ExecutionFailureEvent read(DataInputStream input) throws IOException {
-            String projectId = readUTF(input);
+        public static ExecutionFailureEvent read( DataInputStream input ) throws IOException
+        {
+            String projectId = readUTF( input );
             boolean halted = input.readBoolean();
-            String exception = readUTF(input);
-            return new ExecutionFailureEvent(projectId, halted, exception);
+            String exception = readUTF( input );
+            return new ExecutionFailureEvent( projectId, halted, exception );
         }
     }
 
-    public static class TransferEvent extends Message {
+    public static class TransferEvent extends Message
+    {
 
         public static final int INITIATED = 0;
         public static final int STARTED = 1;
@@ -909,11 +1060,12 @@ public abstract class Message {
         final long transferredBytes;
         final String exception;
 
-        private TransferEvent(int type, String projectId, int requestType,
+        private TransferEvent( int type, String projectId, int requestType,
                 String repositoryId, String repositoryUrl,
                 String resourceName, long contentLength, long transferredBytes,
-                String exception) {
-            super(type);
+                String exception )
+        {
+            super( type );
             this.projectId = projectId;
             this.requestType = requestType;
             this.repositoryId = repositoryId;
@@ -924,40 +1076,49 @@ public abstract class Message {
             this.exception = exception;
         }
 
-        public String getProjectId() {
+        public String getProjectId()
+        {
             return projectId;
         }
 
-        public int getRequestType() {
+        public int getRequestType()
+        {
             return requestType;
         }
 
-        public String getRepositoryId() {
+        public String getRepositoryId()
+        {
             return repositoryId;
         }
 
-        public String getRepositoryUrl() {
+        public String getRepositoryUrl()
+        {
             return repositoryUrl;
         }
 
-        public String getResourceName() {
+        public String getResourceName()
+        {
             return resourceName;
         }
 
-        public long getContentLength() {
+        public long getContentLength()
+        {
             return contentLength;
         }
 
-        public long getTransferredBytes() {
+        public long getTransferredBytes()
+        {
             return transferredBytes;
         }
 
-        public String getException() {
+        public String getException()
+        {
             return exception;
         }
 
         @Override
-        public String toString() {
+        public String toString()
+        {
             return mnemonic() + "{" +
                     "projectId=" + projectId +
                     ", requestType=" + requestType +
@@ -970,8 +1131,10 @@ public abstract class Message {
                     '}';
         }
 
-        private String mnemonic() {
-            switch (type) {
+        private String mnemonic()
+        {
+            switch ( type )
+            {
             case TRANSFER_INITIATED:
                 return "TransferInitiated";
             case TRANSFER_STARTED:
@@ -985,96 +1148,112 @@ public abstract class Message {
             case TRANSFER_FAILED:
                 return "TransferFailed";
             default:
-                throw new IllegalStateException("Unexpected type " + type);
+                throw new IllegalStateException( "Unexpected type " + type );
             }
         }
 
         @Override
-        public void write(DataOutputStream output) throws IOException {
-            super.write(output);
-            writeUTF(output, projectId);
-            output.writeByte(requestType);
-            writeUTF(output, repositoryId);
-            writeUTF(output, repositoryUrl);
-            writeUTF(output, resourceName);
-            output.writeLong(contentLength);
-            output.writeLong(transferredBytes);
-            writeUTF(output, exception);
+        public void write( DataOutputStream output ) throws IOException
+        {
+            super.write( output );
+            writeUTF( output, projectId );
+            output.writeByte( requestType );
+            writeUTF( output, repositoryId );
+            writeUTF( output, repositoryUrl );
+            writeUTF( output, resourceName );
+            output.writeLong( contentLength );
+            output.writeLong( transferredBytes );
+            writeUTF( output, exception );
         }
 
-        public static TransferEvent read(int type, DataInputStream input) throws IOException {
-            String projectId = readUTF(input);
+        public static TransferEvent read( int type, DataInputStream input ) throws IOException
+        {
+            String projectId = readUTF( input );
             int request = input.readByte();
-            String repositoryId = readUTF(input);
-            String repositoryUrl = readUTF(input);
-            String resourceName = readUTF(input);
+            String repositoryId = readUTF( input );
+            String repositoryUrl = readUTF( input );
+            String resourceName = readUTF( input );
             long contentLength = input.readLong();
             long transferredBytes = input.readLong();
-            String exception = readUTF(input);
-            return new TransferEvent(type, projectId, request, repositoryId, repositoryUrl, resourceName,
-                    contentLength, transferredBytes, exception);
+            String exception = readUTF( input );
+            return new TransferEvent( type, projectId, request, repositoryId, repositoryUrl, resourceName,
+                    contentLength, transferredBytes, exception );
         }
     }
 
-    public int getType() {
+    public int getType()
+    {
         return type;
     }
 
-    public static StringMessage buildStatus(String payload) {
-        return new StringMessage(BUILD_STATUS, payload);
+    public static StringMessage buildStatus( String payload )
+    {
+        return new StringMessage( BUILD_STATUS, payload );
     }
 
-    public static StringMessage display(String message) {
-        return new StringMessage(DISPLAY, message);
+    public static StringMessage display( String message )
+    {
+        return new StringMessage( DISPLAY, message );
     }
 
-    public static StringMessage out(String message) {
-        return new StringMessage(PRINT_OUT, message);
+    public static StringMessage out( String message )
+    {
+        return new StringMessage( PRINT_OUT, message );
     }
 
-    public static StringMessage err(String message) {
-        return new StringMessage(PRINT_ERR, message);
+    public static StringMessage err( String message )
+    {
+        return new StringMessage( PRINT_ERR, message );
     }
 
-    public static StringMessage log(String message) {
-        return new StringMessage(BUILD_LOG_MESSAGE, message);
+    public static StringMessage log( String message )
+    {
+        return new StringMessage( BUILD_LOG_MESSAGE, message );
     }
 
-    public static ProjectEvent log(String projectId, String message) {
-        return new ProjectEvent(PROJECT_LOG_MESSAGE, projectId, message);
+    public static ProjectEvent log( String projectId, String message )
+    {
+        return new ProjectEvent( PROJECT_LOG_MESSAGE, projectId, message );
     }
 
-    public static StringMessage keyboardInput(char keyStroke) {
-        return new StringMessage(KEYBOARD_INPUT, String.valueOf(keyStroke));
+    public static StringMessage keyboardInput( char keyStroke )
+    {
+        return new StringMessage( KEYBOARD_INPUT, String.valueOf( keyStroke ) );
     }
 
-    public static StringMessage projectStarted(String projectId) {
-        return new StringMessage(PROJECT_STARTED, projectId);
+    public static StringMessage projectStarted( String projectId )
+    {
+        return new StringMessage( PROJECT_STARTED, projectId );
     }
 
-    public static StringMessage projectStopped(String projectId) {
-        return new StringMessage(PROJECT_STOPPED, projectId);
+    public static StringMessage projectStopped( String projectId )
+    {
+        return new StringMessage( PROJECT_STOPPED, projectId );
     }
 
-    public static ExecutionFailureEvent executionFailure(String projectId, boolean halted, String exception) {
-        return new ExecutionFailureEvent(projectId, halted, exception);
+    public static ExecutionFailureEvent executionFailure( String projectId, boolean halted, String exception )
+    {
+        return new ExecutionFailureEvent( projectId, halted, exception );
     }
 
-    public static Message mojoStarted(String artifactId, String pluginGroupId, String pluginArtifactId,
-            String pluginVersion, String mojo, String executionId) {
-        return new MojoStartedEvent(artifactId, pluginGroupId, pluginArtifactId, pluginVersion, mojo, executionId);
+    public static Message mojoStarted( String artifactId, String pluginGroupId, String pluginArtifactId,
+            String pluginVersion, String mojo, String executionId )
+    {
+        return new MojoStartedEvent( artifactId, pluginGroupId, pluginArtifactId, pluginVersion, mojo, executionId );
     }
 
-    public static ProjectEvent display(String projectId, String message) {
-        return new ProjectEvent(Message.DISPLAY, projectId, message);
+    public static ProjectEvent display( String projectId, String message )
+    {
+        return new ProjectEvent( Message.DISPLAY, projectId, message );
     }
 
-    public static TransferEvent transfer(String projectId, int transferEventType, int requestType,
+    public static TransferEvent transfer( String projectId, int transferEventType, int requestType,
             String repositoryId, String repositoryUrl,
             String resourceName, long contentLength, long transferredBytes,
-            String exception) {
-        return new TransferEvent(transferEventType, projectId, requestType,
-                repositoryId, repositoryUrl, resourceName, contentLength, transferredBytes, exception);
+            String exception )
+    {
+        return new TransferEvent( transferEventType, projectId, requestType,
+                repositoryId, repositoryUrl, resourceName, contentLength, transferredBytes, exception );
     }
 
 }

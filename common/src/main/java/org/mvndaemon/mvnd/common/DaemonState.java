@@ -19,7 +19,8 @@ package org.mvndaemon.mvnd.common;
  * File origin
  * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/server/api/DaemonStateControl.java
  */
-public enum DaemonState {
+public enum DaemonState
+{
 
     Idle,
     Busy,

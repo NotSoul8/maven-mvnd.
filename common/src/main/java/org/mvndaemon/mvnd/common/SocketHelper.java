@@ -20,17 +20,21 @@ import java.net.SocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
-public class SocketHelper {
+public class SocketHelper
+{
 
-    public static SocketChannel openUnixSocket() throws IOException {
-        throw new UnsupportedOperationException("Unix sockets are supported only on JDK >= 16");
+    public static SocketChannel openUnixSocket() throws IOException
+    {
+        throw new UnsupportedOperationException( "Unix sockets are supported only on JDK >= 16" );
     }
 
-    public static ServerSocketChannel openUnixServerSocket() throws IOException {
-        throw new UnsupportedOperationException("Unix sockets are supported only on JDK >= 16");
+    public static ServerSocketChannel openUnixServerSocket() throws IOException
+    {
+        throw new UnsupportedOperationException( "Unix sockets are supported only on JDK >= 16" );
     }
 
-    public static SocketAddress unixSocketAddressOf(String s) {
-        throw new UnsupportedOperationException("Unix sockets are supported only on JDK >= 16");
+    public static SocketAddress unixSocketAddressOf( String s )
+    {
+        throw new UnsupportedOperationException( "Unix sockets are supported only on JDK >= 16" );
     }
 }

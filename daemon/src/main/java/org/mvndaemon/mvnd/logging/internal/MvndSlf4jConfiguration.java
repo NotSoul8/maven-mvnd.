@@ -17,12 +17,16 @@ package org.mvndaemon.mvnd.logging.internal;
 
 import org.apache.maven.cli.logging.Slf4jConfiguration;
 
-public class MvndSlf4jConfiguration implements Slf4jConfiguration {
+public class MvndSlf4jConfiguration implements Slf4jConfiguration
+{
+
     @Override
-    public void setRootLoggerLevel(Level level) {
+    public void setRootLoggerLevel( Level level )
+    {
     }
 
     @Override
-    public void activate() {
+    public void activate()
+    {
     }
 }

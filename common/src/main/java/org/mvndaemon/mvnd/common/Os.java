@@ -17,59 +17,78 @@ package org.mvndaemon.mvnd.common;
 
 import java.util.Locale;
 
-public enum Os {
-    LINUX(true),
-    MAC(true),
-    WINDOWS(false) {
+public enum Os
+{
+
+    LINUX( true ),
+    MAC( true ),
+    WINDOWS( false )
+    {
+
         private boolean cygwin;
         {
-            String pwd = System.getenv("PWD");
-            cygwin = pwd != null && pwd.startsWith("/");
+            String pwd = System.getenv( "PWD" );
+            cygwin = pwd != null && pwd.startsWith( "/" );
         }
 
         @Override
-        public boolean isCygwin() {
+        public boolean isCygwin()
+        {
             return cygwin;
         }
     },
-    UNKNOWN(false) {
+    UNKNOWN( false )
+    {
 
         @Override
-        public boolean isUnixLike() {
-            throw new UnsupportedOperationException("Cannot tell isUnixLike() for an " + UNKNOWN.name() + " OS");
+        public boolean isUnixLike()
+        {
+            throw new UnsupportedOperationException( "Cannot tell isUnixLike() for an " + UNKNOWN.name() + " OS" );
         }
 
     };
 
     private static final Os CURRENT;
-    static {
-        final String osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
-        if (osName.startsWith("osx") || osName.startsWith("mac os x")) {
+    static
+    {
+        final String osName = System.getProperty( "os.name" ).toLowerCase( Locale.ROOT );
+        if ( osName.startsWith( "osx" ) || osName.startsWith( "mac os x" ) )
+        {
             CURRENT = MAC;
-        } else if (osName.contains("win")) {
+        }
+        else if ( osName.contains( "win" ) )
+        {
             CURRENT = WINDOWS;
-        } else if (osName.contains("linux")) {
+        }
+        else if ( osName.contains( "linux" ) )
+        {
             CURRENT = LINUX;
-        } else {
+        }
+        else
+        {
             CURRENT = UNKNOWN;
         }
     }
 
     private final boolean unixLike;
 
-    public static Os current() {
+    public static Os current()
+    {
         return CURRENT;
     }
 
-    Os(boolean unixLike) {
+    Os( boolean unixLike )
+    {
         this.unixLike = unixLike;
     }
 
-    public boolean isUnixLike() {
+    public boolean isUnixLike()
+    {
         return unixLike;
     }
 
-    public boolean isCygwin() {
+    public boolean isCygwin()
+    {
         return false;
     }
 

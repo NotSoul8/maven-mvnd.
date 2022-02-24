@@ -26,12 +26,16 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Locale;
 
-public enum SocketFamily {
+public enum SocketFamily
+{
+
     inet,
     unix;
 
-    public SocketChannel openSocket() throws IOException {
-        switch (this) {
+    public SocketChannel openSocket() throws IOException
+    {
+        switch ( this )
+        {
         case inet:
             return SocketChannel.open();
         case unix:
@@ -41,10 +45,12 @@ public enum SocketFamily {
         }
     }
 
-    public ServerSocketChannel openServerSocket() throws IOException {
-        switch (this) {
+    public ServerSocketChannel openServerSocket() throws IOException
+    {
+        switch ( this )
+        {
         case inet:
-            return ServerSocketChannel.open().bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
+            return ServerSocketChannel.open().bind( new InetSocketAddress( InetAddress.getLoopbackAddress(), 0 ), 0 );
         case unix:
             return SocketHelper.openUnixServerSocket();
         default:
@@ -52,89 +58,123 @@ public enum SocketFamily {
         }
     }
 
-    private StandardProtocolFamily getStandardProtocolFamily() {
-        return StandardProtocolFamily.valueOf(name().toUpperCase(Locale.ROOT));
+    private StandardProtocolFamily getStandardProtocolFamily()
+    {
+        return StandardProtocolFamily.valueOf( name().toUpperCase( Locale.ROOT ) );
     }
 
-    private SocketAddress getLoopbackAddress() {
-        if (this == inet) {
-            return new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
-        } else {
+    private SocketAddress getLoopbackAddress()
+    {
+        if ( this == inet )
+        {
+            return new InetSocketAddress( InetAddress.getLoopbackAddress(), 0 );
+        }
+        else
+        {
             return null;
         }
     }
 
-    public static SocketAddress fromString(String str) {
-        if (str.startsWith("inet:")) {
-            String s = str.substring("inet:".length());
-            int ic = s.lastIndexOf(':');
-            String ia = s.substring(0, ic);
-            int is = ia.indexOf('/');
-            String h = ia.substring(0, is);
-            String a = ia.substring(is + 1);
-            String p = s.substring(ic + 1);
+    public static SocketAddress fromString( String str )
+    {
+        if ( str.startsWith( "inet:" ) )
+        {
+            String s = str.substring( "inet:".length() );
+            int ic = s.lastIndexOf( ':' );
+            String ia = s.substring( 0, ic );
+            int is = ia.indexOf( '/' );
+            String h = ia.substring( 0, is );
+            String a = ia.substring( is + 1 );
+            String p = s.substring( ic + 1 );
             InetAddress addr;
-            if ("<unresolved>".equals(a)) {
-                return InetSocketAddress.createUnresolved(h, Integer.parseInt(p));
-            } else {
-                if (a.indexOf('.') > 0) {
-                    String[] as = a.split("\\.");
-                    if (as.length != 4) {
-                        throw new IllegalArgumentException("Unsupported socket address: '" + str + "'");
+            if ( "<unresolved>".equals( a ) )
+            {
+                return InetSocketAddress.createUnresolved( h, Integer.parseInt( p ) );
+            }
+            else
+            {
+                if ( a.indexOf( '.' ) > 0 )
+                {
+                    String[] as = a.split( "\\." );
+                    if ( as.length != 4 )
+                    {
+                        throw new IllegalArgumentException( "Unsupported socket address: '" + str + "'" );
                     }
                     byte[] ab = new byte[4];
-                    for (int i = 0; i < 4; i++) {
-                        ab[i] = (byte) Integer.parseInt(as[i]);
+                    for ( int i = 0; i < 4; i++ )
+                    {
+                        ab[i] = ( byte ) Integer.parseInt( as[i] );
                     }
-                    try {
-                        addr = InetAddress.getByAddress(h.isEmpty() ? null : h, ab);
-                    } catch (UnknownHostException e) {
-                        throw new IllegalArgumentException("Unsupported address: " + str, e);
+                    try
+                    {
+                        addr = InetAddress.getByAddress( h.isEmpty() ? null : h, ab );
                     }
-                } else {
-                    throw new IllegalArgumentException("Unsupported address: " + str);
+                    catch ( UnknownHostException e )
+                    {
+                        throw new IllegalArgumentException( "Unsupported address: " + str, e );
+                    }
                 }
-                return new InetSocketAddress(addr, Integer.parseInt(p));
+                else
+                {
+                    throw new IllegalArgumentException( "Unsupported address: " + str );
+                }
+                return new InetSocketAddress( addr, Integer.parseInt( p ) );
             }
-        } else if (str.startsWith("unix:")) {
-            return SocketHelper.unixSocketAddressOf(str.substring("unix:".length()));
-        } else {
-            throw new IllegalArgumentException("Unsupported socket address: '" + str + "'");
+        }
+        else if ( str.startsWith( "unix:" ) )
+        {
+            return SocketHelper.unixSocketAddressOf( str.substring( "unix:".length() ) );
+        }
+        else
+        {
+            throw new IllegalArgumentException( "Unsupported socket address: '" + str + "'" );
         }
     }
 
-    public static String toString(SocketAddress address) {
-        switch (familyOf(address)) {
+    public static String toString( SocketAddress address )
+    {
+        switch ( familyOf( address ) )
+        {
         case inet:
-            InetSocketAddress isa = (InetSocketAddress) address;
+            InetSocketAddress isa = ( InetSocketAddress ) address;
             String host = isa.getHostString();
             InetAddress addr = isa.getAddress();
             int port = isa.getPort();
             String formatted;
-            if (addr == null) {
+            if ( addr == null )
+            {
                 formatted = host + "/<unresolved>";
-            } else {
+            }
+            else
+            {
                 formatted = addr.toString();
-                if (addr instanceof Inet6Address) {
-                    int i = formatted.lastIndexOf("/");
-                    formatted = formatted.substring(0, i + 1) + "[" + formatted.substring(i + 1) + "]";
+                if ( addr instanceof Inet6Address )
+                {
+                    int i = formatted.lastIndexOf( "/" );
+                    formatted = formatted.substring( 0, i + 1 ) + "[" + formatted.substring( i + 1 ) + "]";
                 }
             }
             return "inet:" + formatted + ":" + port;
         case unix:
             return "unix:" + address;
         default:
-            throw new IllegalArgumentException("Unsupported socket address: '" + address + "'");
+            throw new IllegalArgumentException( "Unsupported socket address: '" + address + "'" );
         }
     }
 
-    public static SocketFamily familyOf(SocketAddress address) {
-        if (address instanceof InetSocketAddress) {
+    public static SocketFamily familyOf( SocketAddress address )
+    {
+        if ( address instanceof InetSocketAddress )
+        {
             return SocketFamily.inet;
-        } else if ("java.net.UnixDomainSocketAddress".equals(address.getClass().getName())) {
+        }
+        else if ( "java.net.UnixDomainSocketAddress".equals( address.getClass().getName() ) )
+        {
             return SocketFamily.unix;
-        } else {
-            throw new IllegalArgumentException("Unsupported socket address '" + address + "'");
+        }
+        else
+        {
+            throw new IllegalArgumentException( "Unsupported socket address '" + address + "'" );
         }
     }
 

@@ -24,7 +24,8 @@ import static org.mvndaemon.mvnd.common.DaemonState.Idle;
  * File origin:
  * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/registry/DaemonInfo.java
  */
-public class DaemonInfo {
+public class DaemonInfo
+{
 
     public static final int TOKEN_SIZE = 16;
 
@@ -40,10 +41,11 @@ public class DaemonInfo {
     private final long lastIdle;
     private final long lastBusy;
 
-    public DaemonInfo(String id, String javaHome, String mavenHome,
+    public DaemonInfo( String id, String javaHome, String mavenHome,
             int pid, String address, byte[] token,
             String locale, List<String> options,
-            DaemonState state, long lastIdle, long lastBusy) {
+            DaemonState state, long lastIdle, long lastBusy )
+    {
         this.id = id;
         this.javaHome = javaHome;
         this.mvndHome = mavenHome;
@@ -57,82 +59,101 @@ public class DaemonInfo {
         this.lastBusy = lastBusy;
     }
 
-    public String getId() {
+    public String getId()
+    {
         return id;
     }
 
-    public String getJavaHome() {
+    public String getJavaHome()
+    {
         return javaHome;
     }
 
-    public String getMvndHome() {
+    public String getMvndHome()
+    {
         return mvndHome;
     }
 
-    public int getPid() {
+    public int getPid()
+    {
         return pid;
     }
 
-    public String getAddress() {
+    public String getAddress()
+    {
         return address;
     }
 
-    public byte[] getToken() {
+    public byte[] getToken()
+    {
         return token;
     }
 
-    public String getLocale() {
+    public String getLocale()
+    {
         return locale;
     }
 
-    public List<String> getOptions() {
+    public List<String> getOptions()
+    {
         return options;
     }
 
-    public DaemonState getState() {
+    public DaemonState getState()
+    {
         return state;
     }
 
-    public long getLastIdle() {
+    public long getLastIdle()
+    {
         return lastIdle;
     }
 
-    public long getLastBusy() {
+    public long getLastBusy()
+    {
         return lastBusy;
     }
 
-    public DaemonInfo withState(DaemonState state) {
+    public DaemonInfo withState( DaemonState state )
+    {
         long lb, li;
-        if (this.state == Idle && state == Busy) {
+        if ( this.state == Idle && state == Busy )
+        {
             li = lastIdle;
             lb = System.currentTimeMillis();
-        } else if (this.state == Busy && state == Idle) {
+        }
+        else if ( this.state == Busy && state == Idle )
+        {
             li = System.currentTimeMillis();
             lb = lastBusy;
-        } else {
+        }
+        else
+        {
             li = lastIdle;
             lb = lastBusy;
         }
-        return new DaemonInfo(id, javaHome, mvndHome, pid, address,
-                token, locale, options, state, li, lb);
+        return new DaemonInfo( id, javaHome, mvndHome, pid, address,
+                token, locale, options, state, li, lb );
     }
 
     @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("DaemonInfo{id=").append(id);
-        appendNonKeyFields(sb);
-        return sb.append('}').toString();
+    public String toString()
+    {
+        final StringBuilder sb = new StringBuilder( "DaemonInfo{id=" ).append( id );
+        appendNonKeyFields( sb );
+        return sb.append( '}' ).toString();
     }
 
-    public StringBuilder appendNonKeyFields(StringBuilder sb) {
-        return sb.append("javaHome=").append(javaHome)
-                .append(", options=").append(options)
-                .append(", mavenHome=").append(mvndHome)
-                .append(", pid=").append(pid)
-                .append(", address=").append(address)
-                .append(", locale=").append(locale)
-                .append(", state=").append(state)
-                .append(", lastIdle=").append(lastIdle)
-                .append(", lastBusy=").append(lastBusy);
+    public StringBuilder appendNonKeyFields( StringBuilder sb )
+    {
+        return sb.append( "javaHome=" ).append( javaHome )
+                .append( ", options=" ).append( options )
+                .append( ", mavenHome=" ).append( mvndHome )
+                .append( ", pid=" ).append( pid )
+                .append( ", address=" ).append( address )
+                .append( ", locale=" ).append( locale )
+                .append( ", state=" ).append( state )
+                .append( ", lastIdle=" ).append( lastIdle )
+                .append( ", lastBusy=" ).append( lastBusy );
     }
 }

@@ -20,12 +20,14 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class DaemonConnectorTest {
+public class DaemonConnectorTest
+{
 
     @Test
-    public void newId() {
+    public void newId()
+    {
         String id = DaemonConnector.newId();
-        assertNotNull(id);
-        assertEquals(8, id.length());
+        assertNotNull( id );
+        assertEquals( 8, id.length() );
     }
 }

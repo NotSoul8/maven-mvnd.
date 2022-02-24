@@ -15,13 +15,16 @@
  */
 package org.mvndaemon.mvnd.common;
 
-public class JavaVersion {
+public class JavaVersion
+{
 
     private static float javaSpec = 0.0f;
 
-    public static float getJavaSpec() {
-        if (javaSpec <= 0.0f) {
-            javaSpec = Float.parseFloat(System.getProperty("java.specification.version"));
+    public static float getJavaSpec()
+    {
+        if ( javaSpec <= 0.0f )
+        {
+            javaSpec = Float.parseFloat( System.getProperty( "java.specification.version" ) );
         }
         return javaSpec;
     }

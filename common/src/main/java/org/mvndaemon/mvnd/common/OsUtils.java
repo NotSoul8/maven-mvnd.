@@ -29,89 +29,127 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OsUtils {
+public class OsUtils
+{
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OsUtils.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger( OsUtils.class );
     private static final long KB = 1024;
     private static final String UNITS = "Bkmgt";
 
-    private OsUtils() {
+    private OsUtils()
+    {
 
     }
 
-    public static String bytesTohumanReadable(long bytes) {
+    public static String bytesTohumanReadable( long bytes )
+    {
         int unit = 0;
-        while (bytes >= KB && unit < UNITS.length() - 1) {
+        while ( bytes >= KB && unit < UNITS.length() - 1 )
+        {
             bytes /= KB;
             unit++;
         }
-        String kbString = String.valueOf(bytes);
-        return new StringBuilder(kbString.length() + 1).append(kbString).append(UNITS.charAt(unit)).toString();
+        String kbString = String.valueOf( bytes );
+        return new StringBuilder( kbString.length() + 1 ).append( kbString ).append( UNITS.charAt( unit ) ).toString();
     }
 
-    public static String kbTohumanReadable(long kb) {
+    public static String kbTohumanReadable( long kb )
+    {
         int unit = 1;
-        while (kb >= KB && unit < UNITS.length() - 1) {
+        while ( kb >= KB && unit < UNITS.length() - 1 )
+        {
             kb /= KB;
             unit++;
         }
-        String kbString = String.valueOf(kb);
-        return new StringBuilder(kbString.length() + 1).append(kbString).append(UNITS.charAt(unit)).toString();
+        String kbString = String.valueOf( kb );
+        return new StringBuilder( kbString.length() + 1 ).append( kbString ).append( UNITS.charAt( unit ) ).toString();
     }
 
-    public static long findProcessRssInKb(long pid) {
+    public static long findProcessRssInKb( long pid )
+    {
         final Os os = Os.current();
-        if (os.isUnixLike()) {
-            String[] cmd = { "ps", "-o", "rss=", "-p", String.valueOf(pid) };
-            final List<String> output = new ArrayList<String>(1);
-            exec(cmd, output);
-            if (output.size() == 1) {
-                try {
-                    return Long.parseLong(output.get(0).trim());
-                } catch (NumberFormatException e) {
-                    LOGGER.warn("Could not parse the output of " + Stream.of(cmd).collect(Collectors.joining(" "))
-                            + " as a long:\n"
-                            + output.stream().collect(Collectors.joining("\n")));
+        if ( os.isUnixLike() )
+        {
+            String[] cmd =
+            { "ps", "-o", "rss=", "-p", String.valueOf( pid )
+            };
+            final List<String> output = new ArrayList<String>( 1 );
+            exec( cmd, output );
+            if ( output.size() == 1 )
+            {
+                try
+                {
+                    return Long.parseLong( output.get( 0 ).trim() );
                 }
-            } else {
-                LOGGER.warn("Unexpected output of " + Stream.of(cmd).collect(Collectors.joining(" ")) + ":\n"
-                        + output.stream().collect(Collectors.joining("\n")));
+                catch ( NumberFormatException e )
+                {
+                    LOGGER.warn(
+                            "Could not parse the output of " + Stream.of( cmd ).collect( Collectors.joining( " " ) )
+                                    + " as a long:\n"
+                                    + output.stream().collect( Collectors.joining( "\n" ) ) );
+                }
+            }
+            else
+            {
+                LOGGER.warn( "Unexpected output of " + Stream.of( cmd ).collect( Collectors.joining( " " ) ) + ":\n"
+                        + output.stream().collect( Collectors.joining( "\n" ) ) );
             }
             return -1;
-        } else if (os == Os.WINDOWS) {
-            String[] cmd = { "wmic", "process", "where", "processid=" + pid, "get", "WorkingSetSize" };
-            final List<String> output = new ArrayList<String>(1);
-            exec(cmd, output);
-            final List<String> nonEmptyLines = output.stream().filter(l -> !l.isEmpty()).collect(Collectors.toList());
-            if (nonEmptyLines.size() >= 2) {
-                try {
-                    return Long.parseLong(nonEmptyLines.get(1).trim()) / KB;
-                } catch (NumberFormatException e) {
-                    LOGGER.warn("Could not parse the second line of " + Stream.of(cmd).collect(Collectors.joining(" "))
+        }
+        else if ( os == Os.WINDOWS )
+        {
+            String[] cmd =
+            { "wmic", "process", "where", "processid=" + pid, "get", "WorkingSetSize"
+            };
+            final List<String> output = new ArrayList<String>( 1 );
+            exec( cmd, output );
+            final List<String> nonEmptyLines = output.stream().filter( l -> !l.isEmpty() )
+                    .collect( Collectors.toList() );
+            if ( nonEmptyLines.size() >= 2 )
+            {
+                try
+                {
+                    return Long.parseLong( nonEmptyLines.get( 1 ).trim() ) / KB;
+                }
+                catch ( NumberFormatException e )
+                {
+                    LOGGER.warn( "Could not parse the second line of "
+                            + Stream.of( cmd ).collect( Collectors.joining( " " ) )
                             + " output as a long:\n"
-                            + nonEmptyLines.stream().collect(Collectors.joining("\n")));
+                            + nonEmptyLines.stream().collect( Collectors.joining( "\n" ) ) );
                 }
-            } else {
-                LOGGER.warn("Unexpected output of " + Stream.of(cmd).collect(Collectors.joining(" ")) + ":\n"
-                        + output.stream().collect(Collectors.joining("\n")));
+            }
+            else
+            {
+                LOGGER.warn( "Unexpected output of " + Stream.of( cmd ).collect( Collectors.joining( " " ) ) + ":\n"
+                        + output.stream().collect( Collectors.joining( "\n" ) ) );
             }
             return -1;
-        } else {
+        }
+        else
+        {
             return -1;
         }
     }
 
-    private static void exec(String[] cmd, final List<String> output) {
-        final ProcessBuilder builder = new ProcessBuilder(cmd).redirectErrorStream(true);
-        try (CommandProcess ps = new CommandProcess(builder.start(), output::add)) {
-            final int exitCode = ps.waitFor(1000);
-            if (exitCode != 0) {
-                LOGGER.warn(Stream.of(cmd).collect(Collectors.joining(" ")) + " exited with " + exitCode + ":\n"
-                        + output.stream().collect(Collectors.joining("\n")));
+    private static void exec( String[] cmd, final List<String> output )
+    {
+        final ProcessBuilder builder = new ProcessBuilder( cmd ).redirectErrorStream( true );
+        try ( CommandProcess ps = new CommandProcess( builder.start(), output::add ) )
+        {
+            final int exitCode = ps.waitFor( 1000 );
+            if ( exitCode != 0 )
+            {
+                LOGGER.warn( Stream.of( cmd ).collect( Collectors.joining( " " ) ) + " exited with " + exitCode + ":\n"
+                        + output.stream().collect( Collectors.joining( "\n" ) ) );
             }
-        } catch (IOException e) {
-            LOGGER.warn("Could not execute " + Stream.of(cmd).collect(Collectors.joining(" ")));
-        } catch (InterruptedException e) {
+        }
+        catch ( IOException e )
+        {
+            LOGGER.warn( "Could not execute " + Stream.of( cmd ).collect( Collectors.joining( " " ) ) );
+        }
+        catch ( InterruptedException e )
+        {
             Thread.currentThread().interrupt();
         }
     }
@@ -120,41 +158,54 @@ public class OsUtils {
      * A simple wrapper over {@link Process} that manages its destroying and offers Java 8-like
      * {@link #waitFor(long, TimeUnit, String[])} with timeout.
      */
-    public static class CommandProcess implements AutoCloseable {
+    public static class CommandProcess implements AutoCloseable
+    {
+
         public static final int TIMEOUT_EXIT_CODE = Integer.MIN_VALUE + 42;
 
         /**
          * The usual friend of {@link Process#getInputStream()} / {@link Process#getErrorStream()}.
          */
-        static class StreamGobbler extends Thread {
+        static class StreamGobbler extends Thread
+        {
+
             private volatile boolean cancelled;
             private IOException exception;
             private final InputStream in;
             private final Consumer<String> out;
 
-            private StreamGobbler(InputStream in, Consumer<String> out) {
+            private StreamGobbler( InputStream in, Consumer<String> out )
+            {
                 this.in = in;
                 this.out = out;
             }
 
-            public void assertSuccess() throws IOException {
-                if (exception != null) {
+            public void assertSuccess() throws IOException
+            {
+                if ( exception != null )
+                {
                     throw exception;
                 }
             }
 
-            public void cancel() {
+            public void cancel()
+            {
                 this.cancelled = true;
             }
 
             @Override
-            public void run() {
-                try (BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+            public void run()
+            {
+                try ( BufferedReader r = new BufferedReader( new InputStreamReader( in, StandardCharsets.UTF_8 ) ) )
+                {
                     String line;
-                    while (!cancelled && (line = r.readLine()) != null) {
-                        out.accept(line);
+                    while ( !cancelled && ( line = r.readLine() ) != null )
+                    {
+                        out.accept( line );
                     }
-                } catch (IOException e) {
+                }
+                catch ( IOException e )
+                {
                     exception = e;
                 }
             }
@@ -164,36 +215,45 @@ public class OsUtils {
         private final Thread shutDownHook;
         private final StreamGobbler stdOut;
 
-        public CommandProcess(Process process, Consumer<String> outputConsumer) {
+        public CommandProcess( Process process, Consumer<String> outputConsumer )
+        {
             super();
             this.process = process;
-            this.stdOut = new StreamGobbler(process.getInputStream(), outputConsumer);
+            this.stdOut = new StreamGobbler( process.getInputStream(), outputConsumer );
             stdOut.start();
 
-            this.shutDownHook = new Thread(new Runnable() {
+            this.shutDownHook = new Thread( new Runnable()
+            {
+
                 @Override
-                public void run() {
+                public void run()
+                {
                     stdOut.cancel();
                     CommandProcess.this.process.destroy();
                 }
-            });
-            Runtime.getRuntime().addShutdownHook(shutDownHook);
+            } );
+            Runtime.getRuntime().addShutdownHook( shutDownHook );
         }
 
         @Override
-        public void close() {
+        public void close()
+        {
             process.destroy();
         }
 
-        public int waitFor(long timeoutMs) throws InterruptedException, IOException {
+        public int waitFor( long timeoutMs ) throws InterruptedException, IOException
+        {
             final long deadline = System.currentTimeMillis() + timeoutMs;
-            final boolean timeouted = !process.waitFor(timeoutMs, TimeUnit.MILLISECONDS);
-            timeoutMs = Math.max(0, deadline - System.currentTimeMillis());
-            stdOut.join(timeoutMs);
+            final boolean timeouted = !process.waitFor( timeoutMs, TimeUnit.MILLISECONDS );
+            timeoutMs = Math.max( 0, deadline - System.currentTimeMillis() );
+            stdOut.join( timeoutMs );
             stdOut.assertSuccess();
-            try {
-                Runtime.getRuntime().removeShutdownHook(shutDownHook);
-            } catch (Exception ignored) {
+            try
+            {
+                Runtime.getRuntime().removeShutdownHook( shutDownHook );
+            }
+            catch ( Exception ignored )
+            {
             }
             final int exitCode = timeouted ? TIMEOUT_EXIT_CODE : process.exitValue();
             return exitCode;

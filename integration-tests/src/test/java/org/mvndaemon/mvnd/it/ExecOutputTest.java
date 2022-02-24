@@ -25,8 +25,9 @@ import org.mvndaemon.mvnd.junit.MvndTest;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MvndTest(projectDir = "src/test/projects/exec-output")
-public class ExecOutputTest {
+@MvndTest( projectDir = "src/test/projects/exec-output" )
+public class ExecOutputTest
+{
 
     @Inject
     Client client;
@@ -35,12 +36,13 @@ public class ExecOutputTest {
     DaemonParameters parameters;
 
     @Test
-    void cleanInstall() throws IOException, InterruptedException {
+    void cleanInstall() throws IOException, InterruptedException
+    {
 
         final TestClientOutput output = new TestClientOutput();
-        client.execute(output, "clean", "verify", "-e", "-B", "-Dmvnd.log.level=DEBUG").assertSuccess();
-        assertTrue(output.messagesToString()
-                .contains("ProjectLogMessage{projectId='exec-output', message='[INFO] [stdout] Hello world!'}"));
+        client.execute( output, "clean", "verify", "-e", "-B", "-Dmvnd.log.level=DEBUG" ).assertSuccess();
+        assertTrue( output.messagesToString()
+                .contains( "ProjectLogMessage{projectId='exec-output', message='[INFO] [stdout] Hello world!'}" ) );
 
     }
 }

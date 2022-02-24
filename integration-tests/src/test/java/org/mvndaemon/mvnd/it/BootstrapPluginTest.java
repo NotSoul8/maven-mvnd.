@@ -30,9 +30,10 @@ import org.mvndaemon.mvnd.junit.TestRegistry;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-@MvndTest(projectDir = "src/test/projects/bootstrap-plugin")
-@DisabledOnOs(OS.WINDOWS)
-public class BootstrapPluginTest {
+@MvndTest( projectDir = "src/test/projects/bootstrap-plugin" )
+@DisabledOnOs( OS.WINDOWS )
+public class BootstrapPluginTest
+{
 
     @Inject
     Client client;
@@ -44,27 +45,33 @@ public class BootstrapPluginTest {
     DaemonParameters parameters;
 
     @Test
-    void cleanInstall() throws IOException, InterruptedException {
-        assertDaemonRegistrySize(0);
+    void cleanInstall() throws IOException, InterruptedException
+    {
+        assertDaemonRegistrySize( 0 );
 
-        for (int i = 0; i < 5; i++) {
+        for ( int i = 0; i < 5; i++ )
+        {
             final TestClientOutput output = new TestClientOutput();
-            try {
-                client.execute(output, "clean", "install", "-e", "-Dmvnd.log.level=DEBUG").assertSuccess();
-            } catch (Exception e) {
-                output.getMessages().forEach(System.out::println);
-                fail("Error", e);
+            try
+            {
+                client.execute( output, "clean", "install", "-e", "-Dmvnd.log.level=DEBUG" ).assertSuccess();
             }
-            assertDaemonRegistrySize(1);
+            catch ( Exception e )
+            {
+                output.getMessages().forEach( System.out::println );
+                fail( "Error", e );
+            }
+            assertDaemonRegistrySize( 1 );
             /* Wait, till the instance becomes idle */
-            DaemonInfo d = registry.getAll().get(0);
-            registry.awaitIdle(d.getId());
+            DaemonInfo d = registry.getAll().get( 0 );
+            registry.awaitIdle( d.getId() );
         }
     }
 
-    private void assertDaemonRegistrySize(int size) {
-        Assertions.assertThat(registry.getAll().size())
-                .as("Daemon registry size should be " + size)
-                .isEqualTo(size);
+    private void assertDaemonRegistrySize( int size )
+    {
+        Assertions.assertThat( registry.getAll().size() )
+                .as( "Daemon registry size should be " + size )
+                .isEqualTo( size );
     }
 }

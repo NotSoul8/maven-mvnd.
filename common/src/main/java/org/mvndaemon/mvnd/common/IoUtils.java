@@ -21,22 +21,29 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 
-public class IoUtils {
-    public static String readResource(ClassLoader cl, String resourcePath) {
+public class IoUtils
+{
+
+    public static String readResource( ClassLoader cl, String resourcePath )
+    {
         final StringBuilder result = new StringBuilder();
         final int bufSize = 1024;
-        try (Reader in = new BufferedReader(
+        try ( Reader in = new BufferedReader(
                 new InputStreamReader(
-                        cl.getResourceAsStream(resourcePath),
-                        StandardCharsets.UTF_8),
-                bufSize)) {
+                        cl.getResourceAsStream( resourcePath ),
+                        StandardCharsets.UTF_8 ),
+                bufSize ) )
+        {
             int len = 0;
             char[] buf = new char[bufSize];
-            while ((len = in.read(buf)) >= 0) {
-                result.append(buf, 0, len);
+            while ( ( len = in.read( buf ) ) >= 0 )
+            {
+                result.append( buf, 0, len );
             }
-        } catch (IOException e) {
-            throw new RuntimeException("Could not read a class path resource: " + resourcePath, e);
+        }
+        catch ( IOException e )
+        {
+            throw new RuntimeException( "Could not read a class path resource: " + resourcePath, e );
         }
         return result.toString();
 

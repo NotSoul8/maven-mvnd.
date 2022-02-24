@@ -52,75 +52,87 @@ import org.slf4j.LoggerFactory;
 /**
  * Hold all daemon configuration
  */
-public class DaemonParameters {
+public class DaemonParameters
+{
 
     public static final String LOG_EXTENSION = ".log";
 
-    private static final Logger LOG = LoggerFactory.getLogger(DaemonParameters.class);
+    private static final Logger LOG = LoggerFactory.getLogger( DaemonParameters.class );
     private static final String EXT_CLASS_PATH = "maven.ext.class.path";
     private static final String EXTENSIONS_FILENAME = ".mvn/extensions.xml";
 
     protected final Map<Path, Properties> mvndProperties = new ConcurrentHashMap<>();
-    protected final Function<Path, Properties> provider = path -> mvndProperties.computeIfAbsent(path,
-            p -> loadProperties(path));
+    protected final Function<Path, Properties> provider = path -> mvndProperties.computeIfAbsent( path,
+            p -> loadProperties( path ) );
     private final Map<String, String> properties;
 
-    public DaemonParameters() {
+    public DaemonParameters()
+    {
         this.properties = Collections.emptyMap();
     }
 
-    protected DaemonParameters(PropertiesBuilder propertiesBuilder) {
+    protected DaemonParameters( PropertiesBuilder propertiesBuilder )
+    {
         this.properties = propertiesBuilder.build();
     }
 
-    public List<String> getDaemonOpts() {
+    public List<String> getDaemonOpts()
+    {
         return discriminatingValues()
-                .map(envValue -> envValue.envKey.asDaemonOpt(envValue.asString()))
-                .collect(Collectors.toList());
+                .map( envValue -> envValue.envKey.asDaemonOpt( envValue.asString() ) )
+                .collect( Collectors.toList() );
     }
 
-    public Map<String, String> getDaemonOptsMap() {
+    public Map<String, String> getDaemonOptsMap()
+    {
         return discriminatingValues()
-                .collect(Collectors.toMap(
+                .collect( Collectors.toMap(
                         envValue -> envValue.envKey.getProperty(),
-                        EnvValue::asString));
+                        EnvValue::asString ) );
     }
 
-    Stream<EnvValue> discriminatingValues() {
-        return Arrays.stream(Environment.values())
-                .filter(Environment::isDiscriminating)
-                .map(this::property)
-                .filter(EnvValue::isSet);
+    Stream<EnvValue> discriminatingValues()
+    {
+        return Arrays.stream( Environment.values() )
+                .filter( Environment::isDiscriminating )
+                .map( this::property )
+                .filter( EnvValue::isSet );
     }
 
-    public void discriminatingCommandLineOptions(List<String> args) {
+    public void discriminatingCommandLineOptions( List<String> args )
+    {
         discriminatingValues()
-                .forEach(envValue -> envValue.envKey.addCommandLineOption(args, envValue.asString()));
+                .forEach( envValue -> envValue.envKey.addCommandLineOption( args, envValue.asString() ) );
     }
 
-    public Path mvndHome() {
-        return value(Environment.MVND_HOME)
-                .or(new ValueSource(
-                        description -> description.append("path relative to the mvnd executable"),
-                        this::mvndHomeFromExecutable))
+    public Path mvndHome()
+    {
+        return value( Environment.MVND_HOME )
+                .or( new ValueSource(
+                        description -> description.append( "path relative to the mvnd executable" ),
+                        this::mvndHomeFromExecutable ) )
                 .orSystemProperty()
                 .orEnvironmentVariable()
-                .orLocalProperty(provider, suppliedPropertiesPath())
-                .orLocalProperty(provider, localPropertiesPath())
-                .orLocalProperty(provider, userPropertiesPath())
+                .orLocalProperty( provider, suppliedPropertiesPath() )
+                .orLocalProperty( provider, localPropertiesPath() )
+                .orLocalProperty( provider, userPropertiesPath() )
                 .orFail()
                 .asPath()
                 .toAbsolutePath().normalize();
     }
 
-    private String mvndHomeFromExecutable() {
+    private String mvndHomeFromExecutable()
+    {
         Optional<String> cmd = ProcessHandle.current().info().command();
-        if (Environment.isNative() && cmd.isPresent()) {
-            final Path mvndH = Paths.get(cmd.get()).getParent().getParent();
-            if (mvndH != null) {
+        if ( Environment.isNative() && cmd.isPresent() )
+        {
+            final Path mvndH = Paths.get( cmd.get() ).getParent().getParent();
+            if ( mvndH != null )
+            {
                 final Path mvndDaemonLib = mvndH
-                        .resolve("mvn/lib/ext/mvnd-daemon-" + BuildProperties.getInstance().getVersion() + ".jar");
-                if (Files.exists(mvndDaemonLib)) {
+                        .resolve( "mvn/lib/ext/mvnd-daemon-" + BuildProperties.getInstance().getVersion() + ".jar" );
+                if ( Files.exists( mvndDaemonLib ) )
+                {
                     return mvndH.toString();
                 }
             }
@@ -128,41 +140,48 @@ public class DaemonParameters {
         return null;
     }
 
-    public Path javaHome() {
-        final Path result = value(Environment.JAVA_HOME)
+    public Path javaHome()
+    {
+        final Path result = value( Environment.JAVA_HOME )
                 .orEnvironmentVariable()
-                .orLocalProperty(provider, suppliedPropertiesPath())
-                .orLocalProperty(provider, localPropertiesPath())
-                .orLocalProperty(provider, userPropertiesPath())
-                .orLocalProperty(provider, globalPropertiesPath())
+                .orLocalProperty( provider, suppliedPropertiesPath() )
+                .orLocalProperty( provider, localPropertiesPath() )
+                .orLocalProperty( provider, userPropertiesPath() )
+                .orLocalProperty( provider, globalPropertiesPath() )
                 .orSystemProperty()
                 .orFail()
                 .asPath();
-        try {
+        try
+        {
             return result.toRealPath();
-        } catch (IOException e) {
-            throw new RuntimeException("Could not get a real path from path " + result);
+        }
+        catch ( IOException e )
+        {
+            throw new RuntimeException( "Could not get a real path from path " + result );
         }
     }
 
-    public Path userDir() {
-        return value(Environment.USER_DIR)
+    public Path userDir()
+    {
+        return value( Environment.USER_DIR )
                 .orSystemProperty()
                 .orFail()
                 .asPath()
                 .toAbsolutePath();
     }
 
-    public Path userHome() {
-        return value(Environment.USER_HOME)
+    public Path userHome()
+    {
+        return value( Environment.USER_HOME )
                 .orSystemProperty()
                 .orFail()
                 .asPath()
                 .toAbsolutePath();
     }
 
-    public Path suppliedPropertiesPath() {
-        return value(Environment.MVND_PROPERTIES_PATH)
+    public Path suppliedPropertiesPath()
+    {
+        return value( Environment.MVND_PROPERTIES_PATH )
                 .orEnvironmentVariable()
                 .orSystemProperty()
                 .asPath();
@@ -173,125 +192,148 @@ public class DaemonParameters {
      * and used as arguments when starting a daemon JVM.
      * See {@link Environment#MVND_JVM_ARGS}.
      */
-    public Path jvmConfigPath() {
-        return multiModuleProjectDirectory().resolve(".mvn/jvm.config");
+    public Path jvmConfigPath()
+    {
+        return multiModuleProjectDirectory().resolve( ".mvn/jvm.config" );
     }
 
-    public Path localPropertiesPath() {
-        return multiModuleProjectDirectory().resolve(".mvn/mvnd.properties");
+    public Path localPropertiesPath()
+    {
+        return multiModuleProjectDirectory().resolve( ".mvn/mvnd.properties" );
     }
 
-    public Path userPropertiesPath() {
-        return userHome().resolve(".m2/mvnd.properties");
+    public Path userPropertiesPath()
+    {
+        return userHome().resolve( ".m2/mvnd.properties" );
     }
 
-    public Path globalPropertiesPath() {
-        return mvndHome().resolve("conf/mvnd.properties");
+    public Path globalPropertiesPath()
+    {
+        return mvndHome().resolve( "conf/mvnd.properties" );
     }
 
-    public Path daemonStorage() {
-        return value(Environment.MVND_DAEMON_STORAGE)
+    public Path daemonStorage()
+    {
+        return value( Environment.MVND_DAEMON_STORAGE )
                 .orSystemProperty()
                 .orDefault(
-                        () -> userHome().resolve(".m2/mvnd/registry/" + BuildProperties.getInstance().getVersion()).toString())
+                        () -> userHome().resolve( ".m2/mvnd/registry/" + BuildProperties.getInstance().getVersion() )
+                                .toString() )
                 .asPath();
     }
 
-    public Path registry() {
-        return daemonStorage().resolve("registry.bin");
+    public Path registry()
+    {
+        return daemonStorage().resolve( "registry.bin" );
     }
 
-    public Path daemonLog(String daemon) {
-        return daemonStorage().resolve("daemon-" + daemon + LOG_EXTENSION);
+    public Path daemonLog( String daemon )
+    {
+        return daemonStorage().resolve( "daemon-" + daemon + LOG_EXTENSION );
     }
 
-    public Path daemonOutLog(String daemon) {
-        return daemonStorage().resolve("daemon-" + daemon + ".out" + LOG_EXTENSION);
+    public Path daemonOutLog( String daemon )
+    {
+        return daemonStorage().resolve( "daemon-" + daemon + ".out" + LOG_EXTENSION );
     }
 
-    public Path multiModuleProjectDirectory() {
-        return value(Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY)
+    public Path multiModuleProjectDirectory()
+    {
+        return value( Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY )
                 .orSystemProperty()
-                .orDefault(() -> findDefaultMultimoduleProjectDirectory(userDir()))
+                .orDefault( () -> findDefaultMultimoduleProjectDirectory( userDir() ) )
                 .asPath()
                 .toAbsolutePath().normalize();
     }
 
-    public Path multiModuleProjectDirectory(Path projectDir) {
-        return Path.of(findDefaultMultimoduleProjectDirectory(projectDir))
+    public Path multiModuleProjectDirectory( Path projectDir )
+    {
+        return Path.of( findDefaultMultimoduleProjectDirectory( projectDir ) )
                 .toAbsolutePath().normalize();
     }
 
-    public Path logbackConfigurationPath() {
-        return property(Environment.MVND_LOGBACK)
-                .orDefault(() -> mvndHome().resolve("conf/logback.xml").toString())
+    public Path logbackConfigurationPath()
+    {
+        return property( Environment.MVND_LOGBACK )
+                .orDefault( () -> mvndHome().resolve( "conf/logback.xml" ).toString() )
                 .orFail()
                 .asPath();
     }
 
-    public String minHeapSize() {
-        return property(Environment.MVND_MIN_HEAP_SIZE).asString();
+    public String minHeapSize()
+    {
+        return property( Environment.MVND_MIN_HEAP_SIZE ).asString();
     }
 
-    public String maxHeapSize() {
-        return property(Environment.MVND_MAX_HEAP_SIZE).asString();
+    public String maxHeapSize()
+    {
+        return property( Environment.MVND_MAX_HEAP_SIZE ).asString();
     }
 
-    public String threadStackSize() {
-        return property(Environment.MVND_THREAD_STACK_SIZE).asString();
+    public String threadStackSize()
+    {
+        return property( Environment.MVND_THREAD_STACK_SIZE ).asString();
     }
 
-    public String jvmArgs() {
-        return property(Environment.MVND_JVM_ARGS).asString();
+    public String jvmArgs()
+    {
+        return property( Environment.MVND_JVM_ARGS ).asString();
     }
 
-    public String jdkJavaOpts() {
-        return property(Environment.JDK_JAVA_OPTIONS).asString();
+    public String jdkJavaOpts()
+    {
+        return property( Environment.JDK_JAVA_OPTIONS ).asString();
     }
 
     /**
      * @return the number of threads (same syntax as Maven's {@code -T}/{@code --threads} option) to pass to the daemon
      *         unless the user passes his own `-T` or `--threads`.
      */
-    public String threads() {
-        return property(Environment.MVND_THREADS)
-                .orDefault(() -> String.valueOf(property(Environment.MVND_MIN_THREADS)
-                        .asInt(m -> Math.max(Runtime.getRuntime().availableProcessors() - 1, m))))
+    public String threads()
+    {
+        return property( Environment.MVND_THREADS )
+                .orDefault( () -> String.valueOf( property( Environment.MVND_MIN_THREADS )
+                        .asInt( m -> Math.max( Runtime.getRuntime().availableProcessors() - 1, m ) ) ) )
                 .orFail()
                 .asString();
     }
 
-    public String builder() {
-        return property(Environment.MVND_BUILDER).orFail().asString();
+    public String builder()
+    {
+        return property( Environment.MVND_BUILDER ).orFail().asString();
     }
 
     /**
      * @return absolute normalized path to {@code settings.xml} or {@code null}
      */
-    public Path settings() {
-        return property(Environment.MAVEN_SETTINGS).asPath();
+    public Path settings()
+    {
+        return property( Environment.MAVEN_SETTINGS ).asPath();
     }
 
     /**
      * @return path to {@code pom.xml} or {@code null}
      */
-    public Path file() {
-        return value(Environment.MAVEN_FILE).asPath();
+    public Path file()
+    {
+        return value( Environment.MAVEN_FILE ).asPath();
     }
 
     /**
      * @return absolute normalized path to local Maven repository or {@code null} if the server is supposed to use the
      *         default
      */
-    public Path mavenRepoLocal() {
-        return property(Environment.MAVEN_REPO_LOCAL).asPath();
+    public Path mavenRepoLocal()
+    {
+        return property( Environment.MAVEN_REPO_LOCAL ).asPath();
     }
 
     /**
      * @return <code>true</code> if maven should be executed within this process instead of spawning a daemon.
      */
-    public boolean noDaemon() {
-        return value(Environment.MVND_NO_DAEMON)
+    public boolean noDaemon()
+    {
+        return value( Environment.MVND_NO_DAEMON )
                 .orSystemProperty()
                 .orEnvironmentVariable()
                 .orDefault()
@@ -302,8 +344,9 @@ public class DaemonParameters {
      *
      * @return if mvnd should behave as maven
      */
-    public boolean serial() {
-        return value(Environment.SERIAL)
+    public boolean serial()
+    {
+        return value( Environment.SERIAL )
                 .orSystemProperty()
                 .orDefault()
                 .asBoolean();
@@ -313,61 +356,75 @@ public class DaemonParameters {
      * @param  newUserDir where to change the current directory to
      * @return            a new {@link DaemonParameters} with {@code userDir} set to the given {@code newUserDir}
      */
-    public DaemonParameters cd(Path newUserDir) {
-        return derive(b -> b.put(Environment.USER_DIR, newUserDir)
-                .put(Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY, newUserDir));
+    public DaemonParameters cd( Path newUserDir )
+    {
+        return derive( b -> b.put( Environment.USER_DIR, newUserDir )
+                .put( Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY, newUserDir ) );
     }
 
-    public DaemonParameters withJdkJavaOpts(String opts, boolean before) {
-        String org = this.properties.getOrDefault(Environment.JDK_JAVA_OPTIONS.getProperty(), "");
-        return derive(b -> b.put(Environment.JDK_JAVA_OPTIONS,
-                org.isEmpty() ? opts : before ? opts + " " + org : org + " " + opts));
+    public DaemonParameters withJdkJavaOpts( String opts, boolean before )
+    {
+        String org = this.properties.getOrDefault( Environment.JDK_JAVA_OPTIONS.getProperty(), "" );
+        return derive( b -> b.put( Environment.JDK_JAVA_OPTIONS,
+                org.isEmpty() ? opts : before ? opts + " " + org : org + " " + opts ) );
     }
 
-    public DaemonParameters withJvmArgs(String opts, boolean before) {
-        String org = this.properties.getOrDefault(Environment.MVND_JVM_ARGS.getProperty(), "");
-        return derive(b -> b.put(Environment.MVND_JVM_ARGS,
-                org.isEmpty() ? opts : before ? opts + " " + org : org + " " + opts));
+    public DaemonParameters withJvmArgs( String opts, boolean before )
+    {
+        String org = this.properties.getOrDefault( Environment.MVND_JVM_ARGS.getProperty(), "" );
+        return derive( b -> b.put( Environment.MVND_JVM_ARGS,
+                org.isEmpty() ? opts : before ? opts + " " + org : org + " " + opts ) );
     }
 
-    protected DaemonParameters derive(Consumer<PropertiesBuilder> customizer) {
-        PropertiesBuilder builder = new PropertiesBuilder().putAll(this.properties);
-        customizer.accept(builder);
-        return new DaemonParameters(builder);
+    protected DaemonParameters derive( Consumer<PropertiesBuilder> customizer )
+    {
+        PropertiesBuilder builder = new PropertiesBuilder().putAll( this.properties );
+        customizer.accept( builder );
+        return new DaemonParameters( builder );
     }
 
-    public Duration keepAlive() {
-        return property(Environment.MVND_KEEP_ALIVE).orFail().asDuration();
+    public Duration keepAlive()
+    {
+        return property( Environment.MVND_KEEP_ALIVE ).orFail().asDuration();
     }
 
-    public int maxLostKeepAlive() {
-        return property(Environment.MVND_MAX_LOST_KEEP_ALIVE).orFail().asInt();
+    public int maxLostKeepAlive()
+    {
+        return property( Environment.MVND_MAX_LOST_KEEP_ALIVE ).orFail().asInt();
     }
 
-    public boolean noBuffering() {
-        return property(Environment.MVND_NO_BUFERING).orFail().asBoolean();
+    public boolean noBuffering()
+    {
+        return property( Environment.MVND_NO_BUFERING ).orFail().asBoolean();
     }
 
-    public int rollingWindowSize() {
-        return property(Environment.MVND_ROLLING_WINDOW_SIZE).orFail().asInt();
+    public int rollingWindowSize()
+    {
+        return property( Environment.MVND_ROLLING_WINDOW_SIZE ).orFail().asInt();
     }
 
-    public Duration purgeLogPeriod() {
-        return property(Environment.MVND_LOG_PURGE_PERIOD).orFail().asDuration();
+    public Duration purgeLogPeriod()
+    {
+        return property( Environment.MVND_LOG_PURGE_PERIOD ).orFail().asDuration();
     }
 
-    public Optional<SocketFamily> socketFamily() {
-        return property(Environment.MVND_SOCKET_FAMILY).asOptional().map(SocketFamily::valueOf);
+    public Optional<SocketFamily> socketFamily()
+    {
+        return property( Environment.MVND_SOCKET_FAMILY ).asOptional().map( SocketFamily::valueOf );
     }
 
-    public static String findDefaultMultimoduleProjectDirectory(Path pwd) {
+    public static String findDefaultMultimoduleProjectDirectory( Path pwd )
+    {
         Path dir = pwd;
-        do {
-            if (Files.isDirectory(dir.resolve(".mvn"))) {
+        do
+        {
+            if ( Files.isDirectory( dir.resolve( ".mvn" ) ) )
+            {
                 return dir.toString();
             }
             dir = dir.getParent();
-        } while (dir != null);
+        }
+        while ( dir != null );
         /*
          * Return pwd if .mvn directory was not found in the hierarchy.
          * Maven does the same thing in mvn shell script's find_maven_basedir()
@@ -376,131 +433,169 @@ public class DaemonParameters {
         return pwd.toString();
     }
 
-    public EnvValue property(Environment env) {
-        return value(env)
+    public EnvValue property( Environment env )
+    {
+        return value( env )
                 .orSystemProperty()
-                .orLocalProperty(provider, suppliedPropertiesPath())
-                .orLocalProperty(provider, localPropertiesPath())
-                .orLocalProperty(provider, userPropertiesPath())
-                .orLocalProperty(provider, globalPropertiesPath())
-                .orDefault(() -> defaultValue(env));
+                .orLocalProperty( provider, suppliedPropertiesPath() )
+                .orLocalProperty( provider, localPropertiesPath() )
+                .orLocalProperty( provider, userPropertiesPath() )
+                .orLocalProperty( provider, globalPropertiesPath() )
+                .orDefault( () -> defaultValue( env ) );
     }
 
-    protected EnvValue value(Environment env) {
-        return new EnvValue(env, new ValueSource(
-                description -> description.append("value: ").append(env.getProperty()),
-                () -> properties.get(env.getProperty())));
+    protected EnvValue value( Environment env )
+    {
+        return new EnvValue( env, new ValueSource(
+                description -> description.append( "value: " ).append( env.getProperty() ),
+                () -> properties.get( env.getProperty() ) ) );
     }
 
-    public static EnvValue systemProperty(Environment env) {
-        return new EnvValue(env, EnvValue.systemPropertySource(env));
+    public static EnvValue systemProperty( Environment env )
+    {
+        return new EnvValue( env, EnvValue.systemPropertySource( env ) );
     }
 
-    public static EnvValue environmentVariable(Environment env) {
-        return new EnvValue(env, EnvValue.environmentVariableSource(env));
+    public static EnvValue environmentVariable( Environment env )
+    {
+        return new EnvValue( env, EnvValue.environmentVariableSource( env ) );
     }
 
-    public static EnvValue fromValueSource(Environment env, ValueSource valueSource) {
-        return new EnvValue(env, valueSource);
+    public static EnvValue fromValueSource( Environment env, ValueSource valueSource )
+    {
+        return new EnvValue( env, valueSource );
     }
 
-    private String defaultValue(Environment env) {
-        if (env == Environment.MVND_EXT_CLASSPATH) {
-            List<String> cp = parseExtClasspath(userHome());
-            return String.join(",", cp);
-        } else if (env == Environment.MVND_CORE_EXTENSIONS) {
-            try {
-                List<String> extensions = readCoreExtensionsDescriptor(multiModuleProjectDirectory()).stream()
-                        .map(e -> e.getGroupId() + ":" + e.getArtifactId() + ":" + e.getVersion())
-                        .collect(Collectors.toList());
-                return String.join(";", extensions);
-            } catch (IOException | XmlPullParserException e) {
-                throw new RuntimeException("Unable to parse core extensions", e);
+    private String defaultValue( Environment env )
+    {
+        if ( env == Environment.MVND_EXT_CLASSPATH )
+        {
+            List<String> cp = parseExtClasspath( userHome() );
+            return String.join( ",", cp );
+        }
+        else if ( env == Environment.MVND_CORE_EXTENSIONS )
+        {
+            try
+            {
+                List<String> extensions = readCoreExtensionsDescriptor( multiModuleProjectDirectory() ).stream()
+                        .map( e -> e.getGroupId() + ":" + e.getArtifactId() + ":" + e.getVersion() )
+                        .collect( Collectors.toList() );
+                return String.join( ";", extensions );
             }
-        } else {
+            catch ( IOException | XmlPullParserException e )
+            {
+                throw new RuntimeException( "Unable to parse core extensions", e );
+            }
+        }
+        else
+        {
             return env.getDefault();
         }
     }
 
-    private static List<String> parseExtClasspath(Path userDir) {
-        String extClassPath = System.getProperty(EXT_CLASS_PATH);
+    private static List<String> parseExtClasspath( Path userDir )
+    {
+        String extClassPath = System.getProperty( EXT_CLASS_PATH );
         List<String> jars = new ArrayList<>();
-        if (StringUtils.isNotEmpty(extClassPath)) {
-            for (String jar : StringUtils.split(extClassPath, File.pathSeparator)) {
-                Path path = userDir.resolve(jar).toAbsolutePath();
-                jars.add(path.toString());
+        if ( StringUtils.isNotEmpty( extClassPath ) )
+        {
+            for ( String jar : StringUtils.split( extClassPath, File.pathSeparator ) )
+            {
+                Path path = userDir.resolve( jar ).toAbsolutePath();
+                jars.add( path.toString() );
             }
         }
         return jars;
     }
 
-    private static List<CoreExtension> readCoreExtensionsDescriptor(Path multiModuleProjectDirectory)
-            throws IOException, XmlPullParserException {
-        if (multiModuleProjectDirectory == null) {
+    private static List<CoreExtension> readCoreExtensionsDescriptor( Path multiModuleProjectDirectory )
+            throws IOException, XmlPullParserException
+    {
+        if ( multiModuleProjectDirectory == null )
+        {
             return Collections.emptyList();
         }
-        Path extensionsFile = multiModuleProjectDirectory.resolve(EXTENSIONS_FILENAME);
-        if (!Files.exists(extensionsFile)) {
+        Path extensionsFile = multiModuleProjectDirectory.resolve( EXTENSIONS_FILENAME );
+        if ( !Files.exists( extensionsFile ) )
+        {
             return Collections.emptyList();
         }
         CoreExtensionsXpp3Reader parser = new CoreExtensionsXpp3Reader();
-        try (InputStream is = Files.newInputStream(extensionsFile)) {
-            return parser.read(is).getExtensions();
+        try ( InputStream is = Files.newInputStream( extensionsFile ) )
+        {
+            return parser.read( is ).getExtensions();
         }
     }
 
-    private static Properties loadProperties(Path path) {
+    private static Properties loadProperties( Path path )
+    {
         Properties result = new Properties();
-        if (Files.exists(path)) {
-            try (InputStream in = Files.newInputStream(path)) {
-                result.load(in);
-            } catch (IOException e) {
-                throw new RuntimeException("Could not read " + path);
+        if ( Files.exists( path ) )
+        {
+            try ( InputStream in = Files.newInputStream( path ) )
+            {
+                result.load( in );
+            }
+            catch ( IOException e )
+            {
+                throw new RuntimeException( "Could not read " + path );
             }
         }
         return result;
     }
 
-    public static class PropertiesBuilder {
+    public static class PropertiesBuilder
+    {
+
         private Map<String, String> properties = new LinkedHashMap<>();
 
-        public PropertiesBuilder put(Environment envKey, Object value) {
-            if (value == null) {
-                properties.remove(envKey.getProperty());
-            } else {
-                properties.put(envKey.getProperty(), value.toString());
+        public PropertiesBuilder put( Environment envKey, Object value )
+        {
+            if ( value == null )
+            {
+                properties.remove( envKey.getProperty() );
+            }
+            else
+            {
+                properties.put( envKey.getProperty(), value.toString() );
             }
             return this;
         }
 
-        public PropertiesBuilder putAll(Map<String, String> props) {
-            properties.putAll(props);
+        public PropertiesBuilder putAll( Map<String, String> props )
+        {
+            properties.putAll( props );
             return this;
         }
 
-        public Map<String, String> build() {
+        public Map<String, String> build()
+        {
             Map<String, String> props = properties;
             properties = null;
-            return Collections.unmodifiableMap(props);
+            return Collections.unmodifiableMap( props );
         }
     }
 
     /**
      * A source of an environment value with a description capability.
      */
-    public static class ValueSource {
+    public static class ValueSource
+    {
+
         final Function<StringBuilder, StringBuilder> descriptionFunction;
         final Supplier<String> valueSupplier;
 
-        public ValueSource(Function<StringBuilder, StringBuilder> descriptionFunction, Supplier<String> valueSupplier) {
+        public ValueSource( Function<StringBuilder, StringBuilder> descriptionFunction, Supplier<String> valueSupplier )
+        {
             this.descriptionFunction = descriptionFunction;
             this.valueSupplier = valueSupplier;
         }
 
         /** Mostly for debugging */
         @Override
-        public String toString() {
-            return descriptionFunction.apply(new StringBuilder()).toString();
+        public String toString()
+        {
+            return descriptionFunction.apply( new StringBuilder() ).toString();
         }
 
     }
@@ -508,7 +603,8 @@ public class DaemonParameters {
     /**
      * A chained lazy environment value.
      */
-    public static class EnvValue {
+    public static class EnvValue
+    {
 
         static Map<String, String> env = System.getenv();
 
@@ -516,160 +612,200 @@ public class DaemonParameters {
         private final ValueSource valueSource;
         protected EnvValue previous;
 
-        public EnvValue(Environment envKey, ValueSource valueSource) {
+        public EnvValue( Environment envKey, ValueSource valueSource )
+        {
             this.previous = null;
             this.envKey = envKey;
             this.valueSource = valueSource;
         }
 
-        public EnvValue(EnvValue previous, Environment envKey, ValueSource valueSource) {
+        public EnvValue( EnvValue previous, Environment envKey, ValueSource valueSource )
+        {
             this.previous = previous;
             this.envKey = envKey;
             this.valueSource = valueSource;
         }
 
-        private static ValueSource systemPropertySource(Environment env) {
+        private static ValueSource systemPropertySource( Environment env )
+        {
             String property = env.getProperty();
-            if (property == null) {
-                throw new IllegalStateException("Cannot use " + Environment.class.getName() + " for getting a system property");
+            if ( property == null )
+            {
+                throw new IllegalStateException(
+                        "Cannot use " + Environment.class.getName() + " for getting a system property" );
             }
             return new ValueSource(
-                    description -> description.append("system property ").append(property),
-                    () -> Environment.getProperty(property));
+                    description -> description.append( "system property " ).append( property ),
+                    () -> Environment.getProperty( property ) );
         }
 
-        private static ValueSource environmentVariableSource(Environment env) {
+        private static ValueSource environmentVariableSource( Environment env )
+        {
             String envVar = env.getEnvironmentVariable();
-            if (envVar == null) {
+            if ( envVar == null )
+            {
                 throw new IllegalStateException(
                         "Cannot use " + Environment.class.getName() + "." + env.name()
-                                + " for getting an environment variable");
+                                + " for getting an environment variable" );
             }
             return new ValueSource(
-                    description -> description.append("environment variable ").append(envVar),
-                    () -> EnvValue.env.get(envVar));
+                    description -> description.append( "environment variable " ).append( envVar ),
+                    () -> EnvValue.env.get( envVar ) );
         }
 
-        public EnvValue orSystemProperty() {
-            return new EnvValue(this, envKey, systemPropertySource(envKey));
+        public EnvValue orSystemProperty()
+        {
+            return new EnvValue( this, envKey, systemPropertySource( envKey ) );
         }
 
-        public EnvValue orLocalProperty(Function<Path, Properties> provider, Path localPropertiesPath) {
-            if (localPropertiesPath != null) {
-                return new EnvValue(this, envKey, new ValueSource(
-                        description -> description.append("property ").append(envKey.getProperty()).append(" in ")
-                                .append(localPropertiesPath),
-                        () -> provider.apply(localPropertiesPath).getProperty(envKey.getProperty())));
-            } else {
+        public EnvValue orLocalProperty( Function<Path, Properties> provider, Path localPropertiesPath )
+        {
+            if ( localPropertiesPath != null )
+            {
+                return new EnvValue( this, envKey, new ValueSource(
+                        description -> description.append( "property " ).append( envKey.getProperty() ).append( " in " )
+                                .append( localPropertiesPath ),
+                        () -> provider.apply( localPropertiesPath ).getProperty( envKey.getProperty() ) ) );
+            }
+            else
+            {
                 return this;
             }
         }
 
-        public EnvValue orEnvironmentVariable() {
-            return new EnvValue(this, envKey, environmentVariableSource(envKey));
+        public EnvValue orEnvironmentVariable()
+        {
+            return new EnvValue( this, envKey, environmentVariableSource( envKey ) );
         }
 
-        public EnvValue or(ValueSource source) {
-            return new EnvValue(this, envKey, source);
+        public EnvValue or( ValueSource source )
+        {
+            return new EnvValue( this, envKey, source );
         }
 
-        public EnvValue orDefault() {
-            return orDefault(envKey::getDefault);
+        public EnvValue orDefault()
+        {
+            return orDefault( envKey::getDefault );
         }
 
-        public EnvValue orDefault(Supplier<String> defaultSupplier) {
-            return new EnvValue(this, envKey,
-                    new ValueSource(sb -> sb.append("default: ").append(defaultSupplier.get()), defaultSupplier));
+        public EnvValue orDefault( Supplier<String> defaultSupplier )
+        {
+            return new EnvValue( this, envKey,
+                    new ValueSource( sb -> sb.append( "default: " ).append( defaultSupplier.get() ),
+                            defaultSupplier ) );
         }
 
-        public EnvValue orFail() {
-            return new EnvValue(this, envKey, new ValueSource(sb -> sb, () -> {
+        public EnvValue orFail()
+        {
+            return new EnvValue( this, envKey, new ValueSource( sb -> sb, () ->
+            {
                 throw couldNotgetValue();
-            }));
+            } ) );
         }
 
-        IllegalStateException couldNotgetValue() {
+        IllegalStateException couldNotgetValue()
+        {
             EnvValue val = this;
-            final StringBuilder sb = new StringBuilder("Could not get value for ")
-                    .append(Environment.class.getSimpleName())
-                    .append(".").append(envKey.name()).append(" from any of the following sources: ");
+            final StringBuilder sb = new StringBuilder( "Could not get value for " )
+                    .append( Environment.class.getSimpleName() )
+                    .append( "." ).append( envKey.name() ).append( " from any of the following sources: " );
 
             /*
              * Compose the description functions to invert the order thus getting the resolution order in the
              * message
              */
-            Function<StringBuilder, StringBuilder> description = (s -> s);
-            while (val != null) {
-                description = description.compose(val.valueSource.descriptionFunction);
+            Function<StringBuilder, StringBuilder> description = ( s -> s );
+            while ( val != null )
+            {
+                description = description.compose( val.valueSource.descriptionFunction );
                 val = val.previous;
-                if (val != null) {
-                    description = description.compose(s -> s.append(", "));
+                if ( val != null )
+                {
+                    description = description.compose( s -> s.append( ", " ) );
                 }
             }
-            description.apply(sb);
-            return new IllegalStateException(sb.toString());
+            description.apply( sb );
+            return new IllegalStateException( sb.toString() );
         }
 
-        String get() {
-            if (previous != null) {
+        String get()
+        {
+            if ( previous != null )
+            {
                 final String result = previous.get();
-                if (result != null) {
+                if ( result != null )
+                {
                     return result;
                 }
             }
             final String result = valueSource.valueSupplier.get();
-            if (result != null && LOG.isTraceEnabled()) {
-                StringBuilder sb = new StringBuilder("Loaded environment value for key [")
-                        .append(envKey.name())
-                        .append("] from ");
-                valueSource.descriptionFunction.apply(sb);
-                sb.append(": [")
-                        .append(result)
-                        .append(']');
-                LOG.trace(sb.toString());
+            if ( result != null && LOG.isTraceEnabled() )
+            {
+                StringBuilder sb = new StringBuilder( "Loaded environment value for key [" )
+                        .append( envKey.name() )
+                        .append( "] from " );
+                valueSource.descriptionFunction.apply( sb );
+                sb.append( ": [" )
+                        .append( result )
+                        .append( ']' );
+                LOG.trace( sb.toString() );
             }
             return result;
         }
 
-        public String asString() {
+        public String asString()
+        {
             return get();
         }
 
-        public Optional<String> asOptional() {
-            return Optional.ofNullable(get());
+        public Optional<String> asOptional()
+        {
+            return Optional.ofNullable( get() );
         }
 
-        public Path asPath() {
+        public Path asPath()
+        {
             String result = get();
-            if (result != null && Os.current().isCygwin()) {
-                result = Environment.cygpath(result);
+            if ( result != null && Os.current().isCygwin() )
+            {
+                result = Environment.cygpath( result );
             }
-            return result == null ? null : Paths.get(result);
+            return result == null ? null : Paths.get( result );
         }
 
-        public boolean asBoolean() {
+        public boolean asBoolean()
+        {
             final String val = get();
-            return "".equals(val) || Boolean.parseBoolean(val);
+            return "".equals( val ) || Boolean.parseBoolean( val );
         }
 
-        public int asInt() {
-            return Integer.parseInt(get());
+        public int asInt()
+        {
+            return Integer.parseInt( get() );
         }
 
-        public int asInt(IntUnaryOperator function) {
-            return function.applyAsInt(asInt());
+        public int asInt( IntUnaryOperator function )
+        {
+            return function.applyAsInt( asInt() );
         }
 
-        public Duration asDuration() {
-            return TimeUtils.toDuration(get());
+        public Duration asDuration()
+        {
+            return TimeUtils.toDuration( get() );
         }
 
-        public boolean isSet() {
-            if (get() != null) {
+        public boolean isSet()
+        {
+            if ( get() != null )
+            {
                 return true;
-            } else if (envKey.isOptional()) {
+            }
+            else if ( envKey.isOptional() )
+            {
                 return false;
-            } else {
+            }
+            else
+            {
                 throw couldNotgetValue();
             }
         }

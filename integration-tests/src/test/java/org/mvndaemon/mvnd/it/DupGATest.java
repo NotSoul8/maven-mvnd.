@@ -23,8 +23,9 @@ import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
-@MvndTest(projectDir = "src/test/projects/dup-ga")
-public class DupGATest {
+@MvndTest( projectDir = "src/test/projects/dup-ga" )
+public class DupGATest
+{
 
     @Inject
     Client client;
@@ -33,8 +34,9 @@ public class DupGATest {
     DaemonParameters parameters;
 
     @Test
-    void cleanInstall() throws IOException, InterruptedException {
+    void cleanInstall() throws IOException, InterruptedException
+    {
         final TestClientOutput output = new TestClientOutput();
-        client.execute(output, "clean", "install", "-e").assertSuccess();
+        client.execute( output, "clean", "install", "-e" ).assertSuccess();
     }
 }

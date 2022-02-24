@@ -26,8 +26,9 @@ import org.mvndaemon.mvnd.common.DaemonInfo;
 import org.mvndaemon.mvnd.junit.MvndTest;
 import org.mvndaemon.mvnd.junit.TestRegistry;
 
-@MvndTest(projectDir = "src/test/projects/single-module")
-public class StopStatusTest {
+@MvndTest( projectDir = "src/test/projects/single-module" )
+public class StopStatusTest
+{
 
     @Inject
     Client client;
@@ -36,53 +37,55 @@ public class StopStatusTest {
     TestRegistry registry;
 
     @Test
-    void stopStatus() throws IOException, InterruptedException {
+    void stopStatus() throws IOException, InterruptedException
+    {
 
         /* The registry should be empty before we run anything */
-        assertDaemonRegistrySize(0);
+        assertDaemonRegistrySize( 0 );
 
-        client.execute(new TestClientOutput(), "clean").assertSuccess();
+        client.execute( new TestClientOutput(), "clean" ).assertSuccess();
         /* There should be exactly one item in the registry after the first build */
-        assertDaemonRegistrySize(1);
+        assertDaemonRegistrySize( 1 );
 
-        final DaemonInfo d = registry.getAll().get(0);
+        final DaemonInfo d = registry.getAll().get( 0 );
         {
             /* The output of --status must be consistent with the registry */
             final TestClientOutput output = new TestClientOutput();
-            client.execute(output, "--status").assertSuccess();
+            client.execute( output, "--status" ).assertSuccess();
 
-            output.assertContainsMatchingSubsequence(d.getId() + " +" + d.getPid() + " +" + d.getAddress());
+            output.assertContainsMatchingSubsequence( d.getId() + " +" + d.getPid() + " +" + d.getAddress() );
         }
         /* Wait, till the instance becomes idle */
-        registry.awaitIdle(d.getId());
+        registry.awaitIdle( d.getId() );
 
-        client.execute(new TestClientOutput(), "clean").assertSuccess();
+        client.execute( new TestClientOutput(), "clean" ).assertSuccess();
         /* There should still be exactly one item in the registry after the second build */
-        assertDaemonRegistrySize(1);
+        assertDaemonRegistrySize( 1 );
         /* Wait, till the instance becomes idle */
-        registry.awaitIdle(d.getId());
+        registry.awaitIdle( d.getId() );
 
-        client.execute(new TestClientOutput(), "--stop").assertSuccess();
+        client.execute( new TestClientOutput(), "--stop" ).assertSuccess();
         /* No items in the registry after we have killed all daemons */
-        assertDaemonRegistrySize(0);
+        assertDaemonRegistrySize( 0 );
 
         {
             /* After --stop, the output of --status may not contain the daemon ID we have seen before */
             final TestClientOutput output = new TestClientOutput();
-            client.execute(output, "--status").assertSuccess();
+            client.execute( output, "--status" ).assertSuccess();
 
             Assertions.assertThat(
                     output.messagesToString().stream()
-                            .filter(m -> m.contains(d.getId()))
-                            .collect(Collectors.toList()))
+                            .filter( m -> m.contains( d.getId() ) )
+                            .collect( Collectors.toList() ) )
                     .isEmpty();
         }
 
     }
 
-    private void assertDaemonRegistrySize(int size) {
-        Assertions.assertThat(registry.getAll().size())
-                .as("Daemon registry size should be " + size)
-                .isEqualTo(size);
+    private void assertDaemonRegistrySize( int size )
+    {
+        Assertions.assertThat( registry.getAll().size() )
+                .as( "Daemon registry size should be " + size )
+                .isEqualTo( size );
     }
 }

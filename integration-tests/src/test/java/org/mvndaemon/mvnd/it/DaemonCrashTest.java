@@ -31,9 +31,10 @@ import org.mvndaemon.mvnd.junit.MvndTest;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@MvndTest(projectDir = "src/test/projects/daemon-crash", keepAlive = "100ms", maxLostKeepAlive = "30")
-@Timeout(60)
-public class DaemonCrashTest {
+@MvndTest( projectDir = "src/test/projects/daemon-crash", keepAlive = "100ms", maxLostKeepAlive = "30" )
+@Timeout( 60 )
+public class DaemonCrashTest
+{
 
     @Inject
     Client client;
@@ -42,23 +43,28 @@ public class DaemonCrashTest {
     DaemonParameters parameters;
 
     @Test
-    void cleanInstall() throws IOException, InterruptedException {
-        final Path helloPath = parameters.multiModuleProjectDirectory().resolve("hello/target/hello.txt");
-        try {
-            Files.deleteIfExists(helloPath);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not delete " + helloPath);
+    void cleanInstall() throws IOException, InterruptedException
+    {
+        final Path helloPath = parameters.multiModuleProjectDirectory().resolve( "hello/target/hello.txt" );
+        try
+        {
+            Files.deleteIfExists( helloPath );
+        }
+        catch ( IOException e )
+        {
+            throw new RuntimeException( "Could not delete " + helloPath );
         }
 
         final Path localMavenRepo = parameters.mavenRepoLocal();
-        final Path[] installedJars = {
+        final Path[] installedJars =
+        {
                 localMavenRepo.resolve(
-                        "org/mvndaemon/mvnd/test/daemon-crash/daemon-crash-maven-plugin/0.0.1-SNAPSHOT/daemon-crash-maven-plugin-0.0.1-SNAPSHOT.jar"),
+                        "org/mvndaemon/mvnd/test/daemon-crash/daemon-crash-maven-plugin/0.0.1-SNAPSHOT/daemon-crash-maven-plugin-0.0.1-SNAPSHOT.jar" ),
         };
-        Stream.of(installedJars).forEach(jar -> Assertions.assertThat(jar).doesNotExist());
+        Stream.of( installedJars ).forEach( jar -> Assertions.assertThat( jar ).doesNotExist() );
 
         final TestClientOutput output = new TestClientOutput();
-        assertThrows(DaemonException.StaleAddressException.class,
-                () -> client.execute(output, "clean", "install", "-e", "-Dmvnd.log.level=DEBUG").assertFailure());
+        assertThrows( DaemonException.StaleAddressException.class,
+                () -> client.execute( output, "clean", "install", "-e", "-Dmvnd.log.level=DEBUG" ).assertFailure() );
     }
 }

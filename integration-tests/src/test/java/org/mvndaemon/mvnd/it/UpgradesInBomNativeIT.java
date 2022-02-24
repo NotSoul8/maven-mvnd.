@@ -30,8 +30,9 @@ import org.mvndaemon.mvnd.junit.TestParameters;
 import org.mvndaemon.mvnd.junit.TestRegistry;
 import org.mvndaemon.mvnd.junit.TestUtils;
 
-@MvndNativeTest(projectDir = "src/test/projects/upgrades-in-bom")
-public class UpgradesInBomNativeIT {
+@MvndNativeTest( projectDir = "src/test/projects/upgrades-in-bom" )
+public class UpgradesInBomNativeIT
+{
 
     @Inject
     TestParameters parameters;
@@ -43,55 +44,59 @@ public class UpgradesInBomNativeIT {
     ClientFactory clientFactory;
 
     @Test
-    void upgrade() throws IOException, InterruptedException {
-        assertDaemonRegistrySize(0);
+    void upgrade() throws IOException, InterruptedException
+    {
+        assertDaemonRegistrySize( 0 );
         /* Install the dependencies */
-        for (String artifactDir : Arrays.asList("project/hello-0.0.1", "project/hello-0.0.2-SNAPSHOT")) {
-            final Client cl = clientFactory.newClient(parameters.cd(parameters.getTestDir().resolve(artifactDir)));
+        for ( String artifactDir : Arrays.asList( "project/hello-0.0.1", "project/hello-0.0.2-SNAPSHOT" ) )
+        {
+            final Client cl = clientFactory
+                    .newClient( parameters.cd( parameters.getTestDir().resolve( artifactDir ) ) );
             final TestClientOutput output = new TestClientOutput();
-            cl.execute(output, "clean", "install", "-e").assertSuccess();
+            cl.execute( output, "clean", "install", "-e" ).assertSuccess();
 
-            assertDaemonRegistrySize(1);
-            final DaemonInfo d = registry.getAll().get(0);
+            assertDaemonRegistrySize( 1 );
+            final DaemonInfo d = registry.getAll().get( 0 );
             /* Wait, till the instance becomes idle */
-            registry.awaitIdle(d.getId());
+            registry.awaitIdle( d.getId() );
             registry.killAll();
         }
-        assertDaemonRegistrySize(0);
+        assertDaemonRegistrySize( 0 );
 
         /* Build the initial state of the test project */
-        final Path parentDir = parameters.getTestDir().resolve("project/parent");
-        final Client cl = clientFactory.newClient(parameters.cd(parentDir));
+        final Path parentDir = parameters.getTestDir().resolve( "project/parent" );
+        final Client cl = clientFactory.newClient( parameters.cd( parentDir ) );
         {
             final TestClientOutput output = new TestClientOutput();
-            cl.execute(output, "clean", "install", "-e").assertSuccess();
+            cl.execute( output, "clean", "install", "-e" ).assertSuccess();
         }
-        assertDaemonRegistrySize(1);
+        assertDaemonRegistrySize( 1 );
 
-        final DaemonInfo d = registry.getAll().get(0);
+        final DaemonInfo d = registry.getAll().get( 0 );
         /* Wait, till the instance becomes idle */
-        registry.awaitIdle(d.getId());
+        registry.awaitIdle( d.getId() );
 
         /* Upgrade the dependency  */
-        final Path parentPomPath = parentDir.resolve("pom.xml");
-        TestUtils.replace(parentPomPath, "<hello.version>0.0.1</hello.version>",
-                "<hello.version>0.0.2-SNAPSHOT</hello.version>");
+        final Path parentPomPath = parentDir.resolve( "pom.xml" );
+        TestUtils.replace( parentPomPath, "<hello.version>0.0.1</hello.version>",
+                "<hello.version>0.0.2-SNAPSHOT</hello.version>" );
         /* Adapt the caller  */
         final Path useHelloPath = parentDir
-                .resolve("module/src/main/java/org/mvndaemon/mvnd/test/upgrades/bom/module/UseHello.java");
-        TestUtils.replace(useHelloPath, "new Hello().sayHello()", "new Hello().sayWisdom()");
+                .resolve( "module/src/main/java/org/mvndaemon/mvnd/test/upgrades/bom/module/UseHello.java" );
+        TestUtils.replace( useHelloPath, "new Hello().sayHello()", "new Hello().sayWisdom()" );
         {
             final TestClientOutput output = new TestClientOutput();
-            cl.execute(output, "clean", "install", "-e")
+            cl.execute( output, "clean", "install", "-e" )
                     .assertSuccess();
         }
-        assertDaemonRegistrySize(1);
+        assertDaemonRegistrySize( 1 );
 
     }
 
-    private void assertDaemonRegistrySize(int size) {
-        Assertions.assertThat(registry.getAll().size())
-                .as("Daemon registry size should be " + size)
-                .isEqualTo(size);
+    private void assertDaemonRegistrySize( int size )
+    {
+        Assertions.assertThat( registry.getAll().size() )
+                .as( "Daemon registry size should be " + size )
+                .isEqualTo( size );
     }
 }

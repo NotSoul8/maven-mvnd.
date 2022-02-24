@@ -38,10 +38,11 @@ import org.slf4j.LoggerFactory;
 
 @Named
 @Singleton
-@Typed(EventSpy.class)
-public class InvalidatingRealmCacheEventSpy extends AbstractEventSpy {
+@Typed( EventSpy.class )
+public class InvalidatingRealmCacheEventSpy extends AbstractEventSpy
+{
 
-    private static final Logger LOG = LoggerFactory.getLogger(InvalidatingRealmCacheEventSpy.class);
+    private static final Logger LOG = LoggerFactory.getLogger( InvalidatingRealmCacheEventSpy.class );
 
     private final InvalidatingPluginRealmCache pluginCache;
     private final InvalidatingExtensionRealmCache extensionCache;
@@ -54,122 +55,165 @@ public class InvalidatingRealmCacheEventSpy extends AbstractEventSpy {
     public InvalidatingRealmCacheEventSpy(
             InvalidatingPluginRealmCache cache,
             InvalidatingExtensionRealmCache extensionCache,
-            InvalidatingProjectArtifactsCache projectArtifactsCache) {
+            InvalidatingProjectArtifactsCache projectArtifactsCache )
+    {
         this.pluginCache = cache;
         this.extensionCache = extensionCache;
         this.projectArtifactsCache = projectArtifactsCache;
     }
 
     @Override
-    public void onEvent(Object event) throws Exception {
-        try {
-            if (event instanceof MavenExecutionRequest) {
+    public void onEvent( Object event ) throws Exception
+    {
+        try
+        {
+            if ( event instanceof MavenExecutionRequest )
+            {
                 /*  Store the multiModuleProjectDirectory path */
-                multiModuleProjectDirectory = ((MavenExecutionRequest) event).getMultiModuleProjectDirectory().toPath();
+                multiModuleProjectDirectory = ( ( MavenExecutionRequest ) event ).getMultiModuleProjectDirectory()
+                        .toPath();
                 pattern = Environment.MVND_PLUGIN_REALM_EVICT_PATTERN.asOptional()
-                        .orElse(Environment.MVND_PLUGIN_REALM_EVICT_PATTERN.getDefault());
-                if (!pattern.isEmpty()) {
-                    String[] patterns = pattern.split(",");
+                        .orElse( Environment.MVND_PLUGIN_REALM_EVICT_PATTERN.getDefault() );
+                if ( !pattern.isEmpty() )
+                {
+                    String[] patterns = pattern.split( "," );
                     List<PathMatcher> matchers = new ArrayList<>();
-                    for (String pattern : patterns) {
-                        if (pattern.startsWith("mvn:")) {
-                            String[] parts = pattern.substring("mvn:".length()).split(":");
+                    for ( String pattern : patterns )
+                    {
+                        if ( pattern.startsWith( "mvn:" ) )
+                        {
+                            String[] parts = pattern.substring( "mvn:".length() ).split( ":" );
                             String groupId, artifactId, version;
-                            if (parts.length >= 3) {
+                            if ( parts.length >= 3 )
+                            {
                                 version = parts[2];
-                            } else {
+                            }
+                            else
+                            {
                                 version = "*";
                             }
-                            if (parts.length >= 2) {
+                            if ( parts.length >= 2 )
+                            {
                                 groupId = parts[0];
                                 artifactId = parts[1];
-                            } else {
+                            }
+                            else
+                            {
                                 groupId = "*";
                                 artifactId = parts[0];
                             }
-                            pattern = "glob:**/" + ("*".equals(groupId) ? "" : groupId.replace('.', '/') + "/")
-                                    + artifactId + "/" + ("*".equals(version) ? "**" : version + "/**");
+                            pattern = "glob:**/" + ( "*".equals( groupId ) ? "" : groupId.replace( '.', '/' ) + "/" )
+                                    + artifactId + "/" + ( "*".equals( version ) ? "**" : version + "/**" );
                         }
-                        matchers.add(getPathMatcher(pattern));
+                        matchers.add( getPathMatcher( pattern ) );
                     }
-                    if (matchers.size() == 1) {
+                    if ( matchers.size() == 1 )
+                    {
                         matcher = matchers.iterator().next();
-                    } else {
-                        matcher = path -> matchers.stream().anyMatch(f -> f.matches(path));
+                    }
+                    else
+                    {
+                        matcher = path -> matchers.stream().anyMatch( f -> f.matches( path ) );
                     }
                 }
-            } else if (event instanceof MavenExecutionResult) {
+            }
+            else if ( event instanceof MavenExecutionResult )
+            {
                 /* Evict the entries referring to jars under multiModuleProjectDirectory */
-                pluginCache.cache.removeIf(this::shouldEvict);
-                extensionCache.cache.removeIf(this::shouldEvict);
-                MavenExecutionResult mer = (MavenExecutionResult) event;
+                pluginCache.cache.removeIf( this::shouldEvict );
+                extensionCache.cache.removeIf( this::shouldEvict );
+                MavenExecutionResult mer = ( MavenExecutionResult ) event;
                 List<MavenProject> projects = mer.getTopologicallySortedProjects();
                 projectArtifactsCache.cache
-                        .removeIf((k, r) -> shouldEvict(projects, (InvalidatingProjectArtifactsCache.CacheKey) k, r));
+                        .removeIf( ( k, r ) -> shouldEvict( projects, ( InvalidatingProjectArtifactsCache.CacheKey ) k,
+                                r ) );
             }
-        } catch (Exception e) {
-            LOG.warn("Could not notify CliPluginRealmCache", e);
+        }
+        catch ( Exception e )
+        {
+            LOG.warn( "Could not notify CliPluginRealmCache", e );
         }
     }
 
-    private boolean shouldEvict(List<MavenProject> projects, InvalidatingProjectArtifactsCache.CacheKey k,
-            InvalidatingProjectArtifactsCache.Record v) {
-        return projects.stream().anyMatch(p -> k.matches(p.getGroupId(), p.getArtifactId(), p.getVersion()));
+    private boolean shouldEvict( List<MavenProject> projects, InvalidatingProjectArtifactsCache.CacheKey k,
+            InvalidatingProjectArtifactsCache.Record v )
+    {
+        return projects.stream().anyMatch( p -> k.matches( p.getGroupId(), p.getArtifactId(), p.getVersion() ) );
     }
 
-    private boolean shouldEvict(InvalidatingPluginRealmCache.Key k, InvalidatingPluginRealmCache.Record v) {
-        try {
-            for (URL url : v.record.getRealm().getURLs()) {
-                if (url.getProtocol().equals("file")) {
-                    final Path path = Paths.get(url.toURI());
-                    if (path.startsWith(multiModuleProjectDirectory)) {
+    private boolean shouldEvict( InvalidatingPluginRealmCache.Key k, InvalidatingPluginRealmCache.Record v )
+    {
+        try
+        {
+            for ( URL url : v.record.getRealm().getURLs() )
+            {
+                if ( url.getProtocol().equals( "file" ) )
+                {
+                    final Path path = Paths.get( url.toURI() );
+                    if ( path.startsWith( multiModuleProjectDirectory ) )
+                    {
                         LOG.debug(
                                 "Removing PluginRealmCache entry {} because it refers to an artifact in the build tree {}",
-                                k, path);
+                                k, path );
                         return true;
-                    } else if (matcher != null && matcher.matches(path)) {
+                    }
+                    else if ( matcher != null && matcher.matches( path ) )
+                    {
                         LOG.debug(
                                 "Removing PluginRealmCache entry {} because its components {} matches the eviction pattern '{}'",
-                                k, path, pattern);
+                                k, path, pattern );
                         return true;
                     }
                 }
             }
             return false;
-        } catch (URISyntaxException e) {
+        }
+        catch ( URISyntaxException e )
+        {
             return true;
         }
     }
 
-    private boolean shouldEvict(InvalidatingExtensionRealmCache.Key k, InvalidatingExtensionRealmCache.Record v) {
-        try {
-            for (URL url : v.record.getRealm().getURLs()) {
-                if (url.getProtocol().equals("file")) {
-                    final Path path = Paths.get(url.toURI());
-                    if (path.startsWith(multiModuleProjectDirectory)) {
+    private boolean shouldEvict( InvalidatingExtensionRealmCache.Key k, InvalidatingExtensionRealmCache.Record v )
+    {
+        try
+        {
+            for ( URL url : v.record.getRealm().getURLs() )
+            {
+                if ( url.getProtocol().equals( "file" ) )
+                {
+                    final Path path = Paths.get( url.toURI() );
+                    if ( path.startsWith( multiModuleProjectDirectory ) )
+                    {
                         LOG.debug(
                                 "Removing ExtensionRealmCache entry {} because it refers to an artifact in the build tree {}",
-                                k, path);
+                                k, path );
                         return true;
-                    } else if (matcher != null && matcher.matches(path)) {
+                    }
+                    else if ( matcher != null && matcher.matches( path ) )
+                    {
                         LOG.debug(
                                 "Removing ExtensionRealmCache entry {} because its components {} matches the eviction pattern '{}'",
-                                k, path, pattern);
+                                k, path, pattern );
                         return true;
                     }
                 }
             }
             return false;
-        } catch (URISyntaxException e) {
+        }
+        catch ( URISyntaxException e )
+        {
             return true;
         }
     }
 
-    private static PathMatcher getPathMatcher(String pattern) {
-        if (!pattern.startsWith("glob:") && !pattern.startsWith("regex:")) {
+    private static PathMatcher getPathMatcher( String pattern )
+    {
+        if ( !pattern.startsWith( "glob:" ) && !pattern.startsWith( "regex:" ) )
+        {
             pattern = "glob:" + pattern;
         }
-        return FileSystems.getDefault().getPathMatcher(pattern);
+        return FileSystems.getDefault().getPathMatcher( pattern );
     }
 
 }

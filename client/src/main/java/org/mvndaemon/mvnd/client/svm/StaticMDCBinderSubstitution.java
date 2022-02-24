@@ -21,11 +21,13 @@ import org.slf4j.MDC;
 import org.slf4j.impl.StaticMDCBinder;
 import org.slf4j.spi.MDCAdapter;
 
-@TargetClass(MDC.class)
-final class StaticMDCBinderSubstitution {
+@TargetClass( MDC.class )
+final class StaticMDCBinderSubstitution
+{
 
     @Substitute
-    private static MDCAdapter bwCompatibleGetMDCAdapterFromBinder() throws NoClassDefFoundError {
+    private static MDCAdapter bwCompatibleGetMDCAdapterFromBinder() throws NoClassDefFoundError
+    {
         return StaticMDCBinder.SINGLETON.getMDCA();
     }
 

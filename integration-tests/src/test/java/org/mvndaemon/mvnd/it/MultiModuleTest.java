@@ -34,8 +34,9 @@ import org.mvndaemon.mvnd.common.Message.ProjectEvent;
 import org.mvndaemon.mvnd.common.Message.StringMessage;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
-@MvndTest(projectDir = "src/test/projects/multi-module")
-public class MultiModuleTest {
+@MvndTest( projectDir = "src/test/projects/multi-module" )
+public class MultiModuleTest
+{
 
     @Inject
     Client client;
@@ -44,81 +45,88 @@ public class MultiModuleTest {
     DaemonParameters parameters;
 
     @Test
-    void cleanInstall() throws IOException, InterruptedException {
-        final Path[] helloFilePaths = {
-                parameters.multiModuleProjectDirectory().resolve("hello/target/hello.txt"),
-                parameters.multiModuleProjectDirectory().resolve("hi/target/hi.txt")
+    void cleanInstall() throws IOException, InterruptedException
+    {
+        final Path[] helloFilePaths =
+        {
+                parameters.multiModuleProjectDirectory().resolve( "hello/target/hello.txt" ),
+                parameters.multiModuleProjectDirectory().resolve( "hi/target/hi.txt" )
         };
-        Stream.of(helloFilePaths).forEach(path -> {
-            try {
-                Files.deleteIfExists(path);
-            } catch (IOException e) {
-                throw new RuntimeException("Could not delete " + path);
+        Stream.of( helloFilePaths ).forEach( path ->
+        {
+            try
+            {
+                Files.deleteIfExists( path );
             }
-        });
+            catch ( IOException e )
+            {
+                throw new RuntimeException( "Could not delete " + path );
+            }
+        } );
 
         final Path localMavenRepo = parameters.mavenRepoLocal();
-        final Path[] installedJars = {
+        final Path[] installedJars =
+        {
                 localMavenRepo.resolve(
-                        "org/mvndaemon/mvnd/test/multi-module/multi-module-api/0.0.1-SNAPSHOT/multi-module-api-0.0.1-SNAPSHOT.jar"),
+                        "org/mvndaemon/mvnd/test/multi-module/multi-module-api/0.0.1-SNAPSHOT/multi-module-api-0.0.1-SNAPSHOT.jar" ),
                 localMavenRepo.resolve(
-                        "org/mvndaemon/mvnd/test/multi-module/multi-module-hello/0.0.1-SNAPSHOT/multi-module-hello-0.0.1-SNAPSHOT.jar"),
+                        "org/mvndaemon/mvnd/test/multi-module/multi-module-hello/0.0.1-SNAPSHOT/multi-module-hello-0.0.1-SNAPSHOT.jar" ),
                 localMavenRepo.resolve(
-                        "org/mvndaemon/mvnd/test/multi-module/multi-module-hi/0.0.1-SNAPSHOT/multi-module-hi-0.0.1-SNAPSHOT.jar")
+                        "org/mvndaemon/mvnd/test/multi-module/multi-module-hi/0.0.1-SNAPSHOT/multi-module-hi-0.0.1-SNAPSHOT.jar" )
         };
-        Stream.of(installedJars).forEach(jar -> Assertions.assertThat(jar).doesNotExist());
+        Stream.of( installedJars ).forEach( jar -> Assertions.assertThat( jar ).doesNotExist() );
 
         final TestClientOutput output = new TestClientOutput();
-        client.execute(output, "clean", "install", "-e").assertSuccess();
+        client.execute( output, "clean", "install", "-e" ).assertSuccess();
 
         {
             final List<String> filteredMessages = output.getMessages().stream()
-                    .filter(m -> m.getType() == Message.PROJECT_LOG_MESSAGE)
-                    .map(m -> ((ProjectEvent) m).getMessage())
-                    .collect(Collectors.toList());
+                    .filter( m -> m.getType() == Message.PROJECT_LOG_MESSAGE )
+                    .map( m -> ( ( ProjectEvent ) m ).getMessage() )
+                    .collect( Collectors.toList() );
 
-            Assertions.assertThat(filteredMessages)
+            Assertions.assertThat( filteredMessages )
                     .satisfiesAnyOf( /* Two orderings are possible */
-                            messages -> Assertions.assertThat(messages)
-                                    .is(new MatchInOrderAmongOthers<>(
+                            messages -> Assertions.assertThat( messages )
+                                    .is( new MatchInOrderAmongOthers<>(
                                             "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module$",
                                             "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-api",
                                             "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-hello",
-                                            "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-hi")),
-                            messages -> Assertions.assertThat(messages)
-                                    .is(new MatchInOrderAmongOthers<>(
+                                            "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-hi" ) ),
+                            messages -> Assertions.assertThat( messages )
+                                    .is( new MatchInOrderAmongOthers<>(
                                             "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module$",
                                             "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-api",
                                             "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-hi",
-                                            "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-hello")));
+                                            "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-hello" ) ) );
         }
 
         {
             final List<String> filteredMessages = output.getMessages().stream()
-                    .filter(m -> m.getType() == Message.PROJECT_STARTED)
-                    .map(m -> ((StringMessage) m).getMessage())
-                    .collect(Collectors.toList());
+                    .filter( m -> m.getType() == Message.PROJECT_STARTED )
+                    .map( m -> ( ( StringMessage ) m ).getMessage() )
+                    .collect( Collectors.toList() );
 
-            Assertions.assertThat(filteredMessages)
+            Assertions.assertThat( filteredMessages )
                     .satisfiesAnyOf( /* Two orderings are possible */
-                            messages -> Assertions.assertThat(messages)
-                                    .isEqualTo(Arrays.asList(
+                            messages -> Assertions.assertThat( messages )
+                                    .isEqualTo( Arrays.asList(
                                             "multi-module",
                                             "multi-module-api",
                                             "multi-module-hello",
-                                            "multi-module-hi")),
-                            messages -> Assertions.assertThat(messages)
-                                    .isEqualTo(Arrays.asList(
+                                            "multi-module-hi" ) ),
+                            messages -> Assertions.assertThat( messages )
+                                    .isEqualTo( Arrays.asList(
                                             "multi-module",
                                             "multi-module-api",
                                             "multi-module-hi",
-                                            "multi-module-hello")));
+                                            "multi-module-hello" ) ) );
         }
 
         /* Make sure HelloTest and HiTest have created the files they were supposed to create */
-        Stream.of(helloFilePaths).forEach(path -> Assertions.assertThat(path).exists());
+        Stream.of( helloFilePaths ).forEach( path -> Assertions.assertThat( path ).exists() );
 
-        Stream.of(installedJars).forEach(jar -> Assertions.assertThat(jar).exists());
+        Stream.of( installedJars ).forEach( jar -> Assertions.assertThat( jar ).exists() );
 
     }
 }

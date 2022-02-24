@@ -17,9 +17,12 @@ package org.mvndaemon.mvnd.it;
 
 import org.mvndaemon.mvnd.junit.MvndTest;
 
-@MvndTest(projectDir = "src/test/projects/specific-file")
-public class SpecificFileTest extends SpecificFileNativeIT {
-    protected boolean isNative() {
+@MvndTest( projectDir = "src/test/projects/specific-file" )
+public class SpecificFileTest extends SpecificFileNativeIT
+{
+
+    protected boolean isNative()
+    {
         return false;
     }
 

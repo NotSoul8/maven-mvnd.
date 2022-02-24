@@ -34,32 +34,36 @@ import org.mvndaemon.mvnd.common.Environment;
  * The SyncContextFactory implementation.
  */
 @Named
-@Priority(10)
+@Priority( 10 )
 @Singleton
-public class IpcSyncContextFactory implements SyncContextFactory {
+public class IpcSyncContextFactory implements SyncContextFactory
+{
 
     private final Map<Path, IpcClient> clients = new ConcurrentHashMap<>();
 
     @Override
-    public SyncContext newInstance(RepositorySystemSession session, boolean shared) {
+    public SyncContext newInstance( RepositorySystemSession session, boolean shared )
+    {
         Path repository = session.getLocalRepository().getBasedir().toPath();
-        Path logPath = Optional.ofNullable(System.getProperty(Environment.MVND_DAEMON_STORAGE.getProperty()))
-                .map(Paths::get)
-                .orElseGet(() -> Environment.USER_HOME.asPath()
-                        .resolve(".m2/mvnd/registry/" + BuildProperties.getInstance().getVersion()));
+        Path logPath = Optional.ofNullable( System.getProperty( Environment.MVND_DAEMON_STORAGE.getProperty() ) )
+                .map( Paths::get )
+                .orElseGet( () -> Environment.USER_HOME.asPath()
+                        .resolve( ".m2/mvnd/registry/" + BuildProperties.getInstance().getVersion() ) );
         String mvndHome = Environment.MVND_HOME.asString();
-        Path syncPath = mvndHome != null ? Paths.get(mvndHome).resolve("bin") : null;
-        IpcClient client = clients.computeIfAbsent(repository, r -> new IpcClient(r, logPath, syncPath));
-        return new IpcSyncContext(client, shared);
+        Path syncPath = mvndHome != null ? Paths.get( mvndHome ).resolve( "bin" ) : null;
+        IpcClient client = clients.computeIfAbsent( repository, r -> new IpcClient( r, logPath, syncPath ) );
+        return new IpcSyncContext( client, shared );
     }
 
     @PreDestroy
-    void close() {
-        clients.values().forEach(IpcClient::close);
+    void close()
+    {
+        clients.values().forEach( IpcClient::close );
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "IpcSyncContextFactory{"
                 + "clients=" + clients
                 + '}';

@@ -21,16 +21,20 @@ import java.util.HashSet;
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.Assertions;
 
-abstract class AbstractSmartBuilderTest {
-    protected void assertProjects(Collection<MavenProject> actual, MavenProject... expected) {
-        Assertions.assertEquals(new HashSet<MavenProject>(Arrays.asList(expected)), new HashSet<>(actual));
+abstract class AbstractSmartBuilderTest
+{
+
+    protected void assertProjects( Collection<MavenProject> actual, MavenProject... expected )
+    {
+        Assertions.assertEquals( new HashSet<MavenProject>( Arrays.asList( expected ) ), new HashSet<>( actual ) );
     }
 
-    protected MavenProject newProject(String artifactId) {
+    protected MavenProject newProject( String artifactId )
+    {
         MavenProject project = new MavenProject();
-        project.setGroupId("test");
-        project.setArtifactId(artifactId);
-        project.setVersion("1");
+        project.setGroupId( "test" );
+        project.setArtifactId( artifactId );
+        project.setVersion( "1" );
         return project;
     }
 

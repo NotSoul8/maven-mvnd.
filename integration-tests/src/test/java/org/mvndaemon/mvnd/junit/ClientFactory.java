@@ -18,6 +18,8 @@ package org.mvndaemon.mvnd.junit;
 import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.client.DaemonParameters;
 
-public interface ClientFactory {
-    Client newClient(DaemonParameters parameters);
+public interface ClientFactory
+{
+
+    Client newClient( DaemonParameters parameters );
 }

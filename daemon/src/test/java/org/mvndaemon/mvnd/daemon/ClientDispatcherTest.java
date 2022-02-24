@@ -18,16 +18,19 @@ package org.mvndaemon.mvnd.daemon;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ClientDispatcherTest {
+public class ClientDispatcherTest
+{
+
     @Test
-    void trimTrailingEols() {
-        Assertions.assertEquals(null, ClientDispatcher.trimTrailingEols(null));
-        Assertions.assertEquals("foo", ClientDispatcher.trimTrailingEols("foo"));
-        Assertions.assertEquals("foo\nbar", ClientDispatcher.trimTrailingEols("foo\nbar"));
-        Assertions.assertEquals("foo\nbar", ClientDispatcher.trimTrailingEols("foo\nbar\n"));
-        Assertions.assertEquals("foo\nbar", ClientDispatcher.trimTrailingEols("foo\nbar\r\n"));
-        Assertions.assertEquals("foo\nbar", ClientDispatcher.trimTrailingEols("foo\nbar\n\r\n"));
-        Assertions.assertEquals("", ClientDispatcher.trimTrailingEols("\n"));
+    void trimTrailingEols()
+    {
+        Assertions.assertEquals( null, ClientDispatcher.trimTrailingEols( null ) );
+        Assertions.assertEquals( "foo", ClientDispatcher.trimTrailingEols( "foo" ) );
+        Assertions.assertEquals( "foo\nbar", ClientDispatcher.trimTrailingEols( "foo\nbar" ) );
+        Assertions.assertEquals( "foo\nbar", ClientDispatcher.trimTrailingEols( "foo\nbar\n" ) );
+        Assertions.assertEquals( "foo\nbar", ClientDispatcher.trimTrailingEols( "foo\nbar\r\n" ) );
+        Assertions.assertEquals( "foo\nbar", ClientDispatcher.trimTrailingEols( "foo\nbar\n\r\n" ) );
+        Assertions.assertEquals( "", ClientDispatcher.trimTrailingEols( "\n" ) );
     }
 
 }

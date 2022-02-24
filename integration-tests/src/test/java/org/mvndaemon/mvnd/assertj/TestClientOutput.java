@@ -23,59 +23,73 @@ import org.assertj.core.api.Assertions;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.logging.ClientOutput;
 
-public class TestClientOutput implements ClientOutput {
+public class TestClientOutput implements ClientOutput
+{
+
     private final List<Message> messages = new ArrayList<>();
     protected Consumer<Message> daemonDispatch;
 
     @Override
-    public void close() throws Exception {
+    public void close() throws Exception
+    {
     }
 
     @Override
-    public void setDaemonId(String daemonId) {
+    public void setDaemonId( String daemonId )
+    {
     }
 
     @Override
-    public void setDaemonDispatch(Consumer<Message> daemonDispatch) {
+    public void setDaemonDispatch( Consumer<Message> daemonDispatch )
+    {
         this.daemonDispatch = daemonDispatch;
     }
 
     @Override
-    public void setDaemonReceive(Consumer<Message> sink) {
+    public void setDaemonReceive( Consumer<Message> sink )
+    {
     }
 
     @Override
-    public void accept(Message message) {
-        messages.add(message);
+    public void accept( Message message )
+    {
+        messages.add( message );
     }
 
     @Override
-    public void accept(List<Message> messages) {
-        for (Message message : messages) {
-            accept(message);
+    public void accept( List<Message> messages )
+    {
+        for ( Message message : messages )
+        {
+            accept( message );
         }
     }
 
     @Override
-    public void describeTerminal() {
-        accept(Message.display("Test terminal"));
+    public void describeTerminal()
+    {
+        accept( Message.display( "Test terminal" ) );
     }
 
     @Override
-    public int getTerminalWidth() {
+    public int getTerminalWidth()
+    {
         return 74;
     }
 
-    public List<Message> getMessages() {
+    public List<Message> getMessages()
+    {
         return messages;
     }
 
-    public void assertContainsMatchingSubsequence(String... patterns) {
-        Assertions.assertThat(messagesToString()).is(new MatchInOrderAmongOthers<>(patterns));
+    public void assertContainsMatchingSubsequence( String... patterns )
+    {
+        Assertions.assertThat( messagesToString() ).is( new MatchInOrderAmongOthers<>( patterns ) );
     }
 
-    public List<String> messagesToString() {
-        return messages.stream().map(m -> m.toString()).collect(Collectors.toList());
+    public List<String> messagesToString()
+    {
+        return messages.stream().map( m -> m.toString() ).collect( Collectors.toList() );
     }
 
 }

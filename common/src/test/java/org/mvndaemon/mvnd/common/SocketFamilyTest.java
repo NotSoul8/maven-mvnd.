@@ -26,49 +26,59 @@ import org.junit.jupiter.api.condition.JRE;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SocketFamilyTest {
+public class SocketFamilyTest
+{
 
     @Test
-    void testInetNullHost() throws UnknownHostException {
+    void testInetNullHost() throws UnknownHostException
+    {
         InetSocketAddress i4a = new InetSocketAddress(
-                InetAddress.getByAddress(null, new byte[] { (byte) 192, (byte) 168, 0, 1 }), 8080);
+                InetAddress.getByAddress( null, new byte[]
+                { ( byte ) 192, ( byte ) 168, 0, 1
+                } ), 8080 );
 
-        assertEquals("inet:/192.168.0.1:8080", SocketFamily.toString(i4a));
-        assertEquals(i4a, SocketFamily.fromString("inet:/192.168.0.1:8080"));
+        assertEquals( "inet:/192.168.0.1:8080", SocketFamily.toString( i4a ) );
+        assertEquals( i4a, SocketFamily.fromString( "inet:/192.168.0.1:8080" ) );
     }
 
     @Test
-    void testInetDummyHost() throws UnknownHostException {
+    void testInetDummyHost() throws UnknownHostException
+    {
         InetSocketAddress i4a = new InetSocketAddress(
-                InetAddress.getByAddress("dummy.org", new byte[] { (byte) 192, (byte) 168, 0, 1 }), 8080);
+                InetAddress.getByAddress( "dummy.org", new byte[]
+                { ( byte ) 192, ( byte ) 168, 0, 1
+                } ), 8080 );
 
-        assertEquals("inet:dummy.org/192.168.0.1:8080", SocketFamily.toString(i4a));
-        assertEquals(i4a, SocketFamily.fromString("inet:dummy.org/192.168.0.1:8080"));
+        assertEquals( "inet:dummy.org/192.168.0.1:8080", SocketFamily.toString( i4a ) );
+        assertEquals( i4a, SocketFamily.fromString( "inet:dummy.org/192.168.0.1:8080" ) );
     }
 
     @Test
-    void testInetLoopback() throws UnknownHostException {
-        InetSocketAddress i4a = new InetSocketAddress(8080);
+    void testInetLoopback() throws UnknownHostException
+    {
+        InetSocketAddress i4a = new InetSocketAddress( 8080 );
 
-        assertEquals("inet:0.0.0.0/0.0.0.0:8080", SocketFamily.toString(i4a));
-        assertEquals(i4a, SocketFamily.fromString("inet:0.0.0.0/0.0.0.0:8080"));
+        assertEquals( "inet:0.0.0.0/0.0.0.0:8080", SocketFamily.toString( i4a ) );
+        assertEquals( i4a, SocketFamily.fromString( "inet:0.0.0.0/0.0.0.0:8080" ) );
     }
 
     @Test
-    void testInetUnresolved() throws UnknownHostException {
-        InetSocketAddress i4a = InetSocketAddress.createUnresolved("google.com", 8080);
+    void testInetUnresolved() throws UnknownHostException
+    {
+        InetSocketAddress i4a = InetSocketAddress.createUnresolved( "google.com", 8080 );
 
-        assertEquals("inet:google.com/<unresolved>:8080", SocketFamily.toString(i4a));
-        assertEquals(i4a, SocketFamily.fromString("inet:google.com/<unresolved>:8080"));
+        assertEquals( "inet:google.com/<unresolved>:8080", SocketFamily.toString( i4a ) );
+        assertEquals( i4a, SocketFamily.fromString( "inet:google.com/<unresolved>:8080" ) );
     }
 
     @Test
-    @EnabledForJreRange(min = JRE.JAVA_16)
-    @Disabled("Test framework does not support multi-release expanded jars")
-    void testUnixFromTo() {
-        SocketAddress address = SocketFamily.fromString("unix:/tmp/foo-0123456.socket");
-        assertEquals(SocketFamily.unix, SocketFamily.familyOf(address));
-        assertEquals("unix:/tmp/foo-0123456.socket", SocketFamily.toString(address));
+    @EnabledForJreRange( min = JRE.JAVA_16 )
+    @Disabled( "Test framework does not support multi-release expanded jars" )
+    void testUnixFromTo()
+    {
+        SocketAddress address = SocketFamily.fromString( "unix:/tmp/foo-0123456.socket" );
+        assertEquals( SocketFamily.unix, SocketFamily.familyOf( address ) );
+        assertEquals( "unix:/tmp/foo-0123456.socket", SocketFamily.toString( address ) );
     }
 
 }

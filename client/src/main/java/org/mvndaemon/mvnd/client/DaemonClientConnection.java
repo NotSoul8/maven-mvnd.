@@ -39,9 +39,10 @@ import org.slf4j.LoggerFactory;
  * File origin:
  * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/client/DaemonClientConnection.java
  */
-public class DaemonClientConnection implements Closeable {
+public class DaemonClientConnection implements Closeable
+{
 
-    private final static Logger LOG = LoggerFactory.getLogger(DaemonClientConnection.class);
+    private final static Logger LOG = LoggerFactory.getLogger( DaemonClientConnection.class );
 
     private final DaemonConnection connection;
     private final DaemonInfo daemon;
@@ -49,127 +50,170 @@ public class DaemonClientConnection implements Closeable {
     private final boolean newDaemon;
     private boolean hasReceived;
     private final Lock dispatchLock = new ReentrantLock();
-    private final BlockingQueue<Message> queue = new ArrayBlockingQueue<>(16);
+    private final BlockingQueue<Message> queue = new ArrayBlockingQueue<>( 16 );
     private final Thread receiver;
-    private final AtomicBoolean running = new AtomicBoolean(true);
+    private final AtomicBoolean running = new AtomicBoolean( true );
     private final AtomicReference<Exception> exception = new AtomicReference<>();
     private final long maxKeepAliveMs;
     private final DaemonParameters parameters;
 
-    public DaemonClientConnection(DaemonConnection connection, DaemonInfo daemon,
-            StaleAddressDetector staleAddressDetector, boolean newDaemon, DaemonParameters parameters) {
+    public DaemonClientConnection( DaemonConnection connection, DaemonInfo daemon,
+            StaleAddressDetector staleAddressDetector, boolean newDaemon, DaemonParameters parameters )
+    {
         this.connection = connection;
         this.daemon = daemon;
         this.staleAddressDetector = staleAddressDetector;
         this.newDaemon = newDaemon;
-        this.receiver = new Thread(this::doReceive);
+        this.receiver = new Thread( this::doReceive );
         this.receiver.start();
         this.parameters = parameters;
         this.maxKeepAliveMs = parameters.keepAlive().toMillis() * parameters.maxLostKeepAlive();
     }
 
-    public DaemonInfo getDaemon() {
+    public DaemonInfo getDaemon()
+    {
         return daemon;
     }
 
-    public void dispatch(Message message) throws DaemonException.ConnectException {
-        LOG.debug("thread {}: dispatching {}", Thread.currentThread().getId(), message.getClass());
-        try {
+    public void dispatch( Message message ) throws DaemonException.ConnectException
+    {
+        LOG.debug( "thread {}: dispatching {}", Thread.currentThread().getId(), message.getClass() );
+        try
+        {
             dispatchLock.lock();
-            try {
-                connection.dispatch(message);
+            try
+            {
+                connection.dispatch( message );
                 connection.flush();
-            } finally {
+            }
+            finally
+            {
                 dispatchLock.unlock();
             }
-        } catch (DaemonException.MessageIOException e) {
-            LOG.debug("Problem dispatching message to the daemon. Performing 'on failure' operation...");
-            if (!hasReceived && staleAddressDetector.maybeStaleAddress(e)) {
-                throw new DaemonException.StaleAddressException("Could not dispatch a message to the daemon.", e);
+        }
+        catch ( DaemonException.MessageIOException e )
+        {
+            LOG.debug( "Problem dispatching message to the daemon. Performing 'on failure' operation..." );
+            if ( !hasReceived && staleAddressDetector.maybeStaleAddress( e ) )
+            {
+                throw new DaemonException.StaleAddressException( "Could not dispatch a message to the daemon.", e );
             }
-            throw new DaemonException.ConnectException("Could not dispatch a message to the daemon.", e);
+            throw new DaemonException.ConnectException( "Could not dispatch a message to the daemon.", e );
         }
         // in case we dispatch a cancelation request, also forward it to the main thread to exit asap
-        try {
-            if (message.getType() == Message.CANCEL_BUILD) {
-                queue.put(message);
+        try
+        {
+            if ( message.getType() == Message.CANCEL_BUILD )
+            {
+                queue.put( message );
             }
-        } catch (InterruptedException e) {
-            throw new DaemonException.InterruptedException(e);
+        }
+        catch ( InterruptedException e )
+        {
+            throw new DaemonException.InterruptedException( e );
         }
     }
 
-    public List<Message> receive() throws ConnectException, StaleAddressException {
-        while (true) {
-            try {
-                final Message m = queue.poll(maxKeepAliveMs, TimeUnit.MILLISECONDS);
+    public List<Message> receive() throws ConnectException, StaleAddressException
+    {
+        while ( true )
+        {
+            try
+            {
+                final Message m = queue.poll( maxKeepAliveMs, TimeUnit.MILLISECONDS );
                 {
                     Exception e = exception.get();
-                    if (e != null) {
+                    if ( e != null )
+                    {
                         throw e;
-                    } else if (m == null) {
-                        throw new IOException("No message received within " + maxKeepAliveMs
-                                + "ms, daemon may have crashed. You may want to check its status using mvnd --status");
+                    }
+                    else if ( m == null )
+                    {
+                        throw new IOException( "No message received within " + maxKeepAliveMs
+                                + "ms, daemon may have crashed. You may want to check its status using mvnd --status" );
                     }
                 }
-                final List<Message> result = new ArrayList<>(4);
-                result.add(m);
-                queue.drainTo(result);
+                final List<Message> result = new ArrayList<>( 4 );
+                result.add( m );
+                queue.drainTo( result );
                 Exception e = exception.get();
-                if (e != null) {
+                if ( e != null )
+                {
                     throw e;
                 }
                 return result;
-            } catch (Exception e) {
-                DaemonDiagnostics diag = new DaemonDiagnostics(daemon.getId(), parameters);
-                LOG.debug("Problem receiving message to the daemon. Performing 'on failure' operation...");
-                if (!hasReceived && newDaemon) {
-                    throw new ConnectException("Could not receive a message from the daemon.\n" + diag.describe(), e);
-                } else if (staleAddressDetector.maybeStaleAddress(e)) {
-                    throw new StaleAddressException("Could not receive a message from the daemon.\n" + diag.describe(), e);
+            }
+            catch ( Exception e )
+            {
+                DaemonDiagnostics diag = new DaemonDiagnostics( daemon.getId(), parameters );
+                LOG.debug( "Problem receiving message to the daemon. Performing 'on failure' operation..." );
+                if ( !hasReceived && newDaemon )
+                {
+                    throw new ConnectException( "Could not receive a message from the daemon.\n" + diag.describe(), e );
                 }
-            } finally {
+                else if ( staleAddressDetector.maybeStaleAddress( e ) )
+                {
+                    throw new StaleAddressException( "Could not receive a message from the daemon.\n" + diag.describe(),
+                            e );
+                }
+            }
+            finally
+            {
                 hasReceived = true;
             }
         }
     }
 
-    public void enqueue(Message message) {
-        try {
-            queue.put(message);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+    public void enqueue( Message message )
+    {
+        try
+        {
+            queue.put( message );
+        }
+        catch ( InterruptedException e )
+        {
+            throw new RuntimeException( e );
         }
     }
 
-    protected void doReceive() {
-        try {
-            while (running.get()) {
+    protected void doReceive()
+    {
+        try
+        {
+            while ( running.get() )
+            {
                 Message m = connection.receive();
-                if (m == null) {
+                if ( m == null )
+                {
                     break;
                 }
-                queue.put(m);
+                queue.put( m );
             }
-        } catch (Exception e) {
-            if (running.get()) {
-                exception.set(e);
+        }
+        catch ( Exception e )
+        {
+            if ( running.get() )
+            {
+                exception.set( e );
             }
         }
     }
 
-    public void close() {
-        LOG.debug("thread {}: connection stop", Thread.currentThread().getId());
-        running.set(false);
+    public void close()
+    {
+        LOG.debug( "thread {}: connection stop", Thread.currentThread().getId() );
+        running.set( false );
         receiver.interrupt();
         connection.close();
     }
 
-    public interface StaleAddressDetector {
+    public interface StaleAddressDetector
+    {
+
         /**
          * @return true if the failure should be considered due to a stale address.
          */
-        boolean maybeStaleAddress(Exception failure);
+        boolean maybeStaleAddress( Exception failure );
     }
 
 }

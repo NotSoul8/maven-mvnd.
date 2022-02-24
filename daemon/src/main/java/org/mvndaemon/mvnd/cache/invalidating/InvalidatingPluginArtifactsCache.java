@@ -30,41 +30,51 @@ import org.mvndaemon.mvnd.cache.CacheFactory;
 
 @Singleton
 @Named
-@Priority(10)
-public class InvalidatingPluginArtifactsCache extends DefaultPluginArtifactsCache {
+@Priority( 10 )
+public class InvalidatingPluginArtifactsCache extends DefaultPluginArtifactsCache
+{
 
-    protected static class Record implements org.mvndaemon.mvnd.cache.CacheRecord {
+    protected static class Record implements org.mvndaemon.mvnd.cache.CacheRecord
+    {
 
         private final CacheRecord record;
 
-        public Record(CacheRecord record) {
+        public Record( CacheRecord record )
+        {
             this.record = record;
         }
 
         @Override
-        public Stream<Path> getDependencyPaths() {
-            if (record.getException() != null) {
+        public Stream<Path> getDependencyPaths()
+        {
+            if ( record.getException() != null )
+            {
                 return Stream.empty();
             }
-            return record.getArtifacts().stream().map(artifact -> artifact.getFile().toPath());
+            return record.getArtifacts().stream().map( artifact -> artifact.getFile().toPath() );
         }
 
         @Override
-        public void invalidate() {
+        public void invalidate()
+        {
         }
     }
 
     final Cache<Key, Record> cache;
 
     @Inject
-    public InvalidatingPluginArtifactsCache(CacheFactory cacheFactory) {
+    public InvalidatingPluginArtifactsCache( CacheFactory cacheFactory )
+    {
         this.cache = cacheFactory.newCache();
     }
 
-    public CacheRecord get(Key key) throws PluginResolutionException {
-        Record r = cache.get(key);
-        if (r != null) {
-            if (r.record.getException() != null) {
+    public CacheRecord get( Key key ) throws PluginResolutionException
+    {
+        Record r = cache.get( key );
+        if ( r != null )
+        {
+            if ( r.record.getException() != null )
+            {
                 throw r.record.getException();
             }
             return r.record;
@@ -72,27 +82,32 @@ public class InvalidatingPluginArtifactsCache extends DefaultPluginArtifactsCach
         return null;
     }
 
-    public CacheRecord put(Key key, List<Artifact> pluginArtifacts) {
-        CacheRecord record = super.put(key, pluginArtifacts);
-        super.cache.remove(key);
-        cache.put(key, new Record(record));
+    public CacheRecord put( Key key, List<Artifact> pluginArtifacts )
+    {
+        CacheRecord record = super.put( key, pluginArtifacts );
+        super.cache.remove( key );
+        cache.put( key, new Record( record ) );
         return record;
     }
 
-    public CacheRecord put(Key key, PluginResolutionException exception) {
-        CacheRecord record = super.put(key, exception);
-        super.cache.remove(key);
-        cache.put(key, new Record(record));
+    public CacheRecord put( Key key, PluginResolutionException exception )
+    {
+        CacheRecord record = super.put( key, exception );
+        super.cache.remove( key );
+        cache.put( key, new Record( record ) );
         return record;
     }
 
-    protected void assertUniqueKey(Key key) {
-        if (cache.get(key) != null) {
-            throw new IllegalStateException("Duplicate artifact resolution result for plugin " + key);
+    protected void assertUniqueKey( Key key )
+    {
+        if ( cache.get( key ) != null )
+        {
+            throw new IllegalStateException( "Duplicate artifact resolution result for plugin " + key );
         }
     }
 
-    public void flush() {
+    public void flush()
+    {
         cache.clear();
     }
 

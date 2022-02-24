@@ -26,8 +26,9 @@ import org.mvndaemon.mvnd.junit.MvndNativeTest;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MvndNativeTest(projectDir = "src/test/projects/jvm-config")
-public class JvmConfigNativeIT {
+@MvndNativeTest( projectDir = "src/test/projects/jvm-config" )
+public class JvmConfigNativeIT
+{
 
     @Inject
     Client client;
@@ -36,16 +37,17 @@ public class JvmConfigNativeIT {
     DaemonParameters parameters;
 
     @Test
-    void version() throws IOException, InterruptedException {
+    void version() throws IOException, InterruptedException
+    {
         final TestClientOutput o = new TestClientOutput();
-        client.execute(o, "org.codehaus.gmaven:groovy-maven-plugin:2.1.1:execute",
-                "-Dsource=System.out.println(java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments())")
+        client.execute( o, "org.codehaus.gmaven:groovy-maven-plugin:2.1.1:execute",
+                "-Dsource=System.out.println(java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments())" )
                 .assertSuccess();
         String xmx = "-Xmx512k";
-        assertTrue(o.getMessages().stream()
-                .anyMatch(m -> m.toString().contains(xmx)),
+        assertTrue( o.getMessages().stream()
+                .anyMatch( m -> m.toString().contains( xmx ) ),
                 "Output should contain " + xmx + " but is:\n"
-                        + o.getMessages().stream().map(Object::toString).collect(Collectors.joining("\n")));
+                        + o.getMessages().stream().map( Object::toString ).collect( Collectors.joining( "\n" ) ) );
     }
 
 }

@@ -17,10 +17,12 @@ package org.mvndaemon.mvnd.it;
 
 import org.mvndaemon.mvnd.junit.MvndTest;
 
-@MvndTest(projectDir = "src/test/projects/multi-module")
-public class ThreadOptionTest extends ThreadOptionNativeIT {
+@MvndTest( projectDir = "src/test/projects/multi-module" )
+public class ThreadOptionTest extends ThreadOptionNativeIT
+{
 
-    protected boolean isNative() {
+    protected boolean isNative()
+    {
         return false;
     }
 }

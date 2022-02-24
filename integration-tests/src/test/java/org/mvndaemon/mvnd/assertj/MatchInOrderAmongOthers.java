@@ -32,40 +32,46 @@ import org.slf4j.LoggerFactory;
  *
  * @param <T> the type of the tested {@link List}.
  */
-public class MatchInOrderAmongOthers<T extends List<? extends String>> extends Condition<T> {
+public class MatchInOrderAmongOthers<T extends List<? extends String>> extends Condition<T>
+{
 
-    private static final Logger LOG = LoggerFactory.getLogger(MatchInOrderAmongOthers.class);
+    private static final Logger LOG = LoggerFactory.getLogger( MatchInOrderAmongOthers.class );
 
-    public MatchInOrderAmongOthers(String... expectedItems) {
-        this(Stream.of(expectedItems).map(Pattern::compile).collect(Collectors.toList()));
+    public MatchInOrderAmongOthers( String... expectedItems )
+    {
+        this( Stream.of( expectedItems ).map( Pattern::compile ).collect( Collectors.toList() ) );
     }
 
-    public MatchInOrderAmongOthers(final Collection<Pattern> patterns) {
+    public MatchInOrderAmongOthers( final Collection<Pattern> patterns )
+    {
         super(
-                messages -> {
+                messages ->
+                {
                     final List<Pattern> matchingPatterns = messages.stream()
                             /* map each message to the matching pattern or null of none matches */
-                            .map(m -> patterns.stream()
-                                    .filter(pat -> pat.matcher(m).find())
+                            .map( m -> patterns.stream()
+                                    .filter( pat -> pat.matcher( m ).find() )
                                     .findFirst()
-                                    .orElse(null))
-                            .filter(Objects::nonNull) /* remove null patterns */
-                            .collect(Collectors.toList());
-                    final boolean result = matchingPatterns.equals(patterns);
-                    if (!result) {
-                        LOG.warn("Actually matched:\n"
-                                + matchingPatterns.stream().map(p -> "    " + p.pattern()).collect(Collectors.joining("\n")));
-                        LOG.warn("Did not match:\n"
+                                    .orElse( null ) )
+                            .filter( Objects::nonNull ) /* remove null patterns */
+                            .collect( Collectors.toList() );
+                    final boolean result = matchingPatterns.equals( patterns );
+                    if ( !result )
+                    {
+                        LOG.warn( "Actually matched:\n"
+                                + matchingPatterns.stream().map( p -> "    " + p.pattern() )
+                                        .collect( Collectors.joining( "\n" ) ) );
+                        LOG.warn( "Did not match:\n"
                                 + patterns.stream()
-                                        .filter(p -> !matchingPatterns.contains(p))
-                                        .map(p -> "    " + p.pattern())
-                                        .collect(Collectors.joining("\n")));
+                                        .filter( p -> !matchingPatterns.contains( p ) )
+                                        .map( p -> "    " + p.pattern() )
+                                        .collect( Collectors.joining( "\n" ) ) );
                     }
                     /* if the mapped patterns equal the input patterns then each pattern matched exactly once */
                     return result;
                 },
-                "Match in order: " + patterns.stream().map(Pattern::pattern).collect(Collectors.joining(", ")),
-                patterns);
+                "Match in order: " + patterns.stream().map( Pattern::pattern ).collect( Collectors.joining( ", " ) ),
+                patterns );
     }
 
 }

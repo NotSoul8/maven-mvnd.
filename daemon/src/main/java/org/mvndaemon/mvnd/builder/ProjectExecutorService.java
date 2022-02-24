@@ -38,90 +38,108 @@ import org.apache.maven.project.MavenProject;
  * File origin:
  * https://github.com/takari/takari-smart-builder/blob/takari-smart-builder-0.6.1/src/main/java/io/takari/maven/builder/smart/ProjectExecutorService.java
  */
-class ProjectExecutorService {
+class ProjectExecutorService
+{
 
     private final ExecutorService executor;
     private final BlockingQueue<Future<MavenProject>> completion = new LinkedBlockingQueue<>();
     private final Comparator<Runnable> taskComparator;
 
-    public ProjectExecutorService(final int degreeOfConcurrency,
-            final Comparator<MavenProject> projectComparator) {
+    public ProjectExecutorService( final int degreeOfConcurrency,
+            final Comparator<MavenProject> projectComparator )
+    {
 
         this.taskComparator = Comparator.comparing(
-                r -> ((ProjectRunnable) r).getProject(), projectComparator);
+                r -> ( ( ProjectRunnable ) r ).getProject(), projectComparator );
 
-        final BlockingQueue<Runnable> executorWorkQueue = new PriorityBlockingQueue<>(degreeOfConcurrency, taskComparator);
+        final BlockingQueue<Runnable> executorWorkQueue = new PriorityBlockingQueue<>( degreeOfConcurrency,
+                taskComparator );
 
-        executor = new ThreadPoolExecutor(degreeOfConcurrency, // corePoolSize
+        executor = new ThreadPoolExecutor( degreeOfConcurrency, // corePoolSize
                 degreeOfConcurrency, // maximumPoolSize
                 0L, TimeUnit.MILLISECONDS, // keepAliveTime, unit
                 executorWorkQueue, // workQueue
                 new BuildThreadFactory() // threadFactory
-        ) {
+        )
+        {
 
             @Override
-            protected void beforeExecute(Thread t, Runnable r) {
-                ProjectExecutorService.this.beforeExecute(t, r);
+            protected void beforeExecute( Thread t, Runnable r )
+            {
+                ProjectExecutorService.this.beforeExecute( t, r );
             }
         };
     }
 
-    public void submitAll(final Collection<? extends ProjectRunnable> tasks) {
+    public void submitAll( final Collection<? extends ProjectRunnable> tasks )
+    {
         // when there are available worker threads, tasks are immediately executed, i.e. bypassed the
         // ordered queued. need to sort tasks, such that submission order matches desired execution
         // order
         tasks.stream()
-                .sorted(taskComparator)
-                .map(ProjectFutureTask::new)
-                .forEach(executor::execute);
+                .sorted( taskComparator )
+                .map( ProjectFutureTask::new )
+                .forEach( executor::execute );
     }
 
     /**
      * Returns {@link MavenProject} corresponding to the next completed task, waiting if none are yet
      * present.
      */
-    public MavenProject take() throws InterruptedException, ExecutionException {
+    public MavenProject take() throws InterruptedException, ExecutionException
+    {
         return completion.take().get();
     }
 
-    public void shutdown() {
+    public void shutdown()
+    {
         executor.shutdown();
     }
 
-    public void cancel() {
+    public void cancel()
+    {
         executor.shutdownNow();
     }
 
     // hook to allow pausing executor during unit tests
-    protected void beforeExecute(Thread t, Runnable r) {
+    protected void beforeExecute( Thread t, Runnable r )
+    {
     }
 
     // for testing purposes only
-    public void awaitShutdown() throws InterruptedException {
+    public void awaitShutdown() throws InterruptedException
+    {
         executor.shutdown();
-        while (!executor.awaitTermination(5, TimeUnit.SECONDS))
+        while ( !executor.awaitTermination( 5, TimeUnit.SECONDS ) )
             ;
     }
 
-    static interface ProjectRunnable extends Runnable {
+    static interface ProjectRunnable extends Runnable
+    {
+
         public MavenProject getProject();
     }
 
-    private class ProjectFutureTask extends FutureTask<MavenProject> implements ProjectRunnable {
+    private class ProjectFutureTask extends FutureTask<MavenProject> implements ProjectRunnable
+    {
+
         private ProjectRunnable task;
 
-        public ProjectFutureTask(ProjectRunnable task) {
-            super(task, task.getProject());
+        public ProjectFutureTask( ProjectRunnable task )
+        {
+            super( task, task.getProject() );
             this.task = task;
         }
 
         @Override
-        protected void done() {
-            completion.add(this);
+        protected void done()
+        {
+            completion.add( this );
         }
 
         @Override
-        public MavenProject getProject() {
+        public MavenProject getProject()
+        {
             return task.getProject();
         }
     }

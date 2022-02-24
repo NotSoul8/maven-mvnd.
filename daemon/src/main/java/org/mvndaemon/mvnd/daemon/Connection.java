@@ -18,21 +18,26 @@ package org.mvndaemon.mvnd.daemon;
 import java.util.function.Predicate;
 import org.mvndaemon.mvnd.common.Message;
 
-public interface Connection {
+public interface Connection
+{
 
-    static Connection getCurrent() {
+    static Connection getCurrent()
+    {
         return Holder.CURRENT;
     }
 
-    static void setCurrent(Connection connection) {
+    static void setCurrent( Connection connection )
+    {
         Holder.CURRENT = connection;
     }
 
-    void dispatch(Message message);
+    void dispatch( Message message );
 
-    <T extends Message> T request(Message request, Class<T> responseType, Predicate<T> matcher);
+    <T extends Message> T request( Message request, Class<T> responseType, Predicate<T> matcher );
 
-    class Holder {
+    class Holder
+    {
+
         static Connection CURRENT;
     }
 

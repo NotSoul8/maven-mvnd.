@@ -29,8 +29,9 @@ import org.mvndaemon.mvnd.junit.TestRegistry;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MvndTest(projectDir = "src/test/projects/resident-extensions")
-public class ResidentExtensionsTest {
+@MvndTest( projectDir = "src/test/projects/resident-extensions" )
+public class ResidentExtensionsTest
+{
 
     @Inject
     ClientFactory clientFactory;
@@ -42,31 +43,33 @@ public class ResidentExtensionsTest {
     TestParameters parameters;
 
     @Test
-    void verify() throws IOException, InterruptedException {
+    void verify() throws IOException, InterruptedException
+    {
         TestClientOutput o1 = new TestClientOutput();
-        Path prj1 = parameters.getTestDir().resolve("project/project1");
+        Path prj1 = parameters.getTestDir().resolve( "project/project1" );
         clientFactory
-                .newClient(parameters.withMavenMultiModuleProjectDirectory(prj1).cd(prj1))
-                .execute(o1, "verify", "-X", "-B").assertSuccess();
-        assertTrue(o1.getMessages().stream()
-                .map(Object::toString)
-                .anyMatch(s -> s.contains("Writing maven timeline")));
-        assertDaemonRegistrySize(1);
+                .newClient( parameters.withMavenMultiModuleProjectDirectory( prj1 ).cd( prj1 ) )
+                .execute( o1, "verify", "-X", "-B" ).assertSuccess();
+        assertTrue( o1.getMessages().stream()
+                .map( Object::toString )
+                .anyMatch( s -> s.contains( "Writing maven timeline" ) ) );
+        assertDaemonRegistrySize( 1 );
 
         TestClientOutput o2 = new TestClientOutput();
-        Path prj2 = parameters.getTestDir().resolve("project/project2");
+        Path prj2 = parameters.getTestDir().resolve( "project/project2" );
         clientFactory
-                .newClient(parameters.withMavenMultiModuleProjectDirectory(prj2).cd(prj2))
-                .execute(o2, "verify", "-e", "-B").assertSuccess();
-        assertFalse(o2.getMessages().stream()
-                .map(Object::toString)
-                .anyMatch(s -> s.contains("Writing maven timeline")));
-        assertDaemonRegistrySize(1);
+                .newClient( parameters.withMavenMultiModuleProjectDirectory( prj2 ).cd( prj2 ) )
+                .execute( o2, "verify", "-e", "-B" ).assertSuccess();
+        assertFalse( o2.getMessages().stream()
+                .map( Object::toString )
+                .anyMatch( s -> s.contains( "Writing maven timeline" ) ) );
+        assertDaemonRegistrySize( 1 );
     }
 
-    private void assertDaemonRegistrySize(int size) {
-        Assertions.assertThat(registry.getAll().size())
-                .as("Daemon registry size should be " + size)
-                .isEqualTo(size);
+    private void assertDaemonRegistrySize( int size )
+    {
+        Assertions.assertThat( registry.getAll().size() )
+                .as( "Daemon registry size should be " + size )
+                .isEqualTo( size );
     }
 }

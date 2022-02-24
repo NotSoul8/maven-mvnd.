@@ -22,7 +22,9 @@ import java.util.Properties;
 import java.util.stream.Stream;
 import org.mvndaemon.mvnd.common.Environment.DocumentedEnumEntry;
 
-public enum OptionType {
+public enum OptionType
+{
+
     /**
      * <code>true</code> or <code>false</code>; empty string is also interpreted as <code>true</code> - so
      * <code>-Dmvnd.noBuffering</code> is equivalent to <code>-Dmvnd.noBuffering=true</code>
@@ -36,10 +38,13 @@ public enum OptionType {
      * Examples: <code>7 days</code>, <code>7days</code>, <code>7d</code>, <code>100 milliseconds</code>,
      * <code>100 millis</code>, <code>100ms</code>, <code>100</code>
      */
-    DURATION {
+    DURATION
+    {
+
         @Override
-        public String normalize(String value) {
-            return TimeUtils.printDuration(TimeUtils.toMilliSeconds(value));
+        public String normalize( String value )
+        {
+            return TimeUtils.printDuration( TimeUtils.toMilliSeconds( value ) );
         }
     },
     /** A whole number */
@@ -56,22 +61,27 @@ public enum OptionType {
     /** No value */
     VOID;
 
-    public String normalize(String value) {
+    public String normalize( String value )
+    {
         return value;
     }
 
-    public static Stream<DocumentedEnumEntry<OptionType>> documentedEntries() {
+    public static Stream<DocumentedEnumEntry<OptionType>> documentedEntries()
+    {
         Properties props = new Properties();
         OptionType[] values = values();
         final String cliOptionsPath = values[0].getClass().getSimpleName() + ".javadoc.properties";
-        try (InputStream in = Environment.class.getResourceAsStream(cliOptionsPath)) {
-            props.load(in);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not read " + cliOptionsPath, e);
+        try ( InputStream in = Environment.class.getResourceAsStream( cliOptionsPath ) )
+        {
+            props.load( in );
         }
-        return Stream.of(values)
-                .filter(opt -> opt != VOID)
-                .sorted(Comparator.comparing(OptionType::name))
-                .map(env -> new DocumentedEnumEntry<>(env, props.getProperty(env.name())));
+        catch ( IOException e )
+        {
+            throw new RuntimeException( "Could not read " + cliOptionsPath, e );
+        }
+        return Stream.of( values )
+                .filter( opt -> opt != VOID )
+                .sorted( Comparator.comparing( OptionType::name ) )
+                .map( env -> new DocumentedEnumEntry<>( env, props.getProperty( env.name() ) ) );
     }
 }

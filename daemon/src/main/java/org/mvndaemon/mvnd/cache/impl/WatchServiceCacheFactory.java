@@ -41,9 +41,10 @@ import org.slf4j.LoggerFactory;
 /**
  * A factory for {@link Cache} objects invalidating its entries based on events received from {@link WatchService}.
  */
-public class WatchServiceCacheFactory implements CacheFactory {
+public class WatchServiceCacheFactory implements CacheFactory
+{
 
-    private static final Logger LOG = LoggerFactory.getLogger(WatchServiceCacheFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger( WatchServiceCacheFactory.class );
 
     private final WatchService watchService;
 
@@ -59,11 +60,15 @@ public class WatchServiceCacheFactory implements CacheFactory {
      */
     private final Map<Path, Registration> registrationsByDir = new ConcurrentHashMap<>();
 
-    public WatchServiceCacheFactory() {
-        try {
+    public WatchServiceCacheFactory()
+    {
+        try
+        {
             this.watchService = FileSystems.getDefault().newWatchService();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        }
+        catch ( IOException e )
+        {
+            throw new RuntimeException( e );
         }
     }
 
@@ -72,46 +77,65 @@ public class WatchServiceCacheFactory implements CacheFactory {
      *
      * @param record the {@link CacheRecord} to watch
      */
-    public void add(CacheRecord record) {
-        record.getDependencyPaths().forEach(p -> {
-            final List<CacheRecord> records = recordsByPath.computeIfAbsent(p, k -> new ArrayList<>());
-            synchronized (records) {
-                records.add(record);
-                registrationsByDir.compute(p.getParent(), this::register);
+    public void add( CacheRecord record )
+    {
+        record.getDependencyPaths().forEach( p ->
+        {
+            final List<CacheRecord> records = recordsByPath.computeIfAbsent( p, k -> new ArrayList<>() );
+            synchronized ( records )
+            {
+                records.add( record );
+                registrationsByDir.compute( p.getParent(), this::register );
             }
-        });
+        } );
     }
 
     @Override
-    public <K, V extends CacheRecord> Cache<K, V> newCache() {
+    public <K, V extends CacheRecord> Cache<K, V> newCache()
+    {
         return new WatchServiceCache<>();
     }
 
-    private Registration register(Path key, Registration value) {
-        if (value == null) {
-            LOG.debug("Starting to watch path {}", key);
-            try {
+    private Registration register( Path key, Registration value )
+    {
+        if ( value == null )
+        {
+            LOG.debug( "Starting to watch path {}", key );
+            try
+            {
                 WatchEvent.Modifier[] mods;
-                try {
-                    mods = new WatchEvent.Modifier[] {
+                try
+                {
+                    mods = new WatchEvent.Modifier[]
+                    {
                             com.sun.nio.file.SensitivityWatchEventModifier.HIGH
                     };
-                } catch (Throwable t) {
+                }
+                catch ( Throwable t )
+                {
                     mods = null;
                 }
-                final WatchKey watchKey = key.register(watchService,
-                        new WatchEvent.Kind[] { StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY },
-                        mods);
-                return new Registration(watchKey);
-            } catch (NoSuchFileException e) {
+                final WatchKey watchKey = key.register( watchService,
+                        new WatchEvent.Kind[]
+                        { StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY
+                        },
+                        mods );
+                return new Registration( watchKey );
+            }
+            catch ( NoSuchFileException e )
+            {
                 // we allow this exception in case of a missing reactor artifact
                 return null;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             }
-        } else {
+            catch ( IOException e )
+            {
+                throw new RuntimeException( e );
+            }
+        }
+        else
+        {
             int cnt = value.count.incrementAndGet();
-            LOG.debug("Already {} watchers for path {}", cnt, key);
+            LOG.debug( "Already {} watchers for path {}", cnt, key );
             return value;
         }
     }
@@ -119,36 +143,48 @@ public class WatchServiceCacheFactory implements CacheFactory {
     /**
      * Poll for events and process them.
      */
-    public void validateRecords() {
-        for (Map.Entry<Path, Registration> entry : registrationsByDir.entrySet()) {
+    public void validateRecords()
+    {
+        for ( Map.Entry<Path, Registration> entry : registrationsByDir.entrySet() )
+        {
             final WatchKey watchKey = entry.getValue().watchKey;
-            for (WatchEvent<?> event : watchKey.pollEvents()) {
+            for ( WatchEvent<?> event : watchKey.pollEvents() )
+            {
                 final Path dir = entry.getKey();
                 WatchEvent.Kind<?> kind = event.kind();
-                if (kind == StandardWatchEventKinds.ENTRY_DELETE || kind == StandardWatchEventKinds.ENTRY_MODIFY) {
-                    final Path path = dir.resolve((Path) event.context());
-                    LOG.debug("Got watcher event {} for file {}", kind.name(), path);
-                    final List<CacheRecord> records = recordsByPath.remove(path);
-                    if (records != null) {
-                        synchronized (records) {
-                            LOG.debug("Invalidating records for path {}: {}", path, records);
-                            remove(records);
+                if ( kind == StandardWatchEventKinds.ENTRY_DELETE || kind == StandardWatchEventKinds.ENTRY_MODIFY )
+                {
+                    final Path path = dir.resolve( ( Path ) event.context() );
+                    LOG.debug( "Got watcher event {} for file {}", kind.name(), path );
+                    final List<CacheRecord> records = recordsByPath.remove( path );
+                    if ( records != null )
+                    {
+                        synchronized ( records )
+                        {
+                            LOG.debug( "Invalidating records for path {}: {}", path, records );
+                            remove( records );
                         }
                     }
-                } else if (kind == StandardWatchEventKinds.OVERFLOW) {
+                }
+                else if ( kind == StandardWatchEventKinds.OVERFLOW )
+                {
                     /* Invalidate all records under the given dir */
-                    LOG.debug("Got overflow event for path {}", dir);
+                    LOG.debug( "Got overflow event for path {}", dir );
                     Iterator<Map.Entry<Path, List<CacheRecord>>> it = recordsByPath.entrySet().iterator();
-                    while (it.hasNext()) {
+                    while ( it.hasNext() )
+                    {
                         Map.Entry<Path, List<CacheRecord>> en = it.next();
                         final Path path = en.getKey();
-                        if (path.getParent().equals(dir)) {
+                        if ( path.getParent().equals( dir ) )
+                        {
                             it.remove();
                             final List<CacheRecord> records = en.getValue();
-                            if (records != null) {
-                                synchronized (records) {
-                                    LOG.debug("Invalidating records of path {}: {}", path, records);
-                                    remove(records);
+                            if ( records != null )
+                            {
+                                synchronized ( records )
+                                {
+                                    LOG.debug( "Invalidating records of path {}: {}", path, records );
+                                    remove( records );
                                 }
                             }
                         }
@@ -163,27 +199,36 @@ public class WatchServiceCacheFactory implements CacheFactory {
      *
      * @param records the {@link CacheRecord}s to stop watching
      */
-    void remove(List<CacheRecord> records) {
-        for (CacheRecord record : records) {
+    void remove( List<CacheRecord> records )
+    {
+        for ( CacheRecord record : records )
+        {
             record.invalidate();
             record.getDependencyPaths()
-                    .map(Path::getParent)
-                    .forEach(dir -> registrationsByDir.compute(dir, this::unregister));
+                    .map( Path::getParent )
+                    .forEach( dir -> registrationsByDir.compute( dir, this::unregister ) );
         }
     }
 
-    private Registration unregister(Path key, Registration value) {
-        if (value == null) {
-            LOG.debug("Already stopped watching path {}", key);
+    private Registration unregister( Path key, Registration value )
+    {
+        if ( value == null )
+        {
+            LOG.debug( "Already stopped watching path {}", key );
             return null;
-        } else {
+        }
+        else
+        {
             final int cnt = value.count.decrementAndGet();
-            if (cnt <= 0) {
-                LOG.debug("Unwatching path {}", key);
+            if ( cnt <= 0 )
+            {
+                LOG.debug( "Unwatching path {}", key );
                 value.watchKey.cancel();
                 return null;
-            } else {
-                LOG.debug("Still " + cnt + " watchers for path {}", key);
+            }
+            else
+            {
+                LOG.debug( "Still " + cnt + " watchers for path {}", key );
                 return value;
             }
         }
@@ -193,46 +238,57 @@ public class WatchServiceCacheFactory implements CacheFactory {
      * A watcher registration for a directory storing the {@link WatchKey} and the count of watchers to be able to
      * tell when the {@link #watchKey} should be cancelled.
      */
-    static class Registration {
-        final AtomicInteger count = new AtomicInteger(1);
+    static class Registration
+    {
+
+        final AtomicInteger count = new AtomicInteger( 1 );
         final WatchKey watchKey;
 
-        Registration(WatchKey watchKey) {
+        Registration( WatchKey watchKey )
+        {
             this.watchKey = watchKey;
         }
     }
 
-    class WatchServiceCache<K, V extends CacheRecord> implements Cache<K, V> {
+    class WatchServiceCache<K, V extends CacheRecord> implements Cache<K, V>
+    {
 
         private final ConcurrentHashMap<K, V> map = new ConcurrentHashMap<>();
 
         @Override
-        public boolean contains(K key) {
-            return get(key) != null;
+        public boolean contains( K key )
+        {
+            return get( key ) != null;
         }
 
         @Override
-        public V get(K key) {
+        public V get( K key )
+        {
             validateRecords();
-            return map.get(key);
+            return map.get( key );
         }
 
         @Override
-        public void put(K key, V value) {
-            add(new WrappedCacheRecord<>(map, key, value));
-            map.put(key, value);
+        public void put( K key, V value )
+        {
+            add( new WrappedCacheRecord<>( map, key, value ) );
+            map.put( key, value );
         }
 
         @Override
-        public void clear() {
-            removeIf((k, v) -> true);
+        public void clear()
+        {
+            removeIf( ( k, v ) -> true );
         }
 
         @Override
-        public void removeIf(BiPredicate<K, V> predicate) {
-            for (Iterator<Map.Entry<K, V>> iterator = map.entrySet().iterator(); iterator.hasNext();) {
+        public void removeIf( BiPredicate<K, V> predicate )
+        {
+            for ( Iterator<Map.Entry<K, V>> iterator = map.entrySet().iterator(); iterator.hasNext(); )
+            {
                 Map.Entry<K, V> entry = iterator.next();
-                if (predicate.test(entry.getKey(), entry.getValue())) {
+                if ( predicate.test( entry.getKey(), entry.getValue() ) )
+                {
                     entry.getValue().invalidate();
                     iterator.remove();
                 }
@@ -240,36 +296,43 @@ public class WatchServiceCacheFactory implements CacheFactory {
         }
 
         @Override
-        public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+        public V computeIfAbsent( K key, Function<? super K, ? extends V> mappingFunction )
+        {
             validateRecords();
-            return map.computeIfAbsent(key, k -> {
-                V v = mappingFunction.apply(k);
-                add(new WrappedCacheRecord<>(map, k, v));
+            return map.computeIfAbsent( key, k ->
+            {
+                V v = mappingFunction.apply( k );
+                add( new WrappedCacheRecord<>( map, k, v ) );
                 return v;
-            });
+            } );
         }
     }
 
-    static class WrappedCacheRecord<K, V extends CacheRecord> implements CacheRecord {
+    static class WrappedCacheRecord<K, V extends CacheRecord> implements CacheRecord
+    {
+
         private final Map<K, V> map;
         private final K key;
         private final V delegate;
 
-        public WrappedCacheRecord(Map<K, V> map, K key, V delegate) {
+        public WrappedCacheRecord( Map<K, V> map, K key, V delegate )
+        {
             this.map = map;
             this.key = key;
             this.delegate = delegate;
         }
 
         @Override
-        public Stream<Path> getDependencyPaths() {
+        public Stream<Path> getDependencyPaths()
+        {
             return delegate.getDependencyPaths();
         }
 
         @Override
-        public void invalidate() {
+        public void invalidate()
+        {
             delegate.invalidate();
-            map.remove(key);
+            map.remove( key );
         }
 
     }

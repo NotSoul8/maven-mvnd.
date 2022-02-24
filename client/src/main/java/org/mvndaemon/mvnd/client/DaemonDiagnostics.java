@@ -30,47 +30,58 @@ import java.util.stream.Collector;
  * File origin:
  * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/diagnostics/DaemonDiagnostics.java
  */
-public class DaemonDiagnostics {
+public class DaemonDiagnostics
+{
 
     private final static int TAIL_SIZE = 200;
 
     private final String id;
     private final DaemonParameters parameters;
 
-    public DaemonDiagnostics(String id, DaemonParameters parameters) {
+    public DaemonDiagnostics( String id, DaemonParameters parameters )
+    {
         this.id = id;
         this.parameters = parameters;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "{"
                 + "id=" + id
                 + ", parameters=" + parameters
                 + '}';
     }
 
-    public String describe() {
+    public String describe()
+    {
         StringBuilder sb = new StringBuilder();
-        sb.append("Daemon id: ").append(id).append("\n");
-        tail(sb, "log file", parameters.daemonLog(id));
-        tail(sb, "output", parameters.daemonOutLog(id));
+        sb.append( "Daemon id: " ).append( id ).append( "\n" );
+        tail( sb, "log file", parameters.daemonLog( id ) );
+        tail( sb, "output", parameters.daemonOutLog( id ) );
         return sb.toString();
     }
 
-    static void tail(StringBuilder sb, String name, Path log) {
-        try {
-            String tail = tail(log);
-            sb.append("  ").append(name).append(": ").append(log).append("\n");
-            sb.append("----- Last  " + TAIL_SIZE + " lines from daemon ").append(name).append(" - ").append(log)
-                    .append(" -----\n");
-            sb.append(tail);
-            sb.append("----- End of the daemon ").append(name).append(" -----\n");
-        } catch (NoSuchFileException e) {
-            sb.append("  no ").append(name).append(" at: ").append(log).append("\n");
-        } catch (IOException e) {
-            sb.append("  unable to read from the daemon ").append(name).append(": ").append(log).append(", because of: ")
-                    .append(e);
+    static void tail( StringBuilder sb, String name, Path log )
+    {
+        try
+        {
+            String tail = tail( log );
+            sb.append( "  " ).append( name ).append( ": " ).append( log ).append( "\n" );
+            sb.append( "----- Last  " + TAIL_SIZE + " lines from daemon " ).append( name ).append( " - " ).append( log )
+                    .append( " -----\n" );
+            sb.append( tail );
+            sb.append( "----- End of the daemon " ).append( name ).append( " -----\n" );
+        }
+        catch ( NoSuchFileException e )
+        {
+            sb.append( "  no " ).append( name ).append( " at: " ).append( log ).append( "\n" );
+        }
+        catch ( IOException e )
+        {
+            sb.append( "  unable to read from the daemon " ).append( name ).append( ": " ).append( log )
+                    .append( ", because of: " )
+                    .append( e );
         }
     }
 
@@ -79,23 +90,29 @@ public class DaemonDiagnostics {
      * @return             tail content
      * @throws IOException when reading failed
      */
-    static String tail(Path path) throws IOException {
-        try (BufferedReader r = Files.newBufferedReader(path)) {
-            return String.join("\n", r.lines().collect(lastN(TAIL_SIZE))) + "\n";
+    static String tail( Path path ) throws IOException
+    {
+        try ( BufferedReader r = Files.newBufferedReader( path ) )
+        {
+            return String.join( "\n", r.lines().collect( lastN( TAIL_SIZE ) ) ) + "\n";
         }
     }
 
-    static <T> Collector<T, ?, List<T>> lastN(int n) {
-        return Collector.<T, Deque<T>, List<T>> of(ArrayDeque::new, (acc, t) -> {
-            if (acc.size() == n)
+    static <T> Collector<T, ?, List<T>> lastN( int n )
+    {
+        return Collector.<T, Deque<T>, List<T>> of( ArrayDeque::new, ( acc, t ) ->
+        {
+            if ( acc.size() == n )
                 acc.pollFirst();
-            acc.add(t);
-        }, (acc1, acc2) -> {
-            while (acc2.size() < n && !acc1.isEmpty()) {
-                acc2.addFirst(acc1.pollLast());
+            acc.add( t );
+        }, ( acc1, acc2 ) ->
+        {
+            while ( acc2.size() < n && !acc1.isEmpty() )
+            {
+                acc2.addFirst( acc1.pollLast() );
             }
             return acc2;
-        }, ArrayList::new);
+        }, ArrayList::new );
     }
 
 }

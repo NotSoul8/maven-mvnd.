@@ -23,24 +23,27 @@ import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
 import org.mvndaemon.mvnd.junit.MvndTestExtension;
 
-@MvndNativeTest(projectDir = MvndTestExtension.TEMP_EXTERNAL)
-public class CompletionNativeIT {
+@MvndNativeTest( projectDir = MvndTestExtension.TEMP_EXTERNAL )
+public class CompletionNativeIT
+{
 
     @Inject
     Client client;
 
     @Test
-    void completionBash() throws IOException, InterruptedException {
+    void completionBash() throws IOException, InterruptedException
+    {
         final TestClientOutput output = new TestClientOutput();
 
-        client.execute(output, "--completion", "bash").assertSuccess();
+        client.execute( output, "--completion", "bash" ).assertSuccess();
 
-        output.assertContainsMatchingSubsequence("mvnd_opts=\"[^\"]*-1[^\"]*\"");
-        output.assertContainsMatchingSubsequence("mvnd_long_opts=\"[^\"]*--purge[^\"]*\"");
-        output.assertContainsMatchingSubsequence("mvnd_properties=\"[^\"]*-Dmvnd.debug[^\"]*\"");
+        output.assertContainsMatchingSubsequence( "mvnd_opts=\"[^\"]*-1[^\"]*\"" );
+        output.assertContainsMatchingSubsequence( "mvnd_long_opts=\"[^\"]*--purge[^\"]*\"" );
+        output.assertContainsMatchingSubsequence( "mvnd_properties=\"[^\"]*-Dmvnd.debug[^\"]*\"" );
     }
 
-    protected boolean isNative() {
+    protected boolean isNative()
+    {
         return true;
     }
 }

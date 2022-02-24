@@ -21,39 +21,45 @@ import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.TimeUtils;
 
-public class TestParameters extends DaemonParameters {
+public class TestParameters extends DaemonParameters
+{
+
     static final int TEST_MIN_THREADS = 2;
     private final Path testDir;
 
-    public TestParameters(Path testDir, Path mvndPropertiesPath, Path mavenHome, Path userHome, Path userDir,
+    public TestParameters( Path testDir, Path mvndPropertiesPath, Path mavenHome, Path userHome, Path userDir,
             Path multiModuleProjectDirectory,
             Path javaHome, Path localMavenRepository, Path settings, Path logbackConfigurationPath,
-            Duration idleTimeout, Duration keepAlive, int maxLostKeepAlive) {
-        super(new PropertiesBuilder().put(Environment.MVND_PROPERTIES_PATH, mvndPropertiesPath)
-                .put(Environment.MVND_HOME, mavenHome)
-                .put(Environment.USER_HOME, userHome)
-                .put(Environment.USER_DIR, userDir)
-                .put(Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY, multiModuleProjectDirectory)
-                .put(Environment.JAVA_HOME, javaHome)
-                .put(Environment.MAVEN_REPO_LOCAL, localMavenRepository)
-                .put(Environment.MAVEN_SETTINGS, settings)
-                .put(Environment.MVND_LOGBACK, logbackConfigurationPath)
-                .put(Environment.MVND_IDLE_TIMEOUT, TimeUtils.printDuration(idleTimeout))
-                .put(Environment.MVND_KEEP_ALIVE, TimeUtils.printDuration(keepAlive))
-                .put(Environment.MVND_MAX_LOST_KEEP_ALIVE, maxLostKeepAlive)
-                .put(Environment.MVND_MIN_THREADS, TEST_MIN_THREADS));
+            Duration idleTimeout, Duration keepAlive, int maxLostKeepAlive )
+    {
+        super( new PropertiesBuilder().put( Environment.MVND_PROPERTIES_PATH, mvndPropertiesPath )
+                .put( Environment.MVND_HOME, mavenHome )
+                .put( Environment.USER_HOME, userHome )
+                .put( Environment.USER_DIR, userDir )
+                .put( Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY, multiModuleProjectDirectory )
+                .put( Environment.JAVA_HOME, javaHome )
+                .put( Environment.MAVEN_REPO_LOCAL, localMavenRepository )
+                .put( Environment.MAVEN_SETTINGS, settings )
+                .put( Environment.MVND_LOGBACK, logbackConfigurationPath )
+                .put( Environment.MVND_IDLE_TIMEOUT, TimeUtils.printDuration( idleTimeout ) )
+                .put( Environment.MVND_KEEP_ALIVE, TimeUtils.printDuration( keepAlive ) )
+                .put( Environment.MVND_MAX_LOST_KEEP_ALIVE, maxLostKeepAlive )
+                .put( Environment.MVND_MIN_THREADS, TEST_MIN_THREADS ) );
         this.testDir = testDir;
     }
 
-    public DaemonParameters clearMavenMultiModuleProjectDirectory() {
-        return derive(b -> b.put(Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY, null));
+    public DaemonParameters clearMavenMultiModuleProjectDirectory()
+    {
+        return derive( b -> b.put( Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY, null ) );
     }
 
-    public DaemonParameters withMavenMultiModuleProjectDirectory(Path dir) {
-        return derive(b -> b.put(Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY, dir.toString()));
+    public DaemonParameters withMavenMultiModuleProjectDirectory( Path dir )
+    {
+        return derive( b -> b.put( Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY, dir.toString() ) );
     }
 
-    public Path getTestDir() {
+    public Path getTestDir()
+    {
         return testDir;
     }
 

@@ -55,7 +55,7 @@
         <junit.jupiter.version>5.7.2</junit.jupiter.version>
         <logback.version>1.2.10</logback.version>
         <maven.version>4.0.0-alpha-1-SNAPSHOT</maven.version>
-        <maven.resolver.version>1.7.2</maven.resolver.version>
+        <maven.resolver.version>1.8.0-SNAPSHOT</maven.resolver.version>
         <slf4j.version>1.7.32</slf4j.version>
 
         <!-- plugin versions a..z -->

@@ -33,7 +33,8 @@ import org.codehaus.plexus.component.configurator.ConfigurationListener;
  * @author Benjamin Bentmann
  */
 class ValidatingConfigurationListener
-        implements ConfigurationListener {
+        implements ConfigurationListener
+{
 
     private final Object mojo;
 
@@ -41,43 +42,54 @@ class ValidatingConfigurationListener
 
     private final Map<String, Parameter> missingParameters;
 
-    ValidatingConfigurationListener(Object mojo, MojoDescriptor mojoDescriptor, ConfigurationListener delegate) {
+    ValidatingConfigurationListener( Object mojo, MojoDescriptor mojoDescriptor, ConfigurationListener delegate )
+    {
         this.mojo = mojo;
         this.delegate = delegate;
         this.missingParameters = new HashMap<>();
 
-        if (mojoDescriptor.getParameters() != null) {
-            for (Parameter param : mojoDescriptor.getParameters()) {
-                if (param.isRequired()) {
-                    missingParameters.put(param.getName(), param);
+        if ( mojoDescriptor.getParameters() != null )
+        {
+            for ( Parameter param : mojoDescriptor.getParameters() )
+            {
+                if ( param.isRequired() )
+                {
+                    missingParameters.put( param.getName(), param );
                 }
             }
         }
     }
 
-    public Collection<Parameter> getMissingParameters() {
+    public Collection<Parameter> getMissingParameters()
+    {
         return missingParameters.values();
     }
 
-    public void notifyFieldChangeUsingSetter(String fieldName, Object value, Object target) {
-        delegate.notifyFieldChangeUsingSetter(fieldName, value, target);
+    public void notifyFieldChangeUsingSetter( String fieldName, Object value, Object target )
+    {
+        delegate.notifyFieldChangeUsingSetter( fieldName, value, target );
 
-        if (mojo == target) {
-            notify(fieldName, value);
+        if ( mojo == target )
+        {
+            notify( fieldName, value );
         }
     }
 
-    public void notifyFieldChangeUsingReflection(String fieldName, Object value, Object target) {
-        delegate.notifyFieldChangeUsingReflection(fieldName, value, target);
+    public void notifyFieldChangeUsingReflection( String fieldName, Object value, Object target )
+    {
+        delegate.notifyFieldChangeUsingReflection( fieldName, value, target );
 
-        if (mojo == target) {
-            notify(fieldName, value);
+        if ( mojo == target )
+        {
+            notify( fieldName, value );
         }
     }
 
-    private void notify(String fieldName, Object value) {
-        if (value != null) {
-            missingParameters.remove(fieldName);
+    private void notify( String fieldName, Object value )
+    {
+        if ( value != null )
+        {
+            missingParameters.remove( fieldName );
         }
     }
 

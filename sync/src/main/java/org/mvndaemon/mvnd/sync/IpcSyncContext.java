@@ -27,42 +27,50 @@ import org.eclipse.aether.metadata.Metadata;
 /**
  * The SyncContext implementation.
  */
-class IpcSyncContext implements SyncContext {
+class IpcSyncContext implements SyncContext
+{
 
     final IpcClient client;
     final boolean shared;
     final String contextId;
     final AtomicBoolean closed = new AtomicBoolean();
 
-    IpcSyncContext(IpcClient client, boolean shared) {
+    IpcSyncContext( IpcClient client, boolean shared )
+    {
         this.client = client;
         this.shared = shared;
-        this.contextId = Objects.requireNonNull(client.newContext(shared));
+        this.contextId = Objects.requireNonNull( client.newContext( shared ) );
     }
 
     @Override
-    public void acquire(Collection<? extends Artifact> artifacts, Collection<? extends Metadata> metadatas) {
-        if (closed.get()) {
-            throw new IllegalStateException("Already closed");
+    public void acquire( Collection<? extends Artifact> artifacts, Collection<? extends Metadata> metadatas )
+    {
+        if ( closed.get() )
+        {
+            throw new IllegalStateException( "Already closed" );
         }
         Collection<String> keys = new TreeSet<>();
-        stream(artifacts).map(this::getKey).forEach(keys::add);
-        stream(metadatas).map(this::getKey).forEach(keys::add);
-        if (keys.isEmpty()) {
+        stream( artifacts ).map( this::getKey ).forEach( keys::add );
+        stream( metadatas ).map( this::getKey ).forEach( keys::add );
+        if ( keys.isEmpty() )
+        {
             return;
         }
-        client.lock(contextId, keys);
+        client.lock( contextId, keys );
     }
 
     @Override
-    public void close() {
-        if (closed.compareAndSet(false, true)) {
-            client.unlock(contextId);
+    public void close()
+    {
+        if ( closed.compareAndSet( false, true ) )
+        {
+            client.unlock( contextId );
         }
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "IpcSyncContext{"
                 + "client=" + client
                 + ", shared=" + shared
@@ -70,22 +78,28 @@ class IpcSyncContext implements SyncContext {
                 + '}';
     }
 
-    private <T> Stream<T> stream(Collection<T> col) {
+    private <T> Stream<T> stream( Collection<T> col )
+    {
         return col != null ? col.stream() : Stream.empty();
     }
 
-    private String getKey(Artifact a) {
+    private String getKey( Artifact a )
+    {
         return "artifact:" + a.getGroupId() + ":" + a.getArtifactId() + ":" + a.getBaseVersion();
     }
 
-    private String getKey(Metadata m) {
-        StringBuilder key = new StringBuilder("metadata:");
-        if (!m.getGroupId().isEmpty()) {
-            key.append(m.getGroupId());
-            if (!m.getArtifactId().isEmpty()) {
-                key.append(':').append(m.getArtifactId());
-                if (!m.getVersion().isEmpty()) {
-                    key.append(':').append(m.getVersion());
+    private String getKey( Metadata m )
+    {
+        StringBuilder key = new StringBuilder( "metadata:" );
+        if ( !m.getGroupId().isEmpty() )
+        {
+            key.append( m.getGroupId() );
+            if ( !m.getArtifactId().isEmpty() )
+            {
+                key.append( ':' ).append( m.getArtifactId() );
+                if ( !m.getVersion().isEmpty() )
+                {
+                    key.append( ':' ).append( m.getVersion() );
                 }
             }
         }

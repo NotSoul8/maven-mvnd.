@@ -19,12 +19,14 @@ import java.util.Arrays;
 import java.util.List;
 import org.mvndaemon.mvnd.common.logging.ClientOutput;
 
-public interface Client {
+public interface Client
+{
 
-    ExecutionResult execute(ClientOutput output, List<String> args) throws InterruptedException;
+    ExecutionResult execute( ClientOutput output, List<String> args ) throws InterruptedException;
 
-    default ExecutionResult execute(ClientOutput output, String... args) throws InterruptedException {
-        return execute(output, Arrays.asList(args));
+    default ExecutionResult execute( ClientOutput output, String... args ) throws InterruptedException
+    {
+        return execute( output, Arrays.asList( args ) );
     }
 
 }

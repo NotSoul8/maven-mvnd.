@@ -22,44 +22,63 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
-public class TestUtils {
+public class TestUtils
+{
 
-    public static void replace(Path path, String find, String replacement) {
-        try {
-            final String originalSrc = Files.readString(path);
-            final String newSrc = originalSrc.replace(find, replacement);
-            if (originalSrc.equals(newSrc)) {
-                throw new IllegalStateException("[" + find + "] not found in " + path);
+    public static void replace( Path path, String find, String replacement )
+    {
+        try
+        {
+            final String originalSrc = Files.readString( path );
+            final String newSrc = originalSrc.replace( find, replacement );
+            if ( originalSrc.equals( newSrc ) )
+            {
+                throw new IllegalStateException( "[" + find + "] not found in " + path );
             }
-            Files.write(path, newSrc.getBytes(StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            throw new RuntimeException("Could not read or write " + path, e);
+            Files.write( path, newSrc.getBytes( StandardCharsets.UTF_8 ) );
+        }
+        catch ( IOException e )
+        {
+            throw new RuntimeException( "Could not read or write " + path, e );
         }
     }
 
-    public static Path deleteDir(Path dir) {
-        return deleteDir(dir, true);
+    public static Path deleteDir( Path dir )
+    {
+        return deleteDir( dir, true );
     }
 
-    public static Path deleteDir(Path dir, boolean failOnError) {
-        if (Files.exists(dir)) {
-            try (Stream<Path> files = Files.walk(dir)) {
-                files.sorted(Comparator.reverseOrder()).forEach(f -> deleteFile(f, failOnError));
-            } catch (Exception e) {
-                throw new RuntimeException("Could not walk " + dir, e);
+    public static Path deleteDir( Path dir, boolean failOnError )
+    {
+        if ( Files.exists( dir ) )
+        {
+            try ( Stream<Path> files = Files.walk( dir ) )
+            {
+                files.sorted( Comparator.reverseOrder() ).forEach( f -> deleteFile( f, failOnError ) );
+            }
+            catch ( Exception e )
+            {
+                throw new RuntimeException( "Could not walk " + dir, e );
             }
         }
         return dir;
     }
 
-    private static void deleteFile(Path f, boolean failOnError) {
-        try {
-            Files.delete(f);
-        } catch (Exception e) {
-            if (failOnError) {
-                throw new RuntimeException("Could not delete " + f, e);
-            } else {
-                System.err.println("Error deleting " + f + ": " + e);
+    private static void deleteFile( Path f, boolean failOnError )
+    {
+        try
+        {
+            Files.delete( f );
+        }
+        catch ( Exception e )
+        {
+            if ( failOnError )
+            {
+                throw new RuntimeException( "Could not delete " + f, e );
+            }
+            else
+            {
+                System.err.println( "Error deleting " + f + ": " + e );
             }
         }
     }

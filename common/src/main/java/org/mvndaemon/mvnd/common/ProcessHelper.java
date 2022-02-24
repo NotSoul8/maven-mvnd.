@@ -15,9 +15,11 @@
  */
 package org.mvndaemon.mvnd.common;
 
-public class ProcessHelper {
+public class ProcessHelper
+{
 
-    public static void killChildrenProcesses() {
+    public static void killChildrenProcesses()
+    {
     }
 
 }

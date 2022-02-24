@@ -26,8 +26,9 @@ import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Message.Prompt;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
-@MvndTest(projectDir = "src/test/projects/single-module")
-public class InteractiveTest {
+@MvndTest( projectDir = "src/test/projects/single-module" )
+public class InteractiveTest
+{
 
     @Inject
     Client client;
@@ -36,23 +37,28 @@ public class InteractiveTest {
     DaemonParameters parameters;
 
     @Test
-    void versionsSet() throws IOException, InterruptedException {
-        final String version = MvndTestUtil.version(parameters.multiModuleProjectDirectory().resolve("pom.xml"));
-        Assertions.assertEquals("0.0.1-SNAPSHOT", version);
+    void versionsSet() throws IOException, InterruptedException
+    {
+        final String version = MvndTestUtil.version( parameters.multiModuleProjectDirectory().resolve( "pom.xml" ) );
+        Assertions.assertEquals( "0.0.1-SNAPSHOT", version );
 
-        final TestClientOutput o = new TestClientOutput() {
+        final TestClientOutput o = new TestClientOutput()
+        {
+
             @Override
-            public void accept(Message m) {
-                if (m instanceof Prompt) {
-                    daemonDispatch.accept(((Prompt) m).response("0.1.0-SNAPSHOT"));
+            public void accept( Message m )
+            {
+                if ( m instanceof Prompt )
+                {
+                    daemonDispatch.accept( ( ( Prompt ) m ).response( "0.1.0-SNAPSHOT" ) );
                 }
-                super.accept(m);
+                super.accept( m );
             }
         };
-        client.execute(o, "versions:set").assertSuccess();
+        client.execute( o, "versions:set" ).assertSuccess();
 
-        final String newVersion = MvndTestUtil.version(parameters.multiModuleProjectDirectory().resolve("pom.xml"));
-        Assertions.assertEquals("0.1.0-SNAPSHOT", newVersion);
+        final String newVersion = MvndTestUtil.version( parameters.multiModuleProjectDirectory().resolve( "pom.xml" ) );
+        Assertions.assertEquals( "0.1.0-SNAPSHOT", newVersion );
     }
 
 }

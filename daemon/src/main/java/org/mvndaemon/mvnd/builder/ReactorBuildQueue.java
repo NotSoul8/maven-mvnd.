@@ -28,7 +28,8 @@ import org.apache.maven.project.MavenProject;
  * File origin:
  * https://github.com/takari/takari-smart-builder/blob/takari-smart-builder-0.6.1/src/main/java/io/takari/maven/builder/smart/ReactorBuildQueue.java
  */
-class ReactorBuildQueue {
+class ReactorBuildQueue
+{
 
     private final DependencyGraph<MavenProject> graph;
 
@@ -43,77 +44,92 @@ class ReactorBuildQueue {
 
     private final Set<MavenProject> finishedProjects;
 
-    public ReactorBuildQueue(Collection<MavenProject> projects,
-            DependencyGraph<MavenProject> graph) {
+    public ReactorBuildQueue( Collection<MavenProject> projects,
+            DependencyGraph<MavenProject> graph )
+    {
         this.graph = graph;
         this.projects = new HashSet<>();
         this.rootProjects = new HashSet<>();
         this.blockedProjects = new HashSet<>();
         this.finishedProjects = new HashSet<>();
-        projects.forEach(project -> {
-            this.projects.add(project);
-            if (this.graph.isRoot(project)) {
-                this.rootProjects.add(project);
-            } else {
-                this.blockedProjects.add(project);
+        projects.forEach( project ->
+        {
+            this.projects.add( project );
+            if ( this.graph.isRoot( project ) )
+            {
+                this.rootProjects.add( project );
             }
-        });
+            else
+            {
+                this.blockedProjects.add( project );
+            }
+        } );
     }
 
     /**
      * Marks specified project as finished building. Returns, possible empty, set of project's
      * downstream dependencies that become ready to build.
      */
-    public Set<MavenProject> onProjectFinish(MavenProject project) {
-        finishedProjects.add(project);
+    public Set<MavenProject> onProjectFinish( MavenProject project )
+    {
+        finishedProjects.add( project );
         Set<MavenProject> downstreamProjects = new HashSet<>();
-        getDownstreamProjects(project)
-                .filter(successor -> blockedProjects.contains(successor) && isProjectReady(successor))
-                .forEach(successor -> {
-                    blockedProjects.remove(successor);
-                    downstreamProjects.add(successor);
-                });
+        getDownstreamProjects( project )
+                .filter( successor -> blockedProjects.contains( successor ) && isProjectReady( successor ) )
+                .forEach( successor ->
+                {
+                    blockedProjects.remove( successor );
+                    downstreamProjects.add( successor );
+                } );
         return downstreamProjects;
     }
 
-    public Stream<MavenProject> getDownstreamProjects(MavenProject project) {
-        return graph.getDownstreamProjects(project);
+    public Stream<MavenProject> getDownstreamProjects( MavenProject project )
+    {
+        return graph.getDownstreamProjects( project );
     }
 
-    private boolean isProjectReady(MavenProject project) {
-        return graph.getUpstreamProjects(project).allMatch(finishedProjects::contains);
+    private boolean isProjectReady( MavenProject project )
+    {
+        return graph.getUpstreamProjects( project ).allMatch( finishedProjects::contains );
     }
 
     /**
      * Returns {@code true} when no more projects are left to schedule.
      */
-    public boolean isEmpty() {
+    public boolean isEmpty()
+    {
         return blockedProjects.isEmpty();
     }
 
     /**
      * Returns reactor build root projects, that is, projects that do not have upstream dependencies.
      */
-    public Set<MavenProject> getRootProjects() {
+    public Set<MavenProject> getRootProjects()
+    {
         return rootProjects;
     }
 
-    public int getBlockedCount() {
+    public int getBlockedCount()
+    {
         return blockedProjects.size();
     }
 
-    public int getFinishedCount() {
+    public int getFinishedCount()
+    {
         return finishedProjects.size();
     }
 
-    public int getReadyCount() {
+    public int getReadyCount()
+    {
         return projects.size() - blockedProjects.size() - finishedProjects.size();
     }
 
-    public Set<MavenProject> getReadyProjects() {
-        Set<MavenProject> projects = new HashSet<>(this.projects);
-        projects.removeAll(blockedProjects);
-        projects.removeAll(finishedProjects);
+    public Set<MavenProject> getReadyProjects()
+    {
+        Set<MavenProject> projects = new HashSet<>( this.projects );
+        projects.removeAll( blockedProjects );
+        projects.removeAll( finishedProjects );
         return projects;
     }
 

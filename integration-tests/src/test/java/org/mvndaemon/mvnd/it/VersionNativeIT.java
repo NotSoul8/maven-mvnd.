@@ -24,8 +24,9 @@ import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
 import org.mvndaemon.mvnd.junit.MvndTestExtension;
 
-@MvndNativeTest(projectDir = MvndTestExtension.TEMP_EXTERNAL)
-public class VersionNativeIT {
+@MvndNativeTest( projectDir = MvndTestExtension.TEMP_EXTERNAL )
+public class VersionNativeIT
+{
 
     @Inject
     Client client;
@@ -34,21 +35,23 @@ public class VersionNativeIT {
     DaemonParameters parameters;
 
     @Test
-    void version() throws IOException, InterruptedException {
+    void version() throws IOException, InterruptedException
+    {
         final TestClientOutput output = new TestClientOutput();
 
-        client.execute(output, "-v").assertSuccess();
+        client.execute( output, "-v" ).assertSuccess();
 
         output.assertContainsMatchingSubsequence(
-                "\\Qmvnd " + (isNative() ? "native client " : "JVM client ")
-                        + System.getProperty("project.version")
-                        + "-" + System.getProperty("os.detected.name")
-                        + "-" + System.getProperty("os.detected.arch")
+                "\\Qmvnd " + ( isNative() ? "native client " : "JVM client " )
+                        + System.getProperty( "project.version" )
+                        + "-" + System.getProperty( "os.detected.name" )
+                        + "-" + System.getProperty( "os.detected.arch" )
                         + "\\E",
-                "\\QMaven home: " + parameters.mvndHome() + "\\E");
+                "\\QMaven home: " + parameters.mvndHome() + "\\E" );
     }
 
-    protected boolean isNative() {
+    protected boolean isNative()
+    {
         return true;
     }
 }

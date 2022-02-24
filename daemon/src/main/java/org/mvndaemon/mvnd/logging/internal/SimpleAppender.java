@@ -28,39 +28,44 @@ import static org.apache.maven.shared.utils.logging.MessageUtils.level;
  * This appender acts like the slf4j simple logger.
  * It's used
  */
-public class SimpleAppender extends AppenderBase<ILoggingEvent> {
+public class SimpleAppender extends AppenderBase<ILoggingEvent>
+{
 
     @Override
-    protected void append(ILoggingEvent eventObject) {
+    protected void append( ILoggingEvent eventObject )
+    {
         StringBuilder buf = new StringBuilder();
-        buf.append('[');
-        buf.append(renderLevel(eventObject.getLevel()));
-        buf.append(']');
-        buf.append(' ');
-        buf.append(eventObject.getFormattedMessage());
-        buf.append(CoreConstants.LINE_SEPARATOR);
+        buf.append( '[' );
+        buf.append( renderLevel( eventObject.getLevel() ) );
+        buf.append( ']' );
+        buf.append( ' ' );
+        buf.append( eventObject.getFormattedMessage() );
+        buf.append( CoreConstants.LINE_SEPARATOR );
         IThrowableProxy tp = eventObject.getThrowableProxy();
-        if (tp != null) {
-            buf.append(CoreConstants.LINE_SEPARATOR);
-            buf.append(new ThrowableProxyConverter().convert(eventObject));
+        if ( tp != null )
+        {
+            buf.append( CoreConstants.LINE_SEPARATOR );
+            buf.append( new ThrowableProxyConverter().convert( eventObject ) );
         }
-        System.out.print(buf.toString());
+        System.out.print( buf.toString() );
     }
 
-    private String renderLevel(Level level) {
-        switch (level.toInt()) {
+    private String renderLevel( Level level )
+    {
+        switch ( level.toInt() )
+        {
         case Level.TRACE_INT:
-            return level().debug("TRACE");
+            return level().debug( "TRACE" );
         case Level.DEBUG_INT:
-            return level().debug("DEBUG");
+            return level().debug( "DEBUG" );
         case Level.INFO_INT:
-            return level().info("INFO");
+            return level().info( "INFO" );
         case Level.WARN_INT:
-            return level().warning("WARNING");
+            return level().warning( "WARNING" );
         case Level.ERROR_INT:
-            return level().error("ERROR");
+            return level().error( "ERROR" );
         default:
-            throw new IllegalStateException("Level " + level + " is unknown.");
+            throw new IllegalStateException( "Level " + level + " is unknown." );
         }
 
     }

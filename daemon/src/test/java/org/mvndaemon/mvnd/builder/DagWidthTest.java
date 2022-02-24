@@ -31,12 +31,14 @@ import org.mvndaemon.mvnd.builder.DependencyGraph.DagWidth;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class DagWidthTest {
+public class DagWidthTest
+{
 
     @Test
-    void testSimpleGraph() {
+    void testSimpleGraph()
+    {
         DependencyGraph<String> graph = newSimpleGraph();
-        assertEquals(4, new DagWidth<>(graph).getMaxWidth(12));
+        assertEquals( 4, new DagWidth<>( graph ).getMaxWidth( 12 ) );
     }
 
     /**
@@ -48,21 +50,23 @@ public class DagWidthTest {
      *   G
      * </pre>
      */
-    private DependencyGraph<String> newSimpleGraph() {
+    private DependencyGraph<String> newSimpleGraph()
+    {
         return newGraph(
                 "A", Collections.emptyList(),
                 "B", Collections.emptyList(),
-                "C", Collections.singletonList("A"),
-                "D", Collections.singletonList("A"),
-                "E", Arrays.asList("A", "B"),
-                "F", Collections.singletonList("B"),
-                "G", Arrays.asList("D", "E"));
+                "C", Collections.singletonList( "A" ),
+                "D", Collections.singletonList( "A" ),
+                "E", Arrays.asList( "A", "B" ),
+                "F", Collections.singletonList( "B" ),
+                "G", Arrays.asList( "D", "E" ) );
     }
 
     @Test
-    void tripleLinearGraph() {
+    void tripleLinearGraph()
+    {
         DependencyGraph<String> graph = newTripleLinearGraph();
-        assertEquals(1, new DagWidth<>(graph).getMaxWidth());
+        assertEquals( 1, new DagWidth<>( graph ).getMaxWidth() );
     }
 
     /**
@@ -74,17 +78,19 @@ public class DagWidthTest {
      *   C
      * </pre>
      */
-    private DependencyGraph<String> newTripleLinearGraph() {
+    private DependencyGraph<String> newTripleLinearGraph()
+    {
         return newGraph(
                 "A", Collections.emptyList(),
-                "B", Collections.singletonList("A"),
-                "C", Arrays.asList("A", "B"));
+                "B", Collections.singletonList( "A" ),
+                "C", Arrays.asList( "A", "B" ) );
     }
 
     @Test
-    void quadrupleLinearGraph() {
+    void quadrupleLinearGraph()
+    {
         DependencyGraph<String> graph = newQuadrupleLinearGraph();
-        assertEquals(1, new DagWidth<>(graph).getMaxWidth());
+        assertEquals( 1, new DagWidth<>( graph ).getMaxWidth() );
     }
 
     /**
@@ -98,18 +104,20 @@ public class DagWidthTest {
      *     D
      * </pre>
      */
-    private DependencyGraph<String> newQuadrupleLinearGraph() {
+    private DependencyGraph<String> newQuadrupleLinearGraph()
+    {
         return newGraph(
                 "A", Collections.emptyList(),
-                "B", Collections.singletonList("A"),
-                "C", Arrays.asList("B", "A"),
-                "D", Arrays.asList("C", "A"));
+                "B", Collections.singletonList( "A" ),
+                "C", Arrays.asList( "B", "A" ),
+                "D", Arrays.asList( "C", "A" ) );
     }
 
     @Test
-    void quadrupleLinearGraph2() {
+    void quadrupleLinearGraph2()
+    {
         DependencyGraph<String> graph = newQuadrupleLinearGraph2();
-        assertEquals(1, new DagWidth<>(graph).getMaxWidth());
+        assertEquals( 1, new DagWidth<>( graph ).getMaxWidth() );
     }
 
     /**
@@ -123,18 +131,20 @@ public class DagWidthTest {
      *   D
      * </pre>
      */
-    private DependencyGraph<String> newQuadrupleLinearGraph2() {
+    private DependencyGraph<String> newQuadrupleLinearGraph2()
+    {
         return newGraph(
                 "A", Collections.emptyList(),
-                "B", Collections.singletonList("A"),
-                "C", Arrays.asList("B", "A"),
-                "D", Arrays.asList("B", "C", "A"));
+                "B", Collections.singletonList( "A" ),
+                "C", Arrays.asList( "B", "A" ),
+                "D", Arrays.asList( "B", "C", "A" ) );
     }
 
     @Test
-    void multilevelSum() {
+    void multilevelSum()
+    {
         DependencyGraph<String> graph = newMultilevelSumGraph();
-        assertEquals(5, new DagWidth<>(graph).getMaxWidth());
+        assertEquals( 5, new DagWidth<>( graph ).getMaxWidth() );
     }
 
     /**
@@ -146,22 +156,24 @@ public class DagWidthTest {
      * E F G H
      * </pre>
      */
-    private DependencyGraph<String> newMultilevelSumGraph() {
+    private DependencyGraph<String> newMultilevelSumGraph()
+    {
         return newGraph(
                 "A", Collections.emptyList(),
-                "B", Collections.singletonList("A"),
-                "C", Collections.singletonList("A"),
-                "D", Collections.singletonList("A"),
-                "E", Collections.singletonList("B"),
-                "F", Collections.singletonList("B"),
-                "G", Collections.singletonList("B"),
-                "H", Arrays.asList("C", "D"));
+                "B", Collections.singletonList( "A" ),
+                "C", Collections.singletonList( "A" ),
+                "D", Collections.singletonList( "A" ),
+                "E", Collections.singletonList( "B" ),
+                "F", Collections.singletonList( "B" ),
+                "G", Collections.singletonList( "B" ),
+                "H", Arrays.asList( "C", "D" ) );
     }
 
     @Test
-    void wideGraph() {
+    void wideGraph()
+    {
         DependencyGraph<String> graph = newWideGraph();
-        assertEquals(3, new DagWidth<>(graph).getMaxWidth());
+        assertEquals( 3, new DagWidth<>( graph ).getMaxWidth() );
     }
 
     /**
@@ -173,20 +185,22 @@ public class DagWidthTest {
      *       E
      * </pre>
      */
-    private DependencyGraph<String> newWideGraph() {
+    private DependencyGraph<String> newWideGraph()
+    {
         return newGraph(
                 "A", Collections.emptyList(),
-                "B", Collections.singletonList("A"),
-                "C", Collections.singletonList("A"),
-                "D", Collections.singletonList("A"),
-                "E", Collections.singletonList("D"));
+                "B", Collections.singletonList( "A" ),
+                "C", Collections.singletonList( "A" ),
+                "D", Collections.singletonList( "A" ),
+                "E", Collections.singletonList( "D" ) );
     }
 
     @Test
-    void testSingle() {
+    void testSingle()
+    {
         DependencyGraph<String> graph = newSingleGraph();
 
-        assertEquals(1, new DagWidth<>(graph).getMaxWidth(12));
+        assertEquals( 1, new DagWidth<>( graph ).getMaxWidth( 12 ) );
     }
 
     /**
@@ -194,15 +208,17 @@ public class DagWidthTest {
      * A
      * </pre>
      */
-    private DependencyGraph<String> newSingleGraph() {
+    private DependencyGraph<String> newSingleGraph()
+    {
         return newGraph(
-                "A", Collections.emptyList());
+                "A", Collections.emptyList() );
     }
 
     @Test
-    void testLinear() {
+    void testLinear()
+    {
         DependencyGraph<String> graph = newLinearGraph();
-        assertEquals(1, new DagWidth<>(graph).getMaxWidth(12));
+        assertEquals( 1, new DagWidth<>( graph ).getMaxWidth( 12 ) );
     }
 
     /**
@@ -216,114 +232,131 @@ public class DagWidthTest {
      *         D
      * </pre>
      */
-    private DependencyGraph<String> newLinearGraph() {
+    private DependencyGraph<String> newLinearGraph()
+    {
         return newGraph(
                 "A", Collections.emptyList(),
-                "B", Collections.singletonList("A"),
-                "C", Collections.singletonList("B"),
-                "D", Collections.singletonList("C"));
+                "B", Collections.singletonList( "A" ),
+                "C", Collections.singletonList( "B" ),
+                "D", Collections.singletonList( "C" ) );
     }
 
     @Test
-    public void testHugeGraph() {
+    public void testHugeGraph()
+    {
         DependencyGraph<String> graph = newHugeGraph();
 
-        DagWidth<String> w = new DagWidth<>(graph);
+        DagWidth<String> w = new DagWidth<>( graph );
         List<String> d = w.ensembleWithChildrenOf(
-                graph.getDownstreamProjects("org.apache.camel:camel").collect(Collectors.toList()),
-                "org.apache.camel:camel-parent");
+                graph.getDownstreamProjects( "org.apache.camel:camel" ).collect( Collectors.toList() ),
+                "org.apache.camel:camel-parent" );
 
-        assertEquals(12, w.getMaxWidth(12));
+        assertEquals( 12, w.getMaxWidth( 12 ) );
     }
 
-    private DependencyGraph<String> newHugeGraph() {
+    private DependencyGraph<String> newHugeGraph()
+    {
         Map<String, List<String>> upstreams = new HashMap<>();
-        try (BufferedReader r = new BufferedReader(
-                new InputStreamReader(getClass().getResourceAsStream("huge-graph.properties")))) {
-            r.lines().forEach(l -> {
-                int idxEq = l.indexOf(" = ");
-                if (!l.startsWith("#") && idxEq > 0) {
-                    String k = l.substring(0, idxEq).trim();
-                    String[] ups = l.substring(idxEq + 3).trim().split(",");
-                    List<String> list = Stream.of(ups).map(String::trim)
-                            .filter(s -> !s.isEmpty())
-                            .collect(Collectors.toList());
-                    upstreams.put(k, list);
+        try ( BufferedReader r = new BufferedReader(
+                new InputStreamReader( getClass().getResourceAsStream( "huge-graph.properties" ) ) ) )
+        {
+            r.lines().forEach( l ->
+            {
+                int idxEq = l.indexOf( " = " );
+                if ( !l.startsWith( "#" ) && idxEq > 0 )
+                {
+                    String k = l.substring( 0, idxEq ).trim();
+                    String[] ups = l.substring( idxEq + 3 ).trim().split( "," );
+                    List<String> list = Stream.of( ups ).map( String::trim )
+                            .filter( s -> !s.isEmpty() )
+                            .collect( Collectors.toList() );
+                    upstreams.put( k, list );
                 }
-            });
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            } );
         }
-        return newGraph(upstreams);
+        catch ( IOException e )
+        {
+            throw new RuntimeException( e );
+        }
+        return newGraph( upstreams );
     }
 
     @Test
-    public void reduce() {
-        assertSameReduced(newSimpleGraph());
+    public void reduce()
+    {
+        assertSameReduced( newSimpleGraph() );
 
         assertReduced(
                 newTripleLinearGraph(),
                 "A", Collections.emptyList(),
-                "B", Collections.singletonList("A"),
-                "C", Arrays.asList("B"));
+                "B", Collections.singletonList( "A" ),
+                "C", Arrays.asList( "B" ) );
 
-        assertReduced(newQuadrupleLinearGraph(),
+        assertReduced( newQuadrupleLinearGraph(),
                 "A", Collections.emptyList(),
-                "B", Collections.singletonList("A"),
-                "C", Arrays.asList("B"),
-                "D", Arrays.asList("C"));
+                "B", Collections.singletonList( "A" ),
+                "C", Arrays.asList( "B" ),
+                "D", Arrays.asList( "C" ) );
 
-        assertReduced(newQuadrupleLinearGraph2(),
+        assertReduced( newQuadrupleLinearGraph2(),
                 "A", Collections.emptyList(),
-                "B", Collections.singletonList("A"),
-                "C", Arrays.asList("B"),
-                "D", Arrays.asList("C"));
+                "B", Collections.singletonList( "A" ),
+                "C", Arrays.asList( "B" ),
+                "D", Arrays.asList( "C" ) );
 
-        assertSameReduced(newMultilevelSumGraph());
+        assertSameReduced( newMultilevelSumGraph() );
 
-        assertSameReduced(newWideGraph());
+        assertSameReduced( newWideGraph() );
 
-        assertSameReduced(newSingleGraph());
+        assertSameReduced( newSingleGraph() );
 
-        assertSameReduced(newLinearGraph());
+        assertSameReduced( newLinearGraph() );
 
     }
 
     @Test
-    public void testToString() {
+    public void testToString()
+    {
         DependencyGraph<String> graph = newSingleGraph();
-        assertEquals("A = " + System.lineSeparator(), graph.toString());
+        assertEquals( "A = " + System.lineSeparator(), graph.toString() );
     }
 
-    @SuppressWarnings("unchecked")
-    static DependencyGraph<String> newGraph(Object... upstreams) {
+    @SuppressWarnings( "unchecked" )
+    static DependencyGraph<String> newGraph( Object... upstreams )
+    {
         final Map<String, List<String>> upstreamsMap = new HashMap<>();
-        for (int i = 0; i < upstreams.length; i++) {
-            upstreamsMap.put((String) upstreams[i++], (List<String>) upstreams[i]);
+        for ( int i = 0; i < upstreams.length; i++ )
+        {
+            upstreamsMap.put( ( String ) upstreams[i++], ( List<String> ) upstreams[i] );
         }
-        return newGraph(upstreamsMap);
+        return newGraph( upstreamsMap );
     }
 
-    static <K> DependencyGraph<K> newGraph(Map<K, List<K>> upstreams) {
-        List<K> nodes = Stream.concat(upstreams.keySet().stream(), upstreams.values().stream().flatMap(List::stream))
+    static <K> DependencyGraph<K> newGraph( Map<K, List<K>> upstreams )
+    {
+        List<K> nodes = Stream
+                .concat( upstreams.keySet().stream(), upstreams.values().stream().flatMap( List::stream ) )
                 .distinct()
                 .sorted()
-                .collect(Collectors.toList());
-        Map<K, List<K>> downstreams = nodes.stream().collect(Collectors.toMap(k -> k, k -> new ArrayList<>()));
-        upstreams.forEach((k, ups) -> {
-            ups.forEach(up -> downstreams.get(up).add(k));
-        });
-        return new DependencyGraph<>(nodes, upstreams, downstreams);
+                .collect( Collectors.toList() );
+        Map<K, List<K>> downstreams = nodes.stream().collect( Collectors.toMap( k -> k, k -> new ArrayList<>() ) );
+        upstreams.forEach( ( k, ups ) ->
+        {
+            ups.forEach( up -> downstreams.get( up ).add( k ) );
+        } );
+        return new DependencyGraph<>( nodes, upstreams, downstreams );
     }
 
-    static void assertReduced(DependencyGraph<String> graph, Object... expectedUpstreams) {
+    static void assertReduced( DependencyGraph<String> graph, Object... expectedUpstreams )
+    {
         final DependencyGraph<String> reduced = graph.reduce();
-        final DependencyGraph<String> expectedGraph = newGraph(expectedUpstreams);
-        assertEquals(expectedGraph, reduced);
+        final DependencyGraph<String> expectedGraph = newGraph( expectedUpstreams );
+        assertEquals( expectedGraph, reduced );
     }
 
-    static void assertSameReduced(DependencyGraph<String> graph) {
+    static void assertSameReduced( DependencyGraph<String> graph )
+    {
         final DependencyGraph<String> reduced = graph.reduce();
-        assertEquals(graph, reduced);
+        assertEquals( graph, reduced );
     }
 }

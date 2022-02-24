@@ -17,7 +17,8 @@ package org.mvndaemon.mvnd.it;
 
 import org.mvndaemon.mvnd.junit.MvndTest;
 
-@MvndTest(projectDir = "src/test/projects/extensions")
-public class ExtensionsTest extends ExtensionsNativeIT {
+@MvndTest( projectDir = "src/test/projects/extensions" )
+public class ExtensionsTest extends ExtensionsNativeIT
+{
 
 }

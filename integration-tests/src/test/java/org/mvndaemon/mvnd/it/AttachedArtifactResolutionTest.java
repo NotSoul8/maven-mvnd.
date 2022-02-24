@@ -21,16 +21,18 @@ import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
-@MvndTest(projectDir = "src/test/projects/attached-artifact-resolution")
-public class AttachedArtifactResolutionTest {
+@MvndTest( projectDir = "src/test/projects/attached-artifact-resolution" )
+public class AttachedArtifactResolutionTest
+{
 
     @Inject
     Client client;
 
     @Test
-    void cleanCompile() throws Exception {
+    void cleanCompile() throws Exception
+    {
         final TestClientOutput output = new TestClientOutput();
-        client.execute(output, "clean", "compile", "-e", "-Dmvnd.log.level=DEBUG")
+        client.execute( output, "clean", "compile", "-e", "-Dmvnd.log.level=DEBUG" )
                 .assertSuccess();
     }
 

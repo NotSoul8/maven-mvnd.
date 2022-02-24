@@ -71,9 +71,10 @@ import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
 import static org.mvndaemon.mvnd.common.DaemonState.StopRequested;
 import static org.mvndaemon.mvnd.common.DaemonState.Stopped;
 
-public class Server implements AutoCloseable, Runnable {
+public class Server implements AutoCloseable, Runnable
+{
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger( Server.class );
     public static final int CANCEL_TIMEOUT = 10 * 1000;
 
     private final String daemonId;
@@ -91,7 +92,8 @@ public class Server implements AutoCloseable, Runnable {
     private final DaemonMemoryStatus memoryStatus;
     private final long keepAliveMs;
 
-    public Server() throws IOException {
+    public Server() throws IOException
+    {
         // When spawning a new process, the child process is create within
         // the same process group.  This means that a few signals are sent
         // to the whole group.  This is the case for SIGINT (Ctrl-C) and
@@ -100,13 +102,17 @@ public class Server implements AutoCloseable, Runnable {
         // This is only a problem when the client creates the daemon, but
         // without ignoring those signals, a client being interrupted will
         // also interrupt and kill the daemon.
-        try {
-            Signal.handle(new Signal("INT"), SignalHandler.SIG_IGN);
-            if (Os.current() != Os.WINDOWS) {
-                Signal.handle(new Signal("TSTP"), SignalHandler.SIG_IGN);
+        try
+        {
+            Signal.handle( new Signal( "INT" ), SignalHandler.SIG_IGN );
+            if ( Os.current() != Os.WINDOWS )
+            {
+                Signal.handle( new Signal( "TSTP" ), SignalHandler.SIG_IGN );
             }
-        } catch (Throwable t) {
-            LOGGER.warn("Unable to ignore INT and TSTP signals", t);
+        }
+        catch ( Throwable t )
+        {
+            LOGGER.warn( "Unable to ignore INT and TSTP signals", t );
         }
         this.daemonId = Environment.MVND_ID.asString();
         this.noDaemon = Environment.MVND_NO_DAEMON.asBoolean();
@@ -114,526 +120,697 @@ public class Server implements AutoCloseable, Runnable {
 
         SocketFamily socketFamily = Environment.MVND_SOCKET_FAMILY
                 .asOptional()
-                .map(SocketFamily::valueOf)
-                .orElse(SocketFamily.inet);
+                .map( SocketFamily::valueOf )
+                .orElse( SocketFamily.inet );
 
-        try {
+        try
+        {
             cli = new DaemonMavenCli();
-            registry = new DaemonRegistry(Environment.MVND_REGISTRY.asPath());
+            registry = new DaemonRegistry( Environment.MVND_REGISTRY.asPath() );
             socket = socketFamily.openServerSocket();
-            executor = Executors.newScheduledThreadPool(1);
+            executor = Executors.newScheduledThreadPool( 1 );
             strategy = DaemonExpiration.master();
-            memoryStatus = new DaemonMemoryStatus(executor);
+            memoryStatus = new DaemonMemoryStatus( executor );
 
             SecureRandom secureRandom = new SecureRandom();
             byte[] token = new byte[DaemonInfo.TOKEN_SIZE];
-            secureRandom.nextBytes(token);
+            secureRandom.nextBytes( token );
 
             List<String> opts = new ArrayList<>();
-            Arrays.stream(Environment.values())
-                    .filter(Environment::isDiscriminating)
-                    .forEach(envKey -> envKey.asOptional().ifPresent(val -> opts.add(envKey.getProperty() + "=" + val)));
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(opts.stream().collect(Collectors.joining(
-                        "\n     ", "Initializing daemon with properties:\n     ", "\n")));
+            Arrays.stream( Environment.values() )
+                    .filter( Environment::isDiscriminating )
+                    .forEach( envKey -> envKey.asOptional()
+                            .ifPresent( val -> opts.add( envKey.getProperty() + "=" + val ) ) );
+            if ( LOGGER.isDebugEnabled() )
+            {
+                LOGGER.debug( opts.stream().collect( Collectors.joining(
+                        "\n     ", "Initializing daemon with properties:\n     ", "\n" ) ) );
             }
             long cur = System.currentTimeMillis();
-            info = new DaemonInfo(daemonId,
+            info = new DaemonInfo( daemonId,
                     Environment.MVND_JAVA_HOME.asString(),
                     Environment.MVND_HOME.asString(),
                     DaemonRegistry.getProcessId(),
-                    SocketFamily.toString(socket.getLocalAddress()),
+                    SocketFamily.toString( socket.getLocalAddress() ),
                     token,
                     Locale.getDefault().toLanguageTag(),
                     opts,
-                    Busy, cur, cur);
-            registry.store(info);
-        } catch (Exception e) {
-            throw new RuntimeException("Could not initialize " + Server.class.getName(), e);
+                    Busy, cur, cur );
+            registry.store( info );
+        }
+        catch ( Exception e )
+        {
+            throw new RuntimeException( "Could not initialize " + Server.class.getName(), e );
         }
     }
 
-    public DaemonMemoryStatus getMemoryStatus() {
+    public DaemonMemoryStatus getMemoryStatus()
+    {
         return memoryStatus;
     }
 
-    public void close() {
-        try {
-            try {
-                updateState(Stopped);
-            } finally {
-                try {
+    public void close()
+    {
+        try
+        {
+            try
+            {
+                updateState( Stopped );
+            }
+            finally
+            {
+                try
+                {
                     executor.shutdown();
-                } finally {
-                    try {
+                }
+                finally
+                {
+                    try
+                    {
                         registry.close();
-                    } finally {
+                    }
+                    finally
+                    {
                         socket.close();
                     }
                 }
             }
-        } catch (Throwable t) {
-            LOGGER.error("Error closing daemon", t);
+        }
+        catch ( Throwable t )
+        {
+            LOGGER.error( "Error closing daemon", t );
         }
     }
 
-    public void clearCache(String clazzName, String fieldName) {
-        try {
-            Class<?> clazz = ClassLoader.getSystemClassLoader().loadClass(clazzName);
-            Field f = clazz.getDeclaredField(fieldName);
-            f.setAccessible(true);
-            Map cache = (Map) f.get(null);
+    public void clearCache( String clazzName, String fieldName )
+    {
+        try
+        {
+            Class<?> clazz = ClassLoader.getSystemClassLoader().loadClass( clazzName );
+            Field f = clazz.getDeclaredField( fieldName );
+            f.setAccessible( true );
+            Map cache = ( Map ) f.get( null );
             cache.clear();
-        } catch (Throwable t) {
+        }
+        catch ( Throwable t )
+        {
             // ignore
-            LOGGER.warn("Error clearing cache {}.{}", clazzName, fieldName, t);
+            LOGGER.warn( "Error clearing cache {}.{}", clazzName, fieldName, t );
         }
     }
 
-    public void run() {
-        try {
+    public void run()
+    {
+        try
+        {
             Duration expirationCheckDelay = Environment.MVND_EXPIRATION_CHECK_DELAY.asDuration();
-            executor.scheduleAtFixedRate(this::expirationCheck,
-                    expirationCheckDelay.toMillis(), expirationCheckDelay.toMillis(), TimeUnit.MILLISECONDS);
-            LOGGER.info("Daemon started");
-            if (noDaemon) {
-                try (SocketChannel socket = this.socket.accept()) {
-                    client(socket);
+            executor.scheduleAtFixedRate( this::expirationCheck,
+                    expirationCheckDelay.toMillis(), expirationCheckDelay.toMillis(), TimeUnit.MILLISECONDS );
+            LOGGER.info( "Daemon started" );
+            if ( noDaemon )
+            {
+                try ( SocketChannel socket = this.socket.accept() )
+                {
+                    client( socket );
                 }
-            } else {
-                new DaemonThread(this::accept).start();
+            }
+            else
+            {
+                new DaemonThread( this::accept ).start();
                 awaitStop();
             }
-        } catch (Throwable t) {
-            LOGGER.error("Error running daemon loop", t);
-        } finally {
-            registry.remove(daemonId);
+        }
+        catch ( Throwable t )
+        {
+            LOGGER.error( "Error running daemon loop", t );
+        }
+        finally
+        {
+            registry.remove( daemonId );
         }
     }
 
-    static class DaemonThread extends Thread {
-        public DaemonThread(Runnable target) {
-            super(target);
+    static class DaemonThread extends Thread
+    {
+
+        public DaemonThread( Runnable target )
+        {
+            super( target );
         }
     }
 
-    private void accept() {
-        try {
-            while (true) {
-                try (SocketChannel socket = this.socket.accept()) {
-                    client(socket);
+    private void accept()
+    {
+        try
+        {
+            while ( true )
+            {
+                try ( SocketChannel socket = this.socket.accept() )
+                {
+                    client( socket );
                 }
             }
-        } catch (Throwable t) {
-            LOGGER.error("Error running daemon loop", t);
+        }
+        catch ( Throwable t )
+        {
+            LOGGER.error( "Error running daemon loop", t );
         }
     }
 
-    private void client(SocketChannel socket) {
-        LOGGER.info("Client connected");
-        if (!checkToken(socket)) {
-            LOGGER.error("Received invalid token, dropping connection");
-            updateState(DaemonState.Idle);
+    private void client( SocketChannel socket )
+    {
+        LOGGER.info( "Client connected" );
+        if ( !checkToken( socket ) )
+        {
+            LOGGER.error( "Received invalid token, dropping connection" );
+            updateState( DaemonState.Idle );
 
             return;
         }
 
-        try (DaemonConnection connection = new DaemonConnection(socket)) {
-            LOGGER.info("Waiting for request");
+        try ( DaemonConnection connection = new DaemonConnection( socket ) )
+        {
+            LOGGER.info( "Waiting for request" );
             SynchronousQueue<Message> request = new SynchronousQueue<>();
-            new DaemonThread(() -> {
+            new DaemonThread( () ->
+            {
                 Message message = connection.receive();
-                request.offer(message);
-            }).start();
-            Message message = request.poll(1, TimeUnit.MINUTES);
-            if (message == null) {
-                LOGGER.info("Could not receive request after one minute, dropping connection");
-                updateState(DaemonState.Idle);
+                request.offer( message );
+            } ).start();
+            Message message = request.poll( 1, TimeUnit.MINUTES );
+            if ( message == null )
+            {
+                LOGGER.info( "Could not receive request after one minute, dropping connection" );
+                updateState( DaemonState.Idle );
                 return;
             }
-            LOGGER.info("Request received: " + message);
-            if (message instanceof BuildRequest) {
-                handle(connection, (BuildRequest) message);
+            LOGGER.info( "Request received: " + message );
+            if ( message instanceof BuildRequest )
+            {
+                handle( connection, ( BuildRequest ) message );
             }
-        } catch (Throwable t) {
-            LOGGER.error("Error reading request", t);
-        } finally {
-            if (!noDaemon) {
-                clearCache("sun.net.www.protocol.jar.JarFileFactory", "urlCache");
-                clearCache("sun.net.www.protocol.jar.JarFileFactory", "fileCache");
+        }
+        catch ( Throwable t )
+        {
+            LOGGER.error( "Error reading request", t );
+        }
+        finally
+        {
+            if ( !noDaemon )
+            {
+                clearCache( "sun.net.www.protocol.jar.JarFileFactory", "urlCache" );
+                clearCache( "sun.net.www.protocol.jar.JarFileFactory", "fileCache" );
             }
         }
     }
 
-    private boolean checkToken(SocketChannel socket) {
+    private boolean checkToken( SocketChannel socket )
+    {
         byte[] token = new byte[info.getToken().length];
-        ByteBuffer tokenBuffer = ByteBuffer.wrap(token);
+        ByteBuffer tokenBuffer = ByteBuffer.wrap( token );
 
-        try {
-            do {
-                if (socket.read(tokenBuffer) == -1) {
+        try
+        {
+            do
+            {
+                if ( socket.read( tokenBuffer ) == -1 )
+                {
                     break;
                 }
-            } while (tokenBuffer.remaining() > 0);
-        } catch (final IOException e) {
-            LOGGER.debug("Discarding EOFException: {}", e.toString(), e);
+            }
+            while ( tokenBuffer.remaining() > 0 );
+        }
+        catch ( final IOException e )
+        {
+            LOGGER.debug( "Discarding EOFException: {}", e.toString(), e );
         }
 
-        return MessageDigest.isEqual(info.getToken(), token);
+        return MessageDigest.isEqual( info.getToken(), token );
     }
 
-    private void expirationCheck() {
-        if (expirationLock.tryLock()) {
-            try {
-                LOGGER.debug("Expiration check running");
-                final DaemonExpirationResult result = strategy.checkExpiration(this);
-                switch (result.getStatus()) {
+    private void expirationCheck()
+    {
+        if ( expirationLock.tryLock() )
+        {
+            try
+            {
+                LOGGER.debug( "Expiration check running" );
+                final DaemonExpirationResult result = strategy.checkExpiration( this );
+                switch ( result.getStatus() )
+                {
                 case DO_NOT_EXPIRE:
                     break;
                 case QUIET_EXPIRE:
-                    requestStop(result.getReason());
+                    requestStop( result.getReason() );
                     break;
                 case GRACEFUL_EXPIRE:
-                    onExpire(result.getReason(), result.getStatus());
-                    requestStop(result.getReason());
+                    onExpire( result.getReason(), result.getStatus() );
+                    requestStop( result.getReason() );
                     break;
                 case IMMEDIATE_EXPIRE:
-                    onExpire(result.getReason(), result.getStatus());
-                    requestForcefulStop(result.getReason());
+                    onExpire( result.getReason(), result.getStatus() );
+                    requestForcefulStop( result.getReason() );
                     break;
                 }
-            } catch (Throwable t) {
-                LOGGER.error("Problem in daemon expiration check", t);
-                if (t instanceof Error) {
+            }
+            catch ( Throwable t )
+            {
+                LOGGER.error( "Problem in daemon expiration check", t );
+                if ( t instanceof Error )
+                {
                     // never swallow java.lang.Error
-                    throw (Error) t;
+                    throw ( Error ) t;
                 }
-            } finally {
+            }
+            finally
+            {
                 expirationLock.unlock();
             }
-        } else {
-            LOGGER.warn("Previous DaemonExpirationPeriodicCheck was still running when the next run was scheduled.");
+        }
+        else
+        {
+            LOGGER.warn( "Previous DaemonExpirationPeriodicCheck was still running when the next run was scheduled." );
         }
     }
 
-    private void onExpire(String reason, DaemonExpirationStatus status) {
-        LOGGER.debug("Storing daemon stop event: {}", reason);
-        registry.storeStopEvent(new DaemonStopEvent(daemonId, System.currentTimeMillis(), status, reason));
+    private void onExpire( String reason, DaemonExpirationStatus status )
+    {
+        LOGGER.debug( "Storing daemon stop event: {}", reason );
+        registry.storeStopEvent( new DaemonStopEvent( daemonId, System.currentTimeMillis(), status, reason ) );
     }
 
-    boolean awaitStop() {
+    boolean awaitStop()
+    {
         stateLock.lock();
-        try {
-            while (true) {
-                try {
-                    switch (getState()) {
+        try
+        {
+            while ( true )
+            {
+                try
+                {
+                    switch ( getState() )
+                    {
                     case Idle:
                     case Busy:
-                        LOGGER.debug("daemon is running. Sleeping until state changes.");
+                        LOGGER.debug( "daemon is running. Sleeping until state changes." );
                         condition.await();
                         break;
                     case Canceled:
                         cancelNow();
                         break;
                     case Broken:
-                        throw new IllegalStateException("This daemon is in a broken state.");
+                        throw new IllegalStateException( "This daemon is in a broken state." );
                     case StopRequested:
-                        LOGGER.debug("daemon stop has been requested. Sleeping until state changes.");
+                        LOGGER.debug( "daemon stop has been requested. Sleeping until state changes." );
                         condition.await();
                         break;
                     case Stopped:
-                        LOGGER.debug("daemon has stopped.");
+                        LOGGER.debug( "daemon has stopped." );
                         return true;
                     }
-                } catch (InterruptedException e) {
-                    throw new DaemonException.InterruptedException(e);
+                }
+                catch ( InterruptedException e )
+                {
+                    throw new DaemonException.InterruptedException( e );
                 }
             }
-        } finally {
+        }
+        finally
+        {
             stateLock.unlock();
         }
     }
 
-    private void requestStop(String reason) {
+    private void requestStop( String reason )
+    {
         DaemonState state = getState();
-        if (!(state == StopRequested || state == Stopped)) {
-            LOGGER.info("Daemon will be stopped at the end of the build " + reason);
+        if ( !( state == StopRequested || state == Stopped ) )
+        {
+            LOGGER.info( "Daemon will be stopped at the end of the build " + reason );
             stateLock.lock();
-            try {
-                if (state == Busy) {
-                    LOGGER.debug("Stop as soon as idle requested. The daemon is busy.");
+            try
+            {
+                if ( state == Busy )
+                {
+                    LOGGER.debug( "Stop as soon as idle requested. The daemon is busy." );
                     beginStopping();
-                } else {
-                    stopNow(reason);
                 }
-            } finally {
+                else
+                {
+                    stopNow( reason );
+                }
+            }
+            finally
+            {
                 stateLock.unlock();
             }
         }
     }
 
-    private void requestForcefulStop(String reason) {
-        LOGGER.info("Daemon is stopping immediately " + reason);
-        stopNow(reason);
+    private void requestForcefulStop( String reason )
+    {
+        LOGGER.info( "Daemon is stopping immediately " + reason );
+        stopNow( reason );
     }
 
-    private void beginStopping() {
+    private void beginStopping()
+    {
         DaemonState state = getState();
-        switch (state) {
+        switch ( state )
+        {
         case Idle:
         case Busy:
         case Canceled:
         case Broken:
-            updateState(StopRequested);
+            updateState( StopRequested );
             break;
         case StopRequested:
         case Stopped:
             break;
         default:
-            throw new IllegalStateException("Daemon is in unexpected state: " + state);
+            throw new IllegalStateException( "Daemon is in unexpected state: " + state );
         }
     }
 
-    private void stopNow(String reason) {
+    private void stopNow( String reason )
+    {
         stateLock.lock();
-        try {
+        try
+        {
             DaemonState state = getState();
-            switch (state) {
+            switch ( state )
+            {
             case Idle:
             case Busy:
             case Canceled:
             case Broken:
             case StopRequested:
-                LOGGER.debug("Marking daemon stopped due to {}. The daemon is running a build: {}", reason, state == Busy);
-                updateState(Stopped);
+                LOGGER.debug( "Marking daemon stopped due to {}. The daemon is running a build: {}", reason,
+                        state == Busy );
+                updateState( Stopped );
                 break;
             case Stopped:
                 break;
             default:
-                throw new IllegalStateException("Daemon is in unexpected state: " + state);
+                throw new IllegalStateException( "Daemon is in unexpected state: " + state );
             }
-        } finally {
+        }
+        finally
+        {
             stateLock.unlock();
         }
     }
 
-    private void cancelNow() {
+    private void cancelNow()
+    {
         long time = System.currentTimeMillis() + CANCEL_TIMEOUT;
 
-        LOGGER.debug("Cancel requested: will wait for daemon to become idle.");
+        LOGGER.debug( "Cancel requested: will wait for daemon to become idle." );
         final SmartBuilder builder = SmartBuilder.cancel();
         stateLock.lock();
-        try {
-            try {
+        try
+        {
+            try
+            {
                 ProcessHelper.killChildrenProcesses();
-            } catch (Throwable t) {
-                LOGGER.debug("Error killing children processes", t);
+            }
+            catch ( Throwable t )
+            {
+                LOGGER.debug( "Error killing children processes", t );
                 t.printStackTrace();
             }
             long rem;
-            while ((rem = time - System.currentTimeMillis()) > 0) {
-                try {
-                    switch (getState()) {
+            while ( ( rem = time - System.currentTimeMillis() ) > 0 )
+            {
+                try
+                {
+                    switch ( getState() )
+                    {
                     case Idle:
-                        LOGGER.debug("Cancel: daemon is idle now.");
+                        LOGGER.debug( "Cancel: daemon is idle now." );
                         return;
                     case Busy:
                     case Canceled:
                     case StopRequested:
-                        LOGGER.debug("Cancel: daemon is busy, sleeping until state changes.");
-                        condition.await(rem, TimeUnit.MILLISECONDS);
+                        LOGGER.debug( "Cancel: daemon is busy, sleeping until state changes." );
+                        condition.await( rem, TimeUnit.MILLISECONDS );
                         break;
                     case Broken:
-                        throw new IllegalStateException("This daemon is in a broken state.");
+                        throw new IllegalStateException( "This daemon is in a broken state." );
                     case Stopped:
-                        LOGGER.debug("Cancel: daemon has stopped.");
+                        LOGGER.debug( "Cancel: daemon has stopped." );
                         return;
                     }
-                } catch (InterruptedException e) {
-                    throw new DaemonException.InterruptedException(e);
+                }
+                catch ( InterruptedException e )
+                {
+                    throw new DaemonException.InterruptedException( e );
                 }
             }
-            LOGGER.debug("Cancel: daemon is still busy after grace period. Will force stop.");
-            stopNow("cancel requested but timed out");
-        } finally {
+            LOGGER.debug( "Cancel: daemon is still busy after grace period. Will force stop." );
+            stopNow( "cancel requested but timed out" );
+        }
+        finally
+        {
             stateLock.unlock();
-            if (builder != null) {
+            if ( builder != null )
+            {
                 builder.doneCancel();
             }
         }
     }
 
-    private void handle(DaemonConnection connection, BuildRequest buildRequest) {
-        updateState(Busy);
-        final BlockingQueue<Message> sendQueue = new PriorityBlockingQueue<>(64, Message.getMessageComparator());
+    private void handle( DaemonConnection connection, BuildRequest buildRequest )
+    {
+        updateState( Busy );
+        final BlockingQueue<Message> sendQueue = new PriorityBlockingQueue<>( 64, Message.getMessageComparator() );
         final BlockingQueue<Message> recvQueue = new LinkedBlockingDeque<>();
-        final BuildEventListener buildEventListener = new ClientDispatcher(sendQueue);
-        try (ProjectBuildLogAppender logAppender = new ProjectBuildLogAppender(buildEventListener)) {
+        final BuildEventListener buildEventListener = new ClientDispatcher( sendQueue );
+        try ( ProjectBuildLogAppender logAppender = new ProjectBuildLogAppender( buildEventListener ) )
+        {
 
-            LOGGER.info("Executing request");
+            LOGGER.info( "Executing request" );
 
-            Thread sender = new Thread(() -> {
-                try {
+            Thread sender = new Thread( () ->
+            {
+                try
+                {
                     boolean flushed = true;
-                    while (true) {
+                    while ( true )
+                    {
                         Message m;
-                        if (flushed) {
-                            m = sendQueue.poll(keepAliveMs, TimeUnit.MILLISECONDS);
-                            if (m == null) {
+                        if ( flushed )
+                        {
+                            m = sendQueue.poll( keepAliveMs, TimeUnit.MILLISECONDS );
+                            if ( m == null )
+                            {
                                 m = Message.BareMessage.KEEP_ALIVE_SINGLETON;
                             }
                             flushed = false;
-                        } else {
+                        }
+                        else
+                        {
                             m = sendQueue.poll();
-                            if (m == null) {
+                            if ( m == null )
+                            {
                                 connection.flush();
                                 flushed = true;
                                 continue;
                             }
                         }
-                        if (m == Message.BareMessage.STOP_SINGLETON) {
+                        if ( m == Message.BareMessage.STOP_SINGLETON )
+                        {
                             connection.flush();
-                            LOGGER.info("No more message to dispatch");
+                            LOGGER.info( "No more message to dispatch" );
                             return;
                         }
-                        LOGGER.info("Dispatch message: " + m);
-                        connection.dispatch(m);
+                        LOGGER.info( "Dispatch message: " + m );
+                        connection.dispatch( m );
                     }
-                } catch (Throwable t) {
-                    LOGGER.error("Error dispatching events", t);
                 }
-            });
+                catch ( Throwable t )
+                {
+                    LOGGER.error( "Error dispatching events", t );
+                }
+            } );
             sender.start();
-            Thread receiver = new Thread(() -> {
-                try {
-                    while (true) {
+            Thread receiver = new Thread( () ->
+            {
+                try
+                {
+                    while ( true )
+                    {
                         Message message = connection.receive();
-                        if (message == null) {
+                        if ( message == null )
+                        {
                             break;
                         }
-                        LOGGER.info("Received message: {}", message);
-                        if (message == Message.BareMessage.CANCEL_BUILD_SINGLETON) {
-                            updateState(Canceled);
+                        LOGGER.info( "Received message: {}", message );
+                        if ( message == Message.BareMessage.CANCEL_BUILD_SINGLETON )
+                        {
+                            updateState( Canceled );
                             return;
-                        } else {
-                            synchronized (recvQueue) {
-                                recvQueue.put(message);
+                        }
+                        else
+                        {
+                            synchronized ( recvQueue )
+                            {
+                                recvQueue.put( message );
                                 recvQueue.notifyAll();
                             }
                         }
                     }
-                } catch (DaemonException.RecoverableMessageIOException t) {
-                    updateState(Canceled);
-                } catch (Throwable t) {
-                    updateState(Broken);
-                    LOGGER.error("Error receiving events", t);
                 }
-            });
+                catch ( DaemonException.RecoverableMessageIOException t )
+                {
+                    updateState( Canceled );
+                }
+                catch ( Throwable t )
+                {
+                    updateState( Broken );
+                    LOGGER.error( "Error receiving events", t );
+                }
+            } );
             receiver.start();
-            try {
-                Connection.setCurrent(new Connection() {
+            try
+            {
+                Connection.setCurrent( new Connection()
+                {
+
                     @Override
-                    public void dispatch(Message message) {
-                        try {
-                            sendQueue.put(message);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
+                    public void dispatch( Message message )
+                    {
+                        try
+                        {
+                            sendQueue.put( message );
+                        }
+                        catch ( InterruptedException e )
+                        {
+                            throw new RuntimeException( e );
                         }
                     }
 
                     @Override
-                    public <T extends Message> T request(Message request, Class<T> responseType, Predicate<T> matcher) {
-                        try {
-                            synchronized (recvQueue) {
-                                sendQueue.put(request);
-                                LOGGER.info("Waiting for response");
-                                while (true) {
+                    public <T extends Message> T request( Message request, Class<T> responseType, Predicate<T> matcher )
+                    {
+                        try
+                        {
+                            synchronized ( recvQueue )
+                            {
+                                sendQueue.put( request );
+                                LOGGER.info( "Waiting for response" );
+                                while ( true )
+                                {
                                     T t = recvQueue.stream()
-                                            .filter(responseType::isInstance)
-                                            .map(responseType::cast)
-                                            .filter(matcher)
+                                            .filter( responseType::isInstance )
+                                            .map( responseType::cast )
+                                            .filter( matcher )
                                             .findFirst()
-                                            .orElse(null);
-                                    if (t != null) {
-                                        recvQueue.remove(t);
-                                        LOGGER.info("Received response: {}", t);
+                                            .orElse( null );
+                                    if ( t != null )
+                                    {
+                                        recvQueue.remove( t );
+                                        LOGGER.info( "Received response: {}", t );
                                         return t;
                                     }
                                     recvQueue.wait();
                                 }
                             }
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
+                        }
+                        catch ( InterruptedException e )
+                        {
+                            throw new RuntimeException( e );
                         }
                     }
-                });
-                System.setOut(new LoggingOutputStream(s -> sendQueue.add(Message.out(s))).printStream());
-                System.setErr(new LoggingOutputStream(s -> sendQueue.add(Message.err(s))).printStream());
+                } );
+                System.setOut( new LoggingOutputStream( s -> sendQueue.add( Message.out( s ) ) ).printStream() );
+                System.setErr( new LoggingOutputStream( s -> sendQueue.add( Message.err( s ) ) ).printStream() );
                 int exitCode = cli.main(
                         buildRequest.getArgs(),
                         buildRequest.getWorkingDir(),
                         buildRequest.getProjectDir(),
                         buildRequest.getEnv(),
-                        buildEventListener);
-                LOGGER.info("Build finished, finishing message dispatch");
-                buildEventListener.finish(exitCode);
-            } catch (Throwable t) {
-                LOGGER.error("Error while building project", t);
-                buildEventListener.fail(t);
-            } finally {
-                sender.join();
-                ProjectBuildLogAppender.setProjectId(null);
+                        buildEventListener );
+                LOGGER.info( "Build finished, finishing message dispatch" );
+                buildEventListener.finish( exitCode );
             }
-        } catch (Throwable t) {
-            LOGGER.error("Error while building project", t);
-        } finally {
-            if (!noDaemon) {
-                LOGGER.info("Daemon back to idle");
-                updateState(DaemonState.Idle);
+            catch ( Throwable t )
+            {
+                LOGGER.error( "Error while building project", t );
+                buildEventListener.fail( t );
+            }
+            finally
+            {
+                sender.join();
+                ProjectBuildLogAppender.setProjectId( null );
+            }
+        }
+        catch ( Throwable t )
+        {
+            LOGGER.error( "Error while building project", t );
+        }
+        finally
+        {
+            if ( !noDaemon )
+            {
+                LOGGER.info( "Daemon back to idle" );
+                updateState( DaemonState.Idle );
                 System.gc();
             }
         }
     }
 
-    private void updateState(DaemonState state) {
-        if (getState() != state) {
-            LOGGER.info("Updating state to: " + state);
+    private void updateState( DaemonState state )
+    {
+        if ( getState() != state )
+        {
+            LOGGER.info( "Updating state to: " + state );
             stateLock.lock();
-            try {
-                registry.store(info = info.withState(state));
+            try
+            {
+                registry.store( info = info.withState( state ) );
                 condition.signalAll();
-            } finally {
+            }
+            finally
+            {
                 stateLock.unlock();
             }
         }
     }
 
-    public DaemonRegistry getRegistry() {
+    public DaemonRegistry getRegistry()
+    {
         return registry;
     }
 
-    public DaemonInfo getInfo() {
+    public DaemonInfo getInfo()
+    {
         return info;
     }
 
-    public String getDaemonId() {
+    public String getDaemonId()
+    {
         return info.getId();
     }
 
-    public DaemonState getState() {
+    public DaemonState getState()
+    {
         return info.getState();
     }
 
-    public long getLastIdle() {
+    public long getLastIdle()
+    {
         return info.getLastIdle();
     }
 
-    public long getLastBusy() {
+    public long getLastBusy()
+    {
         return info.getLastBusy();
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return info.toString();
     }
 }

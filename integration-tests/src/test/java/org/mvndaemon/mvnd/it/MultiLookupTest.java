@@ -23,8 +23,9 @@ import org.mvndaemon.mvnd.junit.ClientFactory;
 import org.mvndaemon.mvnd.junit.MvndTest;
 import org.mvndaemon.mvnd.junit.TestParameters;
 
-@MvndTest(projectDir = "src/test/projects/multi-lookup")
-public class MultiLookupTest {
+@MvndTest( projectDir = "src/test/projects/multi-lookup" )
+public class MultiLookupTest
+{
 
     @Inject
     ClientFactory clientFactory;
@@ -33,20 +34,21 @@ public class MultiLookupTest {
     TestParameters parameters;
 
     @Test
-    void cleanInstall() throws IOException, InterruptedException {
+    void cleanInstall() throws IOException, InterruptedException
+    {
 
         final TestClientOutput output = new TestClientOutput();
 
         clientFactory
-                .newClient(parameters.cd(parameters.getTestDir().resolve("project/hello")))
-                .execute(output, "clean", "install", "-e").assertFailure();
+                .newClient( parameters.cd( parameters.getTestDir().resolve( "project/hello" ) ) )
+                .execute( output, "clean", "install", "-e" ).assertFailure();
 
         clientFactory
-                .newClient(parameters)
-                .execute(output, "clean", "install", "-e").assertSuccess();
+                .newClient( parameters )
+                .execute( output, "clean", "install", "-e" ).assertSuccess();
 
         clientFactory
-                .newClient(parameters.cd(parameters.getTestDir().resolve("project/hello")))
-                .execute(output, "clean", "install", "-e").assertSuccess();
+                .newClient( parameters.cd( parameters.getTestDir().resolve( "project/hello" ) ) )
+                .execute( output, "clean", "install", "-e" ).assertSuccess();
     }
 }

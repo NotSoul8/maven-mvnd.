@@ -22,10 +22,11 @@ import java.lang.annotation.Target;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mvndaemon.mvnd.client.Client;
 
-@ExtendWith(MvndTestExtension.class)
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface MvndNativeTest {
+@ExtendWith( MvndTestExtension.class )
+@Retention( RetentionPolicy.RUNTIME )
+@Target( ElementType.TYPE )
+public @interface MvndNativeTest
+{
 
     /**
      * The path to the root directory of a test project relative to the current maven module directory. E.g.

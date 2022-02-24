@@ -22,17 +22,18 @@ import org.mvndaemon.mvnd.common.Message;
 /**
  * A sink for various kinds of events sent by the daemon.
  */
-public interface ClientOutput extends AutoCloseable {
+public interface ClientOutput extends AutoCloseable
+{
 
-    void setDaemonId(String daemonId);
+    void setDaemonId( String daemonId );
 
-    void setDaemonDispatch(Consumer<Message> sink);
+    void setDaemonDispatch( Consumer<Message> sink );
 
-    void setDaemonReceive(Consumer<Message> sink);
+    void setDaemonReceive( Consumer<Message> sink );
 
-    void accept(Message message);
+    void accept( Message message );
 
-    void accept(List<Message> messages);
+    void accept( List<Message> messages );
 
     void describeTerminal();
 

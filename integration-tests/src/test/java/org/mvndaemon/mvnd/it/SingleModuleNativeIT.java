@@ -31,8 +31,9 @@ import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
 
-@MvndNativeTest(projectDir = "src/test/projects/single-module")
-public class SingleModuleNativeIT {
+@MvndNativeTest( projectDir = "src/test/projects/single-module" )
+public class SingleModuleNativeIT
+{
 
     @Inject
     Client client;
@@ -41,52 +42,59 @@ public class SingleModuleNativeIT {
     DaemonParameters parameters;
 
     @Test
-    void cleanInstall() throws IOException, InterruptedException {
-        final Path helloFilePath = parameters.multiModuleProjectDirectory().resolve("target/hello.txt");
-        if (Files.exists(helloFilePath)) {
-            Files.delete(helloFilePath);
+    void cleanInstall() throws IOException, InterruptedException
+    {
+        final Path helloFilePath = parameters.multiModuleProjectDirectory().resolve( "target/hello.txt" );
+        if ( Files.exists( helloFilePath ) )
+        {
+            Files.delete( helloFilePath );
         }
 
         final Path localMavenRepo = parameters.mavenRepoLocal();
         final Path installedJar = localMavenRepo.resolve(
-                "org/mvndaemon/mvnd/test/single-module/single-module/0.0.1-SNAPSHOT/single-module-0.0.1-SNAPSHOT.jar");
-        Assertions.assertThat(installedJar).doesNotExist();
+                "org/mvndaemon/mvnd/test/single-module/single-module/0.0.1-SNAPSHOT/single-module-0.0.1-SNAPSHOT.jar" );
+        Assertions.assertThat( installedJar ).doesNotExist();
 
         final TestClientOutput o = new TestClientOutput();
-        client.execute(o, "clean", "install", "-e", "-B").assertSuccess();
-        final Properties props = MvndTestUtil.properties(parameters.multiModuleProjectDirectory().resolve("pom.xml"));
+        client.execute( o, "clean", "install", "-e", "-B" ).assertSuccess();
+        final Properties props = MvndTestUtil
+                .properties( parameters.multiModuleProjectDirectory().resolve( "pom.xml" ) );
 
         final List<String> messages = o.getMessages().stream()
-                .filter(m -> m.getType() != Message.MOJO_STARTED)
-                .map(m -> m.toString())
-                .collect(Collectors.toList());
-        Assertions.assertThat(messages)
-                .is(new MatchInOrderAmongOthers<>(
+                .filter( m -> m.getType() != Message.MOJO_STARTED )
+                .map( m -> m.toString() )
+                .collect( Collectors.toList() );
+        Assertions.assertThat( messages )
+                .is( new MatchInOrderAmongOthers<>(
                         "Building single-module",
-                        mojoStartedLogMessage(props, "maven-clean-plugin", "clean", "default-clean"),
-                        mojoStartedLogMessage(props, "maven-resources-plugin", "resources", "default-resources"),
-                        mojoStartedLogMessage(props, "maven-compiler-plugin", "compile", "default-compile"),
-                        mojoStartedLogMessage(props, "maven-resources-plugin", "testResources", "default-testResources"),
-                        mojoStartedLogMessage(props, "maven-compiler-plugin", "testCompile", "default-testCompile"),
-                        mojoStartedLogMessage(props, "maven-surefire-plugin", "test", "default-test"),
-                        mojoStartedLogMessage(props, "maven-install-plugin", "install", "default-install"),
-                        "BUILD SUCCESS"));
+                        mojoStartedLogMessage( props, "maven-clean-plugin", "clean", "default-clean" ),
+                        mojoStartedLogMessage( props, "maven-resources-plugin", "resources", "default-resources" ),
+                        mojoStartedLogMessage( props, "maven-compiler-plugin", "compile", "default-compile" ),
+                        mojoStartedLogMessage( props, "maven-resources-plugin", "testResources",
+                                "default-testResources" ),
+                        mojoStartedLogMessage( props, "maven-compiler-plugin", "testCompile", "default-testCompile" ),
+                        mojoStartedLogMessage( props, "maven-surefire-plugin", "test", "default-test" ),
+                        mojoStartedLogMessage( props, "maven-install-plugin", "install", "default-install" ),
+                        "BUILD SUCCESS" ) );
 
-        assertJVM(o, props);
+        assertJVM( o, props );
 
         /* The target/hello.txt is created by HelloTest */
-        Assertions.assertThat(helloFilePath).exists();
+        Assertions.assertThat( helloFilePath ).exists();
 
-        Assertions.assertThat(installedJar).exists();
+        Assertions.assertThat( installedJar ).exists();
 
     }
 
-    protected void assertJVM(TestClientOutput o, Properties props) {
+    protected void assertJVM( TestClientOutput o, Properties props )
+    {
         /* implemented in the subclass */
     }
 
-    String mojoStartedLogMessage(Properties props, String pluginArtifactId, String mojo, String executionId) {
-        return "\\Q--- " + pluginArtifactId + ":" + props.getProperty(pluginArtifactId + ".version") + ":" + mojo + " ("
+    String mojoStartedLogMessage( Properties props, String pluginArtifactId, String mojo, String executionId )
+    {
+        return "\\Q--- " + pluginArtifactId + ":" + props.getProperty( pluginArtifactId + ".version" ) + ":" + mojo
+                + " ("
                 + executionId + ") @ single-module ---\\E";
     }
 

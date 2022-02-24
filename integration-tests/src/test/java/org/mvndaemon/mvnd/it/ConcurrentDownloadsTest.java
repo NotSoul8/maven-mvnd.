@@ -26,8 +26,9 @@ import org.mvndaemon.mvnd.junit.MvndTest;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MvndTest(projectDir = "src/test/projects/concurrent-downloads")
-public class ConcurrentDownloadsTest {
+@MvndTest( projectDir = "src/test/projects/concurrent-downloads" )
+public class ConcurrentDownloadsTest
+{
 
     @Inject
     Client client;
@@ -36,30 +37,37 @@ public class ConcurrentDownloadsTest {
     DaemonParameters parameters;
 
     @Test
-    void build() throws IOException, InterruptedException {
+    void build() throws IOException, InterruptedException
+    {
 
         final TestClientOutput o = new TestClientOutput();
-        client.execute(o, "clean", "install", "-e", "-B").assertSuccess();
+        client.execute( o, "clean", "install", "-e", "-B" ).assertSuccess();
 
         int maxConcurrentDownloads = 0;
         int cur = 0;
-        for (Message m : o.getMessages()) {
-            if (m instanceof Message.TransferEvent) {
-                Message.TransferEvent event = (Message.TransferEvent) m;
+        for ( Message m : o.getMessages() )
+        {
+            if ( m instanceof Message.TransferEvent )
+            {
+                Message.TransferEvent event = ( Message.TransferEvent ) m;
                 String resource = event.getResourceName();
-                if (resource.contains("apache-camel") || resource.contains("apache-activemq")) {
-                    if (m.getType() == Message.TRANSFER_STARTED) {
+                if ( resource.contains( "apache-camel" ) || resource.contains( "apache-activemq" ) )
+                {
+                    if ( m.getType() == Message.TRANSFER_STARTED )
+                    {
                         cur++;
-                        maxConcurrentDownloads = Math.max(cur, maxConcurrentDownloads);
-                    } else if (m.getType() == Message.TRANSFER_SUCCEEDED) {
+                        maxConcurrentDownloads = Math.max( cur, maxConcurrentDownloads );
+                    }
+                    else if ( m.getType() == Message.TRANSFER_SUCCEEDED )
+                    {
                         cur--;
                     }
                 }
             }
         }
-        assertTrue(maxConcurrentDownloads >= 1 && maxConcurrentDownloads <= 2,
+        assertTrue( maxConcurrentDownloads >= 1 && maxConcurrentDownloads <= 2,
                 "The maximum number of concurrent downloads (actual: " + maxConcurrentDownloads
-                        + ") must fulfil the condition maxConcurrentDownloads >= 1 && maxConcurrentDownloads <= 2");
+                        + ") must fulfil the condition maxConcurrentDownloads >= 1 && maxConcurrentDownloads <= 2" );
     }
 
 }

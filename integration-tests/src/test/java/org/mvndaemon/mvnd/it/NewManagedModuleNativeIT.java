@@ -31,8 +31,9 @@ import org.mvndaemon.mvnd.junit.MvndNativeTest;
 import org.mvndaemon.mvnd.junit.TestParameters;
 import org.mvndaemon.mvnd.junit.TestRegistry;
 
-@MvndNativeTest(projectDir = "src/test/projects/new-managed-module")
-public class NewManagedModuleNativeIT {
+@MvndNativeTest( projectDir = "src/test/projects/new-managed-module" )
+public class NewManagedModuleNativeIT
+{
 
     @Inject
     TestParameters parameters;
@@ -44,53 +45,63 @@ public class NewManagedModuleNativeIT {
     ClientFactory clientFactory;
 
     @Test
-    void upgrade() throws IOException, InterruptedException {
-        assertDaemonRegistrySize(0);
+    void upgrade() throws IOException, InterruptedException
+    {
+        assertDaemonRegistrySize( 0 );
 
         /* Build the initial state of the test project */
-        final Path parentDir = parameters.getTestDir().resolve("project/parent");
-        final Client cl = clientFactory.newClient(parameters.cd(parentDir));
+        final Path parentDir = parameters.getTestDir().resolve( "project/parent" );
+        final Client cl = clientFactory.newClient( parameters.cd( parentDir ) );
         {
             final TestClientOutput output = new TestClientOutput();
-            cl.execute(output, "clean", "install", "-e", "-B", "-ntp").assertSuccess();
+            cl.execute( output, "clean", "install", "-e", "-B", "-ntp" ).assertSuccess();
         }
-        assertDaemonRegistrySize(1);
+        assertDaemonRegistrySize( 1 );
 
-        final DaemonInfo d = registry.getAll().get(0);
+        final DaemonInfo d = registry.getAll().get( 0 );
         /* Wait, till the instance becomes idle */
-        registry.awaitIdle(d.getId());
+        registry.awaitIdle( d.getId() );
 
         /* Do the changes */
-        final Path srcDir = parentDir.resolve("../changes").normalize();
-        try (Stream<Path> files = Files.walk(srcDir)) {
-            files.forEach(source -> {
-                final Path relPath = srcDir.relativize(source);
-                final Path dest = parentDir.resolve(relPath);
-                try {
-                    if (Files.isDirectory(source)) {
-                        Files.createDirectories(dest);
-                    } else {
-                        Files.createDirectories(dest.getParent());
-                        Files.copy(source, dest, StandardCopyOption.REPLACE_EXISTING);
+        final Path srcDir = parentDir.resolve( "../changes" ).normalize();
+        try ( Stream<Path> files = Files.walk( srcDir ) )
+        {
+            files.forEach( source ->
+            {
+                final Path relPath = srcDir.relativize( source );
+                final Path dest = parentDir.resolve( relPath );
+                try
+                {
+                    if ( Files.isDirectory( source ) )
+                    {
+                        Files.createDirectories( dest );
                     }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    else
+                    {
+                        Files.createDirectories( dest.getParent() );
+                        Files.copy( source, dest, StandardCopyOption.REPLACE_EXISTING );
+                    }
                 }
-            });
+                catch ( IOException e )
+                {
+                    throw new RuntimeException( e );
+                }
+            } );
         }
 
         /* Build again */
         {
             final TestClientOutput output = new TestClientOutput();
-            cl.execute(output, "clean", "install", "-e", "-B", "-ntp")
+            cl.execute( output, "clean", "install", "-e", "-B", "-ntp" )
                     .assertSuccess();
         }
-        assertDaemonRegistrySize(1);
+        assertDaemonRegistrySize( 1 );
     }
 
-    private void assertDaemonRegistrySize(int size) {
-        Assertions.assertThat(registry.getAll().size())
-                .as("Daemon registry size should be " + size)
-                .isEqualTo(size);
+    private void assertDaemonRegistrySize( int size )
+    {
+        Assertions.assertThat( registry.getAll().size() )
+                .as( "Daemon registry size should be " + size )
+                .isEqualTo( size );
     }
 }

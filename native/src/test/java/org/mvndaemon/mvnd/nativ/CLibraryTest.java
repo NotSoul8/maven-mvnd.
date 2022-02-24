@@ -23,27 +23,31 @@ import org.junit.jupiter.api.condition.OS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class CLibraryTest {
+public class CLibraryTest
+{
 
     @Test
-    void testChdir() {
-        File d = new File("target/tstDir");
+    void testChdir()
+    {
+        File d = new File( "target/tstDir" );
         d.mkdirs();
-        CLibrary.chdir(d.getAbsolutePath());
+        CLibrary.chdir( d.getAbsolutePath() );
     }
 
     @Test
-    void testSetenv() {
-        CLibrary.setenv("MY_NAME", "myValue");
+    void testSetenv()
+    {
+        CLibrary.setenv( "MY_NAME", "myValue" );
     }
 
     @Test
-    @EnabledOnOs(OS.MAC)
-    void testOsxMemory() {
+    @EnabledOnOs( OS.MAC )
+    void testOsxMemory()
+    {
         long[] mem = new long[2];
-        assertEquals(0, CLibrary.getOsxMemoryInfo(mem));
-        assertTrue(mem[0] > 1024, "Total: " + mem[0]);
-        assertTrue(mem[1] > 1024, "Free: " + mem[1]);
-        assertTrue(mem[1] < mem[0], "Free (" + mem[1] + ") < Total (" + mem[0] + ")");
+        assertEquals( 0, CLibrary.getOsxMemoryInfo( mem ) );
+        assertTrue( mem[0] > 1024, "Total: " + mem[0] );
+        assertTrue( mem[1] > 1024, "Free: " + mem[1] );
+        assertTrue( mem[1] < mem[0], "Free (" + mem[1] + ") < Total (" + mem[0] + ")" );
     }
 }

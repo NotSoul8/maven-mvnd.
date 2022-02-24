@@ -21,20 +21,27 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class Completion {
+public class Completion
+{
 
-    public static String getCompletion(String shell, DaemonParameters daemonParameters) {
-        if (!"bash".equals(shell)) {
-            throw new IllegalArgumentException("Unexpected --completion value: '" + shell + "'; expected: 'bash'");
+    public static String getCompletion( String shell, DaemonParameters daemonParameters )
+    {
+        if ( !"bash".equals( shell ) )
+        {
+            throw new IllegalArgumentException( "Unexpected --completion value: '" + shell + "'; expected: 'bash'" );
         }
-        final Path bashCompletionPath = daemonParameters.mvndHome().resolve("bin/mvnd-bash-completion.bash");
-        if (!Files.isRegularFile(bashCompletionPath)) {
-            throw new IllegalStateException("Bash completion file does not exist: " + bashCompletionPath);
+        final Path bashCompletionPath = daemonParameters.mvndHome().resolve( "bin/mvnd-bash-completion.bash" );
+        if ( !Files.isRegularFile( bashCompletionPath ) )
+        {
+            throw new IllegalStateException( "Bash completion file does not exist: " + bashCompletionPath );
         }
-        try {
-            return new String(Files.readAllBytes(bashCompletionPath), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new UncheckedIOException("Could not read " + bashCompletionPath, e);
+        try
+        {
+            return new String( Files.readAllBytes( bashCompletionPath ), StandardCharsets.UTF_8 );
+        }
+        catch ( IOException e )
+        {
+            throw new UncheckedIOException( "Could not read " + bashCompletionPath, e );
         }
     }
 

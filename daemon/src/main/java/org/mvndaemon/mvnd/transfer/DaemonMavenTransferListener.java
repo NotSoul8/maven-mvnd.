@@ -21,49 +21,57 @@ import org.eclipse.aether.transfer.TransferListener;
 import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 import org.mvndaemon.mvnd.logging.smart.ProjectBuildLogAppender;
 
-public class DaemonMavenTransferListener implements TransferListener {
+public class DaemonMavenTransferListener implements TransferListener
+{
 
     private final BuildEventListener dispatcher;
     private final TransferListener delegate;
 
-    public DaemonMavenTransferListener(BuildEventListener dispatcher, TransferListener delegate) {
+    public DaemonMavenTransferListener( BuildEventListener dispatcher, TransferListener delegate )
+    {
         this.dispatcher = dispatcher;
         this.delegate = delegate;
     }
 
     @Override
-    public void transferInitiated(TransferEvent event) throws TransferCancelledException {
-        dispatcher.transfer(ProjectBuildLogAppender.getProjectId(), event);
-        delegate.transferInitiated(event);
+    public void transferInitiated( TransferEvent event ) throws TransferCancelledException
+    {
+        dispatcher.transfer( ProjectBuildLogAppender.getProjectId(), event );
+        delegate.transferInitiated( event );
     }
 
     @Override
-    public void transferStarted(TransferEvent event) throws TransferCancelledException {
-        dispatcher.transfer(ProjectBuildLogAppender.getProjectId(), event);
-        delegate.transferStarted(event);
+    public void transferStarted( TransferEvent event ) throws TransferCancelledException
+    {
+        dispatcher.transfer( ProjectBuildLogAppender.getProjectId(), event );
+        delegate.transferStarted( event );
     }
 
     @Override
-    public void transferProgressed(TransferEvent event) throws TransferCancelledException {
-        dispatcher.transfer(ProjectBuildLogAppender.getProjectId(), event);
-        delegate.transferProgressed(event);
+    public void transferProgressed( TransferEvent event ) throws TransferCancelledException
+    {
+        dispatcher.transfer( ProjectBuildLogAppender.getProjectId(), event );
+        delegate.transferProgressed( event );
     }
 
     @Override
-    public void transferCorrupted(TransferEvent event) throws TransferCancelledException {
-        dispatcher.transfer(ProjectBuildLogAppender.getProjectId(), event);
-        delegate.transferCorrupted(event);
+    public void transferCorrupted( TransferEvent event ) throws TransferCancelledException
+    {
+        dispatcher.transfer( ProjectBuildLogAppender.getProjectId(), event );
+        delegate.transferCorrupted( event );
     }
 
     @Override
-    public void transferSucceeded(TransferEvent event) {
-        dispatcher.transfer(ProjectBuildLogAppender.getProjectId(), event);
-        delegate.transferSucceeded(event);
+    public void transferSucceeded( TransferEvent event )
+    {
+        dispatcher.transfer( ProjectBuildLogAppender.getProjectId(), event );
+        delegate.transferSucceeded( event );
     }
 
     @Override
-    public void transferFailed(TransferEvent event) {
-        dispatcher.transfer(ProjectBuildLogAppender.getProjectId(), event);
-        delegate.transferFailed(event);
+    public void transferFailed( TransferEvent event )
+    {
+        dispatcher.transfer( ProjectBuildLogAppender.getProjectId(), event );
+        delegate.transferFailed( event );
     }
 }

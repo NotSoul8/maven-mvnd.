@@ -34,33 +34,43 @@ import org.mvndaemon.mvnd.cache.CacheFactory;
 
 @Singleton
 @Named
-@Priority(10)
-public class InvalidatingPluginRealmCache extends DefaultPluginRealmCache {
+@Priority( 10 )
+public class InvalidatingPluginRealmCache extends DefaultPluginRealmCache
+{
 
     @FunctionalInterface
-    public interface PluginRealmSupplier {
+    public interface PluginRealmSupplier
+    {
+
         CacheRecord load() throws PluginResolutionException, PluginContainerException;
     }
 
-    protected static class Record implements org.mvndaemon.mvnd.cache.CacheRecord {
+    protected static class Record implements org.mvndaemon.mvnd.cache.CacheRecord
+    {
 
         final CacheRecord record;
 
-        public Record(CacheRecord record) {
+        public Record( CacheRecord record )
+        {
             this.record = record;
         }
 
         @Override
-        public Stream<Path> getDependencyPaths() {
-            return record.getArtifacts().stream().map(artifact -> artifact.getFile().toPath());
+        public Stream<Path> getDependencyPaths()
+        {
+            return record.getArtifacts().stream().map( artifact -> artifact.getFile().toPath() );
         }
 
         @Override
-        public void invalidate() {
+        public void invalidate()
+        {
             ClassRealm realm = record.getRealm();
-            try {
-                realm.getWorld().disposeRealm(realm.getId());
-            } catch (NoSuchRealmException e) {
+            try
+            {
+                realm.getWorld().disposeRealm( realm.getId() );
+            }
+            catch ( NoSuchRealmException e )
+            {
                 // ignore
             }
         }
@@ -69,53 +79,68 @@ public class InvalidatingPluginRealmCache extends DefaultPluginRealmCache {
     final Cache<Key, Record> cache;
 
     @Inject
-    public InvalidatingPluginRealmCache(CacheFactory cacheFactory) {
+    public InvalidatingPluginRealmCache( CacheFactory cacheFactory )
+    {
         cache = cacheFactory.newCache();
     }
 
     @Override
-    public CacheRecord get(Key key) {
-        Record r = cache.get(key);
+    public CacheRecord get( Key key )
+    {
+        Record r = cache.get( key );
         return r != null ? r.record : null;
     }
 
-    public CacheRecord get(Key key, PluginRealmSupplier supplier)
-            throws PluginResolutionException, PluginContainerException {
-        try {
-            Record r = cache.computeIfAbsent(key, k -> {
-                try {
-                    return new Record(supplier.load());
-                } catch (PluginResolutionException | PluginContainerException e) {
-                    throw new RuntimeException(e);
+    public CacheRecord get( Key key, PluginRealmSupplier supplier )
+            throws PluginResolutionException, PluginContainerException
+    {
+        try
+        {
+            Record r = cache.computeIfAbsent( key, k ->
+            {
+                try
+                {
+                    return new Record( supplier.load() );
                 }
-            });
+                catch ( PluginResolutionException | PluginContainerException e )
+                {
+                    throw new RuntimeException( e );
+                }
+            } );
             return r.record;
-        } catch (RuntimeException e) {
-            if (e.getCause() instanceof PluginResolutionException) {
-                throw (PluginResolutionException) e.getCause();
+        }
+        catch ( RuntimeException e )
+        {
+            if ( e.getCause() instanceof PluginResolutionException )
+            {
+                throw ( PluginResolutionException ) e.getCause();
             }
-            if (e.getCause() instanceof PluginContainerException) {
-                throw (PluginContainerException) e.getCause();
+            if ( e.getCause() instanceof PluginContainerException )
+            {
+                throw ( PluginContainerException ) e.getCause();
             }
             throw e;
         }
     }
 
     @Override
-    public CacheRecord put(Key key, ClassRealm pluginRealm, List<Artifact> pluginArtifacts) {
-        CacheRecord record = super.put(key, pluginRealm, pluginArtifacts);
-        super.cache.remove(key);
-        cache.put(key, new Record(record));
+    public CacheRecord put( Key key, ClassRealm pluginRealm, List<Artifact> pluginArtifacts )
+    {
+        CacheRecord record = super.put( key, pluginRealm, pluginArtifacts );
+        super.cache.remove( key );
+        cache.put( key, new Record( record ) );
         return record;
     }
 
     @Override
-    public void flush() {
+    public void flush()
+    {
         cache.clear();
     }
 
     @Override
-    public void register(MavenProject project, Key key, CacheRecord record) {
+    public void register( MavenProject project, Key key, CacheRecord record )
+    {
     }
 
 }

@@ -24,7 +24,8 @@ package org.mvndaemon.mvnd.common;
  * File origin:
  * https://github.com/gradle/gradle/blob/v6.5.1/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/server/expiry/DaemonExpirationStatus.java
  */
-public enum DaemonExpirationStatus {
+public enum DaemonExpirationStatus
+{
     DO_NOT_EXPIRE,
     QUIET_EXPIRE,
     GRACEFUL_EXPIRE,

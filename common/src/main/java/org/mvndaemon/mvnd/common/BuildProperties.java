@@ -19,26 +19,32 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class BuildProperties {
+public class BuildProperties
+{
 
     private static final BuildProperties INSTANCE = load();
 
-    public static BuildProperties getInstance() {
+    public static BuildProperties getInstance()
+    {
         return INSTANCE;
     }
 
-    public static BuildProperties load() {
+    public static BuildProperties load()
+    {
         final Properties buildProperties = new Properties();
-        try (InputStream is = BuildProperties.class.getResourceAsStream("build.properties")) {
-            buildProperties.load(is);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not read build.properties");
+        try ( InputStream is = BuildProperties.class.getResourceAsStream( "build.properties" ) )
+        {
+            buildProperties.load( is );
+        }
+        catch ( IOException e )
+        {
+            throw new RuntimeException( "Could not read build.properties" );
         }
         return new BuildProperties(
-                buildProperties.getProperty("version"),
-                buildProperties.getProperty("revision"),
-                buildProperties.getProperty("os.detected.name"),
-                buildProperties.getProperty("os.detected.arch"));
+                buildProperties.getProperty( "version" ),
+                buildProperties.getProperty( "revision" ),
+                buildProperties.getProperty( "os.detected.name" ),
+                buildProperties.getProperty( "os.detected.arch" ) );
     }
 
     private final String version;
@@ -46,26 +52,31 @@ public class BuildProperties {
     private final String osArch;
     private final String revision;
 
-    public BuildProperties(String version, String revision, String os, String arch) {
+    public BuildProperties( String version, String revision, String os, String arch )
+    {
         this.version = version;
         this.revision = revision;
         this.osName = os;
         this.osArch = arch;
     }
 
-    public String getVersion() {
+    public String getVersion()
+    {
         return version;
     }
 
-    public String getOsName() {
+    public String getOsName()
+    {
         return osName;
     }
 
-    public String getOsArch() {
+    public String getOsArch()
+    {
         return osArch;
     }
 
-    public String getRevision() {
+    public String getRevision()
+    {
         return revision;
     }
 }

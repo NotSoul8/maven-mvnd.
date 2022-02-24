@@ -17,10 +17,12 @@ package org.mvndaemon.mvnd.nativ;
 
 import org.junit.jupiter.api.Test;
 
-public class MvndNativeLoaderTest {
+public class MvndNativeLoaderTest
+{
 
     @Test
-    public void testLoadJansi() {
+    public void testLoadJansi()
+    {
         MvndNativeLoader.initialize();
     }
 }

@@ -18,7 +18,8 @@ package org.mvndaemon.mvnd.cache;
 /**
  * A factory for cache objects
  */
-public interface CacheFactory {
+public interface CacheFactory
+{
 
     /**
      * @param  <K> the type of {@link Cache} keys

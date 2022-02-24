@@ -27,8 +27,9 @@ import org.mvndaemon.mvnd.junit.TestParameters;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MvndNativeTest(projectDir = "src/test/projects/specific-file")
-public class SpecificFileNativeIT {
+@MvndNativeTest( projectDir = "src/test/projects/specific-file" )
+public class SpecificFileNativeIT
+{
 
     @Inject
     ClientFactory clientFactory;
@@ -37,21 +38,23 @@ public class SpecificFileNativeIT {
     TestParameters parameters;
 
     @Test
-    void version() throws IOException, InterruptedException {
+    void version() throws IOException, InterruptedException
+    {
         TestClientOutput output = new TestClientOutput();
 
-        Path prj1 = parameters.getTestDir().resolve("project/prj1").toAbsolutePath();
-        Path prj2 = parameters.getTestDir().resolve("project/prj2").toAbsolutePath();
+        Path prj1 = parameters.getTestDir().resolve( "project/prj1" ).toAbsolutePath();
+        Path prj2 = parameters.getTestDir().resolve( "project/prj2" ).toAbsolutePath();
 
-        Client cl = clientFactory.newClient(parameters.clearMavenMultiModuleProjectDirectory().cd(prj1));
+        Client cl = clientFactory.newClient( parameters.clearMavenMultiModuleProjectDirectory().cd( prj1 ) );
 
-        cl.execute(output, "org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate",
-                "-Dexpression=maven.multiModuleProjectDirectory", "-f", "../prj2/pom.xml", "-e").assertSuccess();
-        assertTrue(output.getMessages().stream()
-                .anyMatch(m -> m.toString().contains(prj2.toString())), "Output should contain " + prj2);
+        cl.execute( output, "org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate",
+                "-Dexpression=maven.multiModuleProjectDirectory", "-f", "../prj2/pom.xml", "-e" ).assertSuccess();
+        assertTrue( output.getMessages().stream()
+                .anyMatch( m -> m.toString().contains( prj2.toString() ) ), "Output should contain " + prj2 );
     }
 
-    protected boolean isNative() {
+    protected boolean isNative()
+    {
         return true;
     }
 }

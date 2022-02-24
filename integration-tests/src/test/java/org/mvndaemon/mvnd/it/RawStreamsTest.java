@@ -27,8 +27,9 @@ import org.mvndaemon.mvnd.junit.TestRegistry;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MvndTest(projectDir = "src/test/projects/raw-streams")
-public class RawStreamsTest {
+@MvndTest( projectDir = "src/test/projects/raw-streams" )
+public class RawStreamsTest
+{
 
     @Inject
     Client client;
@@ -40,23 +41,25 @@ public class RawStreamsTest {
     TestRegistry registry;
 
     @Test
-    void version() throws IOException, InterruptedException {
+    void version() throws IOException, InterruptedException
+    {
         registry.killAll();
-        assertDaemonRegistrySize(0);
+        assertDaemonRegistrySize( 0 );
 
         final TestClientOutput o = new TestClientOutput();
-        client.execute(o, "validate", "--quiet", "--raw-streams").assertSuccess();
+        client.execute( o, "validate", "--quiet", "--raw-streams" ).assertSuccess();
         String expected = "PrintOut{payload='Hello'}";
-        o.getMessages().forEach(m -> System.out.println(m.toString()));
-        assertTrue(o.getMessages().stream()
-                .anyMatch(m -> m.toString().contains(expected)), "Output should contain " + expected);
-        assertDaemonRegistrySize(1);
+        o.getMessages().forEach( m -> System.out.println( m.toString() ) );
+        assertTrue( o.getMessages().stream()
+                .anyMatch( m -> m.toString().contains( expected ) ), "Output should contain " + expected );
+        assertDaemonRegistrySize( 1 );
     }
 
-    private void assertDaemonRegistrySize(int size) {
-        Assertions.assertThat(registry.getAll().size())
-                .as("Daemon registry size should be " + size)
-                .isEqualTo(size);
+    private void assertDaemonRegistrySize( int size )
+    {
+        Assertions.assertThat( registry.getAll().size() )
+                .as( "Daemon registry size should be " + size )
+                .isEqualTo( size );
     }
 
 }

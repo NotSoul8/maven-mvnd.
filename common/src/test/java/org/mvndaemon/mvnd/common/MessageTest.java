@@ -26,47 +26,55 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class MessageTest {
+public class MessageTest
+{
 
     @Test
-    public void testBigMessage() throws IOException {
+    public void testBigMessage() throws IOException
+    {
         StringBuilder stringToWrite = new StringBuilder();
-        for (int i = 0; i < 66000; ++i) {
-            stringToWrite.append("a");
+        for ( int i = 0; i < 66000; ++i )
+        {
+            stringToWrite.append( "a" );
         }
-        Message msg = Message.log("project", stringToWrite.toString());
+        Message msg = Message.log( "project", stringToWrite.toString() );
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (DataOutputStream daos = new DataOutputStream(baos)) {
-            msg.write(daos);
+        try ( DataOutputStream daos = new DataOutputStream( baos ) )
+        {
+            msg.write( daos );
         }
 
         Message msg2;
-        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-        try (DataInputStream dis = new DataInputStream(bais)) {
-            msg2 = Message.read(dis);
+        ByteArrayInputStream bais = new ByteArrayInputStream( baos.toByteArray() );
+        try ( DataInputStream dis = new DataInputStream( bais ) )
+        {
+            msg2 = Message.read( dis );
         }
 
-        assertTrue(msg2 instanceof Message.ProjectEvent);
-        assertEquals(stringToWrite.toString(), ((Message.ProjectEvent) msg2).getMessage());
+        assertTrue( msg2 instanceof Message.ProjectEvent );
+        assertEquals( stringToWrite.toString(), ( ( Message.ProjectEvent ) msg2 ).getMessage() );
     }
 
     @Test
-    void buildExceptionSerialization() throws Exception {
-        Message msg = new Message.BuildException(new NullPointerException());
-        assertNull(((Message.BuildException) msg).getMessage());
+    void buildExceptionSerialization() throws Exception
+    {
+        Message msg = new Message.BuildException( new NullPointerException() );
+        assertNull( ( ( Message.BuildException ) msg ).getMessage() );
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (DataOutputStream daos = new DataOutputStream(baos)) {
-            msg.write(daos);
+        try ( DataOutputStream daos = new DataOutputStream( baos ) )
+        {
+            msg.write( daos );
         }
 
         Message msg2;
-        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-        try (DataInputStream dis = new DataInputStream(bais)) {
-            msg2 = Message.read(dis);
+        ByteArrayInputStream bais = new ByteArrayInputStream( baos.toByteArray() );
+        try ( DataInputStream dis = new DataInputStream( bais ) )
+        {
+            msg2 = Message.read( dis );
         }
 
-        assertTrue(msg2 instanceof Message.BuildException);
-        assertNull(((Message.BuildException) msg2).getMessage());
+        assertTrue( msg2 instanceof Message.BuildException );
+        assertNull( ( ( Message.BuildException ) msg2 ).getMessage() );
     }
 }

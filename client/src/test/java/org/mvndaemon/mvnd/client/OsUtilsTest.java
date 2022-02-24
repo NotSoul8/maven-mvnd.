@@ -19,14 +19,16 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.common.OsUtils;
 
-public class OsUtilsTest {
+public class OsUtilsTest
+{
 
     /**
      * This test needs to be in the client module as long as the common module is on Java 8
      */
     @Test
-    void findProcessRssInKb() {
-        long rss = OsUtils.findProcessRssInKb(ProcessHandle.current().pid());
-        Assertions.assertThat(rss).isGreaterThan(0);
+    void findProcessRssInKb()
+    {
+        long rss = OsUtils.findProcessRssInKb( ProcessHandle.current().pid() );
+        Assertions.assertThat( rss ).isGreaterThan( 0 );
     }
 }

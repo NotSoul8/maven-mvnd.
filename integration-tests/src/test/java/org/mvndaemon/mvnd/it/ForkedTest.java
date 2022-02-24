@@ -25,8 +25,9 @@ import org.mvndaemon.mvnd.junit.MvndTest;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MvndTest(projectDir = "src/test/projects/forked")
-public class ForkedTest {
+@MvndTest( projectDir = "src/test/projects/forked" )
+public class ForkedTest
+{
 
     @Inject
     Client client;
@@ -35,13 +36,14 @@ public class ForkedTest {
     DaemonParameters parameters;
 
     @Test
-    void cleanInstall() throws IOException, InterruptedException {
+    void cleanInstall() throws IOException, InterruptedException
+    {
 
         final TestClientOutput output = new TestClientOutput();
-        client.execute(output, "clean", "verify", "-e", "-B").assertSuccess();
-        assertTrue(output.messagesToString()
+        client.execute( output, "clean", "verify", "-e", "-B" ).assertSuccess();
+        assertTrue( output.messagesToString()
                 .contains(
-                        "ProjectLogMessage{projectId='forked/forked-mod1', message='[INFO] Forking forked-mod1 0.0.1-SNAPSHOT'}"));
+                        "ProjectLogMessage{projectId='forked/forked-mod1', message='[INFO] Forking forked-mod1 0.0.1-SNAPSHOT'}" ) );
 
     }
 }

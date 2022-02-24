@@ -21,52 +21,66 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.function.Consumer;
 
-public class LoggingOutputStream extends FilterOutputStream {
+public class LoggingOutputStream extends FilterOutputStream
+{
 
     static final byte[] LINE_SEP = System.lineSeparator().getBytes();
 
     final EolBaos buf;
     final Consumer<String> consumer;
 
-    public LoggingOutputStream(Consumer<String> consumer) {
-        this(new EolBaos(), consumer);
+    public LoggingOutputStream( Consumer<String> consumer )
+    {
+        this( new EolBaos(), consumer );
     }
 
-    LoggingOutputStream(EolBaos out, Consumer<String> consumer) {
-        super(out);
+    LoggingOutputStream( EolBaos out, Consumer<String> consumer )
+    {
+        super( out );
         this.buf = out;
         this.consumer = consumer;
     }
 
-    public PrintStream printStream() {
-        return new LoggingPrintStream(this);
+    public PrintStream printStream()
+    {
+        return new LoggingPrintStream( this );
     }
 
     @Override
-    public void write(int b) throws IOException {
-        super.write(b);
-        if (buf.isEol()) {
-            String line = new String(buf.toByteArray(), 0, buf.size() - LINE_SEP.length);
+    public void write( int b ) throws IOException
+    {
+        super.write( b );
+        if ( buf.isEol() )
+        {
+            String line = new String( buf.toByteArray(), 0, buf.size() - LINE_SEP.length );
             ProjectBuildLogAppender.updateMdc();
-            consumer.accept(line);
+            consumer.accept( line );
             buf.reset();
         }
     }
 
-    public void forceFlush() {
-        if (buf.size() > 0) {
-            String line = new String(buf.toByteArray(), 0, buf.size());
+    public void forceFlush()
+    {
+        if ( buf.size() > 0 )
+        {
+            String line = new String( buf.toByteArray(), 0, buf.size() );
             ProjectBuildLogAppender.updateMdc();
-            consumer.accept(line);
+            consumer.accept( line );
             buf.reset();
         }
     }
 
-    static class EolBaos extends ByteArrayOutputStream {
-        boolean isEol() {
-            if (count >= LINE_SEP.length) {
-                for (int i = 0; i < LINE_SEP.length; i++) {
-                    if (buf[count - LINE_SEP.length + i] != LINE_SEP[i]) {
+    static class EolBaos extends ByteArrayOutputStream
+    {
+
+        boolean isEol()
+        {
+            if ( count >= LINE_SEP.length )
+            {
+                for ( int i = 0; i < LINE_SEP.length; i++ )
+                {
+                    if ( buf[count - LINE_SEP.length + i] != LINE_SEP[i] )
+                    {
                         return false;
                     }
                 }
@@ -76,19 +90,25 @@ public class LoggingOutputStream extends FilterOutputStream {
         }
     }
 
-    public static class LoggingPrintStream extends PrintStream {
-        public LoggingPrintStream(LoggingOutputStream out) {
-            super(out, true);
+    public static class LoggingPrintStream extends PrintStream
+    {
+
+        public LoggingPrintStream( LoggingOutputStream out )
+        {
+            super( out, true );
         }
 
-        public void forceFlush() {
-            ((LoggingOutputStream) out).forceFlush();
+        public void forceFlush()
+        {
+            ( ( LoggingOutputStream ) out ).forceFlush();
         }
     }
 
-    public static void forceFlush(PrintStream ps) {
-        if (ps instanceof LoggingPrintStream) {
-            ((LoggingPrintStream) ps).forceFlush();
+    public static void forceFlush( PrintStream ps )
+    {
+        if ( ps instanceof LoggingPrintStream )
+        {
+            ( ( LoggingPrintStream ) ps ).forceFlush();
         }
     }
 }

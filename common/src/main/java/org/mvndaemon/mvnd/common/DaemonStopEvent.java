@@ -27,59 +27,68 @@ import java.util.Objects;
  * File origin:
  * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/registry/DaemonStopEvent.java
  */
-public class DaemonStopEvent implements Serializable {
+public class DaemonStopEvent implements Serializable
+{
 
     private final String daemonId;
     private final long timestamp;
     private final DaemonExpirationStatus status;
     private final String reason;
 
-    public DaemonStopEvent(String daemonId, long timestamp, DaemonExpirationStatus status, String reason) {
+    public DaemonStopEvent( String daemonId, long timestamp, DaemonExpirationStatus status, String reason )
+    {
         this.daemonId = daemonId;
         this.timestamp = timestamp;
         this.status = status;
         this.reason = reason != null ? reason : "";
     }
 
-    public String getDaemonId() {
+    public String getDaemonId()
+    {
         return daemonId;
     }
 
-    public long getTimestamp() {
+    public long getTimestamp()
+    {
         return timestamp;
     }
 
-    public DaemonExpirationStatus getStatus() {
+    public DaemonExpirationStatus getStatus()
+    {
         return status;
     }
 
-    public String getReason() {
+    public String getReason()
+    {
         return reason;
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o)
+    public boolean equals( Object o )
+    {
+        if ( this == o )
             return true;
-        if (o == null || getClass() != o.getClass())
+        if ( o == null || getClass() != o.getClass() )
             return false;
-        DaemonStopEvent that = (DaemonStopEvent) o;
-        return Objects.equals(daemonId, that.daemonId)
+        DaemonStopEvent that = ( DaemonStopEvent ) o;
+        return Objects.equals( daemonId, that.daemonId )
                 && timestamp == that.timestamp
                 && status == that.status
-                && Objects.equals(reason, that.reason);
+                && Objects.equals( reason, that.reason );
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(timestamp, daemonId, status, reason);
+    public int hashCode()
+    {
+        return Objects.hash( timestamp, daemonId, status, reason );
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "DaemonStopEvent{"
                 + "daemonId=" + daemonId
-                + ", timestamp=" + DateFormat.getDateTimeInstance().format(new Date(timestamp))
+                + ", timestamp=" + DateFormat.getDateTimeInstance().format( new Date( timestamp ) )
                 + ", status=" + status
                 + ", reason=" + reason
                 + "}";

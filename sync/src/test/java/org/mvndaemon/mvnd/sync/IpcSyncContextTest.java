@@ -34,103 +34,123 @@ import org.mvndaemon.mvnd.common.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class IpcSyncContextTest {
+public class IpcSyncContextTest
+{
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(IpcSyncContextTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger( IpcSyncContextTest.class );
 
     @BeforeAll
-    static void setup() {
-        Path target = Paths.get(System.getProperty("basedir", "")).resolve("target");
-        System.setProperty(Environment.MVND_DAEMON_STORAGE.getProperty(), target.resolve("mvnd/storage").toString());
-        System.setProperty(Environment.MVND_HOME.getProperty(), target.resolve("mvnd/home").toString());
-        System.setProperty(IpcServer.IDLE_TIMEOUT_PROP, "5");
-        System.setProperty(IpcServer.FAMILY_PROP, "inet");
-        System.setProperty(IpcServer.NO_NATIVE_PROP, "true");
+    static void setup()
+    {
+        Path target = Paths.get( System.getProperty( "basedir", "" ) ).resolve( "target" );
+        System.setProperty( Environment.MVND_DAEMON_STORAGE.getProperty(),
+                target.resolve( "mvnd/storage" ).toString() );
+        System.setProperty( Environment.MVND_HOME.getProperty(), target.resolve( "mvnd/home" ).toString() );
+        System.setProperty( IpcServer.IDLE_TIMEOUT_PROP, "5" );
+        System.setProperty( IpcServer.FAMILY_PROP, "inet" );
+        System.setProperty( IpcServer.NO_NATIVE_PROP, "true" );
     }
 
     @AfterAll
-    static void tearDown() {
-        System.clearProperty(IpcServer.IDLE_TIMEOUT_PROP);
+    static void tearDown()
+    {
+        System.clearProperty( IpcServer.IDLE_TIMEOUT_PROP );
     }
 
     @Test
-    public void testContextSimple() throws Exception {
+    public void testContextSimple() throws Exception
+    {
         SyncContextFactory factory = new IpcSyncContextFactory();
 
         DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
-        LocalRepository repository = new LocalRepository(new File("target/mvnd/test-repo"));
+        LocalRepository repository = new LocalRepository( new File( "target/mvnd/test-repo" ) );
         LocalRepositoryManager localRepositoryManager = new SimpleLocalRepositoryManagerFactory()
-                .newInstance(session, repository);
-        session.setLocalRepositoryManager(localRepositoryManager);
-        Artifact artifact = new DefaultArtifact("myGroup", "myArtifact", "jar", "0.1");
+                .newInstance( session, repository );
+        session.setLocalRepositoryManager( localRepositoryManager );
+        Artifact artifact = new DefaultArtifact( "myGroup", "myArtifact", "jar", "0.1" );
 
-        try (SyncContext context = factory.newInstance(session, false)) {
-            context.acquire(Collections.singleton(artifact), null);
-            Thread.sleep(50);
+        try ( SyncContext context = factory.newInstance( session, false ) )
+        {
+            context.acquire( Collections.singleton( artifact ), null );
+            Thread.sleep( 50 );
         }
     }
 
     @Test
-    public void testContext() throws Exception {
+    public void testContext() throws Exception
+    {
         SyncContextFactory factory = new IpcSyncContextFactory();
 
         DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
-        LocalRepository repository = new LocalRepository(new File("target/mvnd/test-repo"));
+        LocalRepository repository = new LocalRepository( new File( "target/mvnd/test-repo" ) );
         LocalRepositoryManager localRepositoryManager = new SimpleLocalRepositoryManagerFactory()
-                .newInstance(session, repository);
-        session.setLocalRepositoryManager(localRepositoryManager);
-        Artifact artifact = new DefaultArtifact("myGroup", "myArtifact", "jar", "0.1");
+                .newInstance( session, repository );
+        session.setLocalRepositoryManager( localRepositoryManager );
+        Artifact artifact = new DefaultArtifact( "myGroup", "myArtifact", "jar", "0.1" );
 
         Thread[] threads = new Thread[10];
-        for (int i = 0; i < threads.length; i++) {
-            threads[i] = new Thread(() -> {
-                try (SyncContext context = factory.newInstance(session, false)) {
-                    LOGGER.info("Trying to lock from {}", context);
-                    context.acquire(Collections.singleton(artifact), null);
-                    LOGGER.info("Lock acquired from {}", context);
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException e) {
+        for ( int i = 0; i < threads.length; i++ )
+        {
+            threads[i] = new Thread( () ->
+            {
+                try ( SyncContext context = factory.newInstance( session, false ) )
+                {
+                    LOGGER.info( "Trying to lock from {}", context );
+                    context.acquire( Collections.singleton( artifact ), null );
+                    LOGGER.info( "Lock acquired from {}", context );
+                    try
+                    {
+                        Thread.sleep( 50 );
+                    }
+                    catch ( InterruptedException e )
+                    {
                         e.printStackTrace();
                     }
-                    LOGGER.info("Unlock from {}", context);
+                    LOGGER.info( "Unlock from {}", context );
                 }
-            });
+            } );
             threads[i].start();
         }
 
-        for (Thread thread : threads) {
+        for ( Thread thread : threads )
+        {
             thread.join();
         }
     }
 
     @Test
-    void testTimeoutAndConnect() throws Exception {
-        System.setProperty(IpcServer.IDLE_TIMEOUT_PROP, "50ms");
-        System.setProperty(IpcServer.NO_FORK_PROP, "true");
-        try {
+    void testTimeoutAndConnect() throws Exception
+    {
+        System.setProperty( IpcServer.IDLE_TIMEOUT_PROP, "50ms" );
+        System.setProperty( IpcServer.NO_FORK_PROP, "true" );
+        try
+        {
 
             SyncContextFactory factory = new IpcSyncContextFactory();
 
             DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
-            LocalRepository repository = new LocalRepository(new File("target/mvnd/test-repo"));
+            LocalRepository repository = new LocalRepository( new File( "target/mvnd/test-repo" ) );
             LocalRepositoryManager localRepositoryManager = new SimpleLocalRepositoryManagerFactory()
-                    .newInstance(session, repository);
-            session.setLocalRepositoryManager(localRepositoryManager);
-            Artifact artifact = new DefaultArtifact("myGroup", "myArtifact", "jar", "0.1");
+                    .newInstance( session, repository );
+            session.setLocalRepositoryManager( localRepositoryManager );
+            Artifact artifact = new DefaultArtifact( "myGroup", "myArtifact", "jar", "0.1" );
 
-            for (int i = 0; i < 10; i++) {
-                LOGGER.info("[client] Creating sync context");
-                try (SyncContext context = factory.newInstance(session, false)) {
-                    LOGGER.info("[client] Sync context created: {}", context.toString());
-                    context.acquire(Collections.singleton(artifact), null);
+            for ( int i = 0; i < 10; i++ )
+            {
+                LOGGER.info( "[client] Creating sync context" );
+                try ( SyncContext context = factory.newInstance( session, false ) )
+                {
+                    LOGGER.info( "[client] Sync context created: {}", context.toString() );
+                    context.acquire( Collections.singleton( artifact ), null );
                 }
-                LOGGER.info("[client] Sync context closed");
-                Thread.sleep(100);
+                LOGGER.info( "[client] Sync context closed" );
+                Thread.sleep( 100 );
             }
-        } finally {
-            System.clearProperty(IpcServer.IDLE_TIMEOUT_PROP);
-            System.clearProperty(IpcServer.NO_FORK_PROP);
+        }
+        finally
+        {
+            System.clearProperty( IpcServer.IDLE_TIMEOUT_PROP );
+            System.clearProperty( IpcServer.NO_FORK_PROP );
         }
     }
 }

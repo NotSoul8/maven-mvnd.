@@ -25,8 +25,9 @@ import org.mvndaemon.mvnd.junit.MvndTest;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MvndTest(projectDir = "src/test/projects/junit-platform")
-public class JUnitPlatformTest {
+@MvndTest( projectDir = "src/test/projects/junit-platform" )
+public class JUnitPlatformTest
+{
 
     @Inject
     Client client;
@@ -35,18 +36,20 @@ public class JUnitPlatformTest {
     DaemonParameters parameters;
 
     @Test
-    void cleanTestInheritIO() throws InterruptedException {
+    void cleanTestInheritIO() throws InterruptedException
+    {
 
         final TestClientOutput output = new TestClientOutput();
-        client.execute(output, "clean", "test", "-e", "-Dmvnd.log.level=DEBUG").assertSuccess();
-        assertHasTestMessage(output);
+        client.execute( output, "clean", "test", "-e", "-Dmvnd.log.level=DEBUG" ).assertSuccess();
+        assertHasTestMessage( output );
 
     }
 
-    private void assertHasTestMessage(final TestClientOutput output) {
-        assertTrue(output.getMessages().stream()
-                .filter(Message.ProjectEvent.class::isInstance)
-                .map(Message.ProjectEvent.class::cast)
-                .anyMatch(it -> it.getMessage().contains("[stdout] From test")));
+    private void assertHasTestMessage( final TestClientOutput output )
+    {
+        assertTrue( output.getMessages().stream()
+                .filter( Message.ProjectEvent.class::isInstance )
+                .map( Message.ProjectEvent.class::cast )
+                .anyMatch( it -> it.getMessage().contains( "[stdout] From test" ) ) );
     }
 }

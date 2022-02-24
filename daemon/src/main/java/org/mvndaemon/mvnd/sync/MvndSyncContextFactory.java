@@ -37,8 +37,9 @@ import org.mvndaemon.mvnd.common.Environment;
 
 @Singleton
 @Named
-@Priority(20)
-public class MvndSyncContextFactory implements SyncContextFactory {
+@Priority( 20 )
+public class MvndSyncContextFactory implements SyncContextFactory
+{
 
     public static final String FACTORY_NOOP = "noop";
     public static final String FACTORY_IPC = "ipc";
@@ -48,102 +49,136 @@ public class MvndSyncContextFactory implements SyncContextFactory {
 
     private final Map<String, SyncContextFactory> factories;
 
-    @SuppressWarnings("unchecked")
-    public MvndSyncContextFactory() {
-        try {
+    @SuppressWarnings( "unchecked" )
+    public MvndSyncContextFactory()
+    {
+        try
+        {
             Map<String, SyncContextFactory> map = new HashMap<>();
-            map.put(FACTORY_LOCAL, new LocalSyncContextFactory());
-            map.put(FACTORY_NOOP, new NoopSyncContextFactory());
-            Class<? extends SyncContextFactory> factoryClass = (Class<? extends SyncContextFactory>) getClass().getClassLoader()
-                    .loadClass(IPC_SYNC_CONTEXT_FACTORY);
-            map.put(FACTORY_IPC, factoryClass.getDeclaredConstructor().newInstance());
-            factories = Collections.unmodifiableMap(map);
-        } catch (Exception e) {
-            throw new RuntimeException("Unable to create IpcSyncContextFactory instance", e);
+            map.put( FACTORY_LOCAL, new LocalSyncContextFactory() );
+            map.put( FACTORY_NOOP, new NoopSyncContextFactory() );
+            Class<? extends SyncContextFactory> factoryClass = ( Class<? extends SyncContextFactory> ) getClass()
+                    .getClassLoader()
+                    .loadClass( IPC_SYNC_CONTEXT_FACTORY );
+            map.put( FACTORY_IPC, factoryClass.getDeclaredConstructor().newInstance() );
+            factories = Collections.unmodifiableMap( map );
+        }
+        catch ( Exception e )
+        {
+            throw new RuntimeException( "Unable to create IpcSyncContextFactory instance", e );
         }
     }
 
     @Override
-    public SyncContext newInstance(RepositorySystemSession repositorySystemSession, boolean shared) {
+    public SyncContext newInstance( RepositorySystemSession repositorySystemSession, boolean shared )
+    {
         String name = Environment.MVND_SYNC_CONTEXT_FACTORY.asOptional()
-                .orElseGet(Environment.MVND_SYNC_CONTEXT_FACTORY::getDefault);
-        SyncContextFactory factory = factories.get(name);
-        if (factory == null) {
-            throw new RuntimeException("Unable to find SyncContextFactory named '" + name + "'");
+                .orElseGet( Environment.MVND_SYNC_CONTEXT_FACTORY::getDefault );
+        SyncContextFactory factory = factories.get( name );
+        if ( factory == null )
+        {
+            throw new RuntimeException( "Unable to find SyncContextFactory named '" + name + "'" );
         }
-        return factory.newInstance(repositorySystemSession, shared);
+        return factory.newInstance( repositorySystemSession, shared );
     }
 
-    private static class NoopSyncContextFactory implements SyncContextFactory {
+    private static class NoopSyncContextFactory implements SyncContextFactory
+    {
+
         @Override
-        public SyncContext newInstance(RepositorySystemSession repositorySystemSession, boolean shared) {
-            return new SyncContext() {
+        public SyncContext newInstance( RepositorySystemSession repositorySystemSession, boolean shared )
+        {
+            return new SyncContext()
+            {
+
                 @Override
-                public void acquire(Collection<? extends Artifact> artifacts, Collection<? extends Metadata> metadatas) {
+                public void acquire( Collection<? extends Artifact> artifacts,
+                        Collection<? extends Metadata> metadatas )
+                {
                 }
 
                 @Override
-                public void close() {
+                public void close()
+                {
                 }
             };
         }
     }
 
-    private static class LocalSyncContextFactory implements SyncContextFactory {
+    private static class LocalSyncContextFactory implements SyncContextFactory
+    {
+
         final Map<String, Lock> locks = new ConcurrentHashMap<>();
 
         @Override
-        public SyncContext newInstance(RepositorySystemSession session, boolean shared) {
+        public SyncContext newInstance( RepositorySystemSession session, boolean shared )
+        {
             return new LocalSyncContext();
         }
 
-        private class LocalSyncContext implements SyncContext {
+        private class LocalSyncContext implements SyncContext
+        {
+
             private final Deque<String> locked = new ArrayDeque<>();
 
             @Override
-            public void acquire(Collection<? extends Artifact> artifacts, Collection<? extends Metadata> metadatas) {
-                stream(artifacts).map(this::getKey).sorted().forEach(this::acquire);
-                stream(metadatas).map(this::getKey).sorted().forEach(this::acquire);
+            public void acquire( Collection<? extends Artifact> artifacts, Collection<? extends Metadata> metadatas )
+            {
+                stream( artifacts ).map( this::getKey ).sorted().forEach( this::acquire );
+                stream( metadatas ).map( this::getKey ).sorted().forEach( this::acquire );
             }
 
-            private void acquire(String key) {
-                try {
-                    getLock(key).lock();
-                    locked.add(key);
-                } catch (Exception e) {
+            private void acquire( String key )
+            {
+                try
+                {
+                    getLock( key ).lock();
+                    locked.add( key );
+                }
+                catch ( Exception e )
+                {
                     close();
-                    throw new IllegalStateException("Could not acquire lock for '" + key + "'", e);
+                    throw new IllegalStateException( "Could not acquire lock for '" + key + "'", e );
                 }
             }
 
             @Override
-            public void close() {
+            public void close()
+            {
                 String key;
-                while ((key = locked.poll()) != null) {
-                    getLock(key).unlock();
+                while ( ( key = locked.poll() ) != null )
+                {
+                    getLock( key ).unlock();
                 }
             }
 
-            private Lock getLock(String key) {
-                return locks.computeIfAbsent(key, k -> new ReentrantLock());
+            private Lock getLock( String key )
+            {
+                return locks.computeIfAbsent( key, k -> new ReentrantLock() );
             }
 
-            private <T> Stream<T> stream(Collection<T> col) {
+            private <T> Stream<T> stream( Collection<T> col )
+            {
                 return col != null ? col.stream() : Stream.empty();
             }
 
-            private String getKey(Artifact a) {
+            private String getKey( Artifact a )
+            {
                 return "artifact:" + a.getGroupId() + ":" + a.getArtifactId() + ":" + a.getBaseVersion();
             }
 
-            private String getKey(Metadata m) {
-                StringBuilder key = new StringBuilder("metadata:");
-                if (!m.getGroupId().isEmpty()) {
-                    key.append(m.getGroupId());
-                    if (!m.getArtifactId().isEmpty()) {
-                        key.append(':').append(m.getArtifactId());
-                        if (!m.getVersion().isEmpty()) {
-                            key.append(':').append(m.getVersion());
+            private String getKey( Metadata m )
+            {
+                StringBuilder key = new StringBuilder( "metadata:" );
+                if ( !m.getGroupId().isEmpty() )
+                {
+                    key.append( m.getGroupId() );
+                    if ( !m.getArtifactId().isEmpty() )
+                    {
+                        key.append( ':' ).append( m.getArtifactId() );
+                        if ( !m.getVersion().isEmpty() )
+                        {
+                            key.append( ':' ).append( m.getVersion() );
                         }
                     }
                 }

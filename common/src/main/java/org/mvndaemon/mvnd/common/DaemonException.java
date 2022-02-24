@@ -15,73 +15,100 @@
  */
 package org.mvndaemon.mvnd.common;
 
-public class DaemonException extends RuntimeException {
+public class DaemonException extends RuntimeException
+{
 
-    public DaemonException(String message) {
-        super(message);
+    public DaemonException( String message )
+    {
+        super( message );
     }
 
-    public DaemonException(String message, Throwable cause) {
-        super(message, cause);
+    public DaemonException( String message, Throwable cause )
+    {
+        super( message, cause );
     }
 
-    public DaemonException(Throwable cause) {
-        super(cause);
+    public DaemonException( Throwable cause )
+    {
+        super( cause );
     }
 
-    public static class InterruptedException extends DaemonException {
-        public InterruptedException(Throwable cause) {
-            super(cause);
-        }
-    }
+    public static class InterruptedException extends DaemonException
+    {
 
-    public static class ConnectException extends DaemonException {
-        public ConnectException(String message) {
-            super(message);
-        }
-
-        public ConnectException(String message, Throwable cause) {
-            super(message, cause);
+        public InterruptedException( Throwable cause )
+        {
+            super( cause );
         }
     }
 
-    public static class StartException extends DaemonException {
-        public StartException(String message) {
-            super(message);
+    public static class ConnectException extends DaemonException
+    {
+
+        public ConnectException( String message )
+        {
+            super( message );
         }
 
-        public StartException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
-
-    public static class MessageIOException extends DaemonException {
-        public MessageIOException(String message) {
-            super(message);
-        }
-
-        public MessageIOException(String message, Throwable cause) {
-            super(message, cause);
+        public ConnectException( String message, Throwable cause )
+        {
+            super( message, cause );
         }
     }
 
-    public static class RecoverableMessageIOException extends MessageIOException {
-        public RecoverableMessageIOException(String message) {
-            super(message);
+    public static class StartException extends DaemonException
+    {
+
+        public StartException( String message )
+        {
+            super( message );
         }
 
-        public RecoverableMessageIOException(String message, Throwable cause) {
-            super(message, cause);
+        public StartException( String message, Throwable cause )
+        {
+            super( message, cause );
         }
     }
 
-    public static class StaleAddressException extends DaemonException {
-        public StaleAddressException(String message) {
-            super(message);
+    public static class MessageIOException extends DaemonException
+    {
+
+        public MessageIOException( String message )
+        {
+            super( message );
         }
 
-        public StaleAddressException(String message, Throwable cause) {
-            super(message, cause);
+        public MessageIOException( String message, Throwable cause )
+        {
+            super( message, cause );
+        }
+    }
+
+    public static class RecoverableMessageIOException extends MessageIOException
+    {
+
+        public RecoverableMessageIOException( String message )
+        {
+            super( message );
+        }
+
+        public RecoverableMessageIOException( String message, Throwable cause )
+        {
+            super( message, cause );
+        }
+    }
+
+    public static class StaleAddressException extends DaemonException
+    {
+
+        public StaleAddressException( String message )
+        {
+            super( message );
+        }
+
+        public StaleAddressException( String message, Throwable cause )
+        {
+            super( message, cause );
         }
     }
 

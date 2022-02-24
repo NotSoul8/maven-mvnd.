@@ -39,7 +39,8 @@ import java.util.Random;
  * <p>
  * usage: call {@link #initialize()} before using mvndnative.
  */
-public class MvndNativeLoader {
+public class MvndNativeLoader
+{
 
     private static boolean loaded = false;
     private static String nativeLibraryPath;
@@ -51,97 +52,128 @@ public class MvndNativeLoader {
      * @return True if mvndnative native library is successfully loaded; false
      *         otherwise.
      */
-    public static synchronized boolean initialize() {
+    public static synchronized boolean initialize()
+    {
         // only cleanup before the first extract
-        if (!loaded) {
+        if ( !loaded )
+        {
             cleanup();
         }
-        try {
+        try
+        {
             loadMvndNativeLibrary();
-        } catch (Exception e) {
-            throw new RuntimeException("Unable to load mvndnative native library", e);
+        }
+        catch ( Exception e )
+        {
+            throw new RuntimeException( "Unable to load mvndnative native library", e );
         }
         return loaded;
     }
 
-    public static String getNativeLibraryPath() {
+    public static String getNativeLibraryPath()
+    {
         return nativeLibraryPath;
     }
 
-    public static String getNativeLibrarySourceUrl() {
+    public static String getNativeLibrarySourceUrl()
+    {
         return nativeLibrarySourceUrl;
     }
 
-    private static File getTempDir() {
-        return new File(System.getProperty("mvndnative.tmpdir", System.getProperty("java.io.tmpdir")));
+    private static File getTempDir()
+    {
+        return new File( System.getProperty( "mvndnative.tmpdir", System.getProperty( "java.io.tmpdir" ) ) );
     }
 
     /**
      * Deleted old native libraries e.g. on Windows the DLL file is not removed
      * on VM-Exit (bug #80)
      */
-    static void cleanup() {
+    static void cleanup()
+    {
         String tempFolder = getTempDir().getAbsolutePath();
-        File dir = new File(tempFolder);
+        File dir = new File( tempFolder );
 
-        File[] nativeLibFiles = dir.listFiles(new FilenameFilter() {
+        File[] nativeLibFiles = dir.listFiles( new FilenameFilter()
+        {
+
             private final String searchPattern = "mvndnative-" + getVersion();
 
-            public boolean accept(File dir, String name) {
-                return name.startsWith(searchPattern) && !name.endsWith(".lck");
+            public boolean accept( File dir, String name )
+            {
+                return name.startsWith( searchPattern ) && !name.endsWith( ".lck" );
             }
-        });
-        if (nativeLibFiles != null) {
-            for (File nativeLibFile : nativeLibFiles) {
-                File lckFile = new File(nativeLibFile.getAbsolutePath() + ".lck");
-                if (!lckFile.exists()) {
-                    try {
+        } );
+        if ( nativeLibFiles != null )
+        {
+            for ( File nativeLibFile : nativeLibFiles )
+            {
+                File lckFile = new File( nativeLibFile.getAbsolutePath() + ".lck" );
+                if ( !lckFile.exists() )
+                {
+                    try
+                    {
                         nativeLibFile.delete();
-                    } catch (SecurityException e) {
-                        System.err.println("Failed to delete old native lib" + e.getMessage());
+                    }
+                    catch ( SecurityException e )
+                    {
+                        System.err.println( "Failed to delete old native lib" + e.getMessage() );
                     }
                 }
             }
         }
     }
 
-    private static int readNBytes(InputStream in, byte[] b) throws IOException {
+    private static int readNBytes( InputStream in, byte[] b ) throws IOException
+    {
         int n = 0;
         int len = b.length;
-        while (n < len) {
-            int count = in.read(b, n, len - n);
-            if (count <= 0)
+        while ( n < len )
+        {
+            int count = in.read( b, n, len - n );
+            if ( count <= 0 )
                 break;
             n += count;
         }
         return n;
     }
 
-    private static String contentsEquals(InputStream in1, InputStream in2) throws IOException {
+    private static String contentsEquals( InputStream in1, InputStream in2 ) throws IOException
+    {
         byte[] buffer1 = new byte[8192];
         byte[] buffer2 = new byte[8192];
         int numRead1;
         int numRead2;
-        while (true) {
-            numRead1 = readNBytes(in1, buffer1);
-            numRead2 = readNBytes(in2, buffer2);
-            if (numRead1 > 0) {
-                if (numRead2 <= 0) {
+        while ( true )
+        {
+            numRead1 = readNBytes( in1, buffer1 );
+            numRead2 = readNBytes( in2, buffer2 );
+            if ( numRead1 > 0 )
+            {
+                if ( numRead2 <= 0 )
+                {
                     return "EOF on second stream but not first";
                 }
-                if (numRead2 != numRead1) {
+                if ( numRead2 != numRead1 )
+                {
                     return "Read size different (" + numRead1 + " vs " + numRead2 + ")";
                 }
                 // Otherwise same number of bytes read
-                if (!Arrays.equals(buffer1, buffer2)) {
+                if ( !Arrays.equals( buffer1, buffer2 ) )
+                {
                     return "Content differs";
                 }
                 // Otherwise same bytes read, so continue ...
-            } else {
+            }
+            else
+            {
                 // Nothing more in stream 1 ...
-                if (numRead2 > 0) {
+                if ( numRead2 > 0 )
+                {
                     return "EOF on first stream but not second";
-                } else {
+                }
+                else
+                {
                     return null;
                 }
             }
@@ -156,69 +188,86 @@ public class MvndNativeLoader {
      * @param  targetFolder          Target folder.
      * @return
      */
-    private static boolean extractAndLoadLibraryFile(String libFolderForCurrentOS, String libraryFileName,
-            String targetFolder) {
+    private static boolean extractAndLoadLibraryFile( String libFolderForCurrentOS, String libraryFileName,
+            String targetFolder )
+    {
         String nativeLibraryFilePath = libFolderForCurrentOS + "/" + libraryFileName;
         // Include architecture name in temporary filename in order to avoid conflicts
         // when multiple JVMs with different architectures running at the same time
         String uuid = randomUUID();
-        String extractedLibFileName = String.format("mvndnative-%s-%s-%s", getVersion(), uuid, libraryFileName);
+        String extractedLibFileName = String.format( "mvndnative-%s-%s-%s", getVersion(), uuid, libraryFileName );
         String extractedLckFileName = extractedLibFileName + ".lck";
 
-        File extractedLibFile = new File(targetFolder, extractedLibFileName);
-        File extractedLckFile = new File(targetFolder, extractedLckFileName);
+        File extractedLibFile = new File( targetFolder, extractedLibFileName );
+        File extractedLckFile = new File( targetFolder, extractedLckFileName );
 
-        try {
+        try
+        {
             // Extract a native library file into the target directory
-            try (InputStream in = MvndNativeLoader.class.getResourceAsStream(nativeLibraryFilePath)) {
-                if (!extractedLckFile.exists()) {
-                    new FileOutputStream(extractedLckFile).close();
+            try ( InputStream in = MvndNativeLoader.class.getResourceAsStream( nativeLibraryFilePath ) )
+            {
+                if ( !extractedLckFile.exists() )
+                {
+                    new FileOutputStream( extractedLckFile ).close();
                 }
-                try (OutputStream out = new FileOutputStream(extractedLibFile)) {
-                    copy(in, out);
+                try ( OutputStream out = new FileOutputStream( extractedLibFile ) )
+                {
+                    copy( in, out );
                 }
-            } finally {
+            }
+            finally
+            {
                 // Delete the extracted lib file on JVM exit.
                 extractedLibFile.deleteOnExit();
                 extractedLckFile.deleteOnExit();
             }
 
             // Set executable (x) flag to enable Java to load the native library
-            extractedLibFile.setReadable(true);
-            extractedLibFile.setWritable(true);
-            extractedLibFile.setExecutable(true);
+            extractedLibFile.setReadable( true );
+            extractedLibFile.setWritable( true );
+            extractedLibFile.setExecutable( true );
 
             // Check whether the contents are properly copied from the resource folder
-            try (InputStream nativeIn = MvndNativeLoader.class.getResourceAsStream(nativeLibraryFilePath)) {
-                try (InputStream extractedLibIn = new FileInputStream(extractedLibFile)) {
-                    String eq = contentsEquals(nativeIn, extractedLibIn);
-                    if (eq != null) {
+            try ( InputStream nativeIn = MvndNativeLoader.class.getResourceAsStream( nativeLibraryFilePath ) )
+            {
+                try ( InputStream extractedLibIn = new FileInputStream( extractedLibFile ) )
+                {
+                    String eq = contentsEquals( nativeIn, extractedLibIn );
+                    if ( eq != null )
+                    {
                         throw new RuntimeException(
-                                String.format("Failed to write a native library file at %s because %s", extractedLibFile, eq));
+                                String.format( "Failed to write a native library file at %s because %s",
+                                        extractedLibFile, eq ) );
                     }
                 }
             }
 
             // Load library
-            if (loadNativeLibrary(extractedLibFile)) {
-                nativeLibrarySourceUrl = MvndNativeLoader.class.getResource(nativeLibraryFilePath).toExternalForm();
+            if ( loadNativeLibrary( extractedLibFile ) )
+            {
+                nativeLibrarySourceUrl = MvndNativeLoader.class.getResource( nativeLibraryFilePath ).toExternalForm();
                 return true;
             }
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
+        }
+        catch ( IOException e )
+        {
+            System.err.println( e.getMessage() );
         }
         return false;
     }
 
-    private static String randomUUID() {
-        return Long.toHexString(new Random().nextLong());
+    private static String randomUUID()
+    {
+        return Long.toHexString( new Random().nextLong() );
     }
 
-    private static void copy(InputStream in, OutputStream out) throws IOException {
+    private static void copy( InputStream in, OutputStream out ) throws IOException
+    {
         byte[] buf = new byte[8192];
         int n;
-        while ((n = in.read(buf)) > 0) {
-            out.write(buf, 0, n);
+        while ( ( n = in.read( buf ) ) > 0 )
+        {
+            out.write( buf, 0, n );
         }
     }
 
@@ -228,22 +277,29 @@ public class MvndNativeLoader {
      * @param  libPath Path of the native library.
      * @return         True for successfully loading; false otherwise.
      */
-    private static boolean loadNativeLibrary(File libPath) {
-        if (libPath.exists()) {
+    private static boolean loadNativeLibrary( File libPath )
+    {
+        if ( libPath.exists() )
+        {
 
-            try {
+            try
+            {
                 String path = libPath.getAbsolutePath();
-                System.load(path);
+                System.load( path );
                 nativeLibraryPath = path;
                 return true;
-            } catch (UnsatisfiedLinkError e) {
-                System.err.println("Failed to load native library:" + libPath.getName() + ". osinfo: "
-                        + OSInfo.getNativeLibFolderPathForCurrentOS());
-                System.err.println(e);
+            }
+            catch ( UnsatisfiedLinkError e )
+            {
+                System.err.println( "Failed to load native library:" + libPath.getName() + ". osinfo: "
+                        + OSInfo.getNativeLibFolderPathForCurrentOS() );
+                System.err.println( e );
                 return false;
             }
 
-        } else {
+        }
+        else
+        {
             return false;
         }
     }
@@ -253,127 +309,159 @@ public class MvndNativeLoader {
      *
      * @throws
      */
-    private static void loadMvndNativeLibrary() throws Exception {
-        if (loaded) {
+    private static void loadMvndNativeLibrary() throws Exception
+    {
+        if ( loaded )
+        {
             return;
         }
 
         List<String> triedPaths = new LinkedList<String>();
 
         // Try loading library from library.mvndnative.path library path */
-        String mvndnativeNativeLibraryPath = System.getProperty("library.mvndnative.path");
-        String mvndnativeNativeLibraryName = System.getProperty("library.mvndnative.name");
-        if (mvndnativeNativeLibraryName == null) {
-            mvndnativeNativeLibraryName = System.mapLibraryName("mvndnative");
+        String mvndnativeNativeLibraryPath = System.getProperty( "library.mvndnative.path" );
+        String mvndnativeNativeLibraryName = System.getProperty( "library.mvndnative.name" );
+        if ( mvndnativeNativeLibraryName == null )
+        {
+            mvndnativeNativeLibraryName = System.mapLibraryName( "mvndnative" );
             assert mvndnativeNativeLibraryName != null;
-            if (mvndnativeNativeLibraryName.endsWith(".dylib")) {
-                mvndnativeNativeLibraryName = mvndnativeNativeLibraryName.replace(".dylib", ".jnilib");
+            if ( mvndnativeNativeLibraryName.endsWith( ".dylib" ) )
+            {
+                mvndnativeNativeLibraryName = mvndnativeNativeLibraryName.replace( ".dylib", ".jnilib" );
             }
         }
 
-        if (mvndnativeNativeLibraryPath != null) {
+        if ( mvndnativeNativeLibraryPath != null )
+        {
             String withOs = mvndnativeNativeLibraryPath + "/" + OSInfo.getNativeLibFolderPathForCurrentOS();
-            if (loadNativeLibrary(new File(withOs, mvndnativeNativeLibraryName))) {
+            if ( loadNativeLibrary( new File( withOs, mvndnativeNativeLibraryName ) ) )
+            {
                 loaded = true;
                 return;
-            } else {
-                triedPaths.add(withOs);
+            }
+            else
+            {
+                triedPaths.add( withOs );
             }
 
-            if (loadNativeLibrary(new File(mvndnativeNativeLibraryPath, mvndnativeNativeLibraryName))) {
+            if ( loadNativeLibrary( new File( mvndnativeNativeLibraryPath, mvndnativeNativeLibraryName ) ) )
+            {
                 loaded = true;
                 return;
-            } else {
-                triedPaths.add(mvndnativeNativeLibraryPath);
+            }
+            else
+            {
+                triedPaths.add( mvndnativeNativeLibraryPath );
             }
         }
 
         // Load the os-dependent library from the jar file
-        String packagePath = MvndNativeLoader.class.getPackage().getName().replace('.', '/');
-        mvndnativeNativeLibraryPath = String.format("/%s/%s", packagePath, OSInfo.getNativeLibFolderPathForCurrentOS());
-        boolean hasNativeLib = hasResource(mvndnativeNativeLibraryPath + "/" + mvndnativeNativeLibraryName);
+        String packagePath = MvndNativeLoader.class.getPackage().getName().replace( '.', '/' );
+        mvndnativeNativeLibraryPath = String.format( "/%s/%s", packagePath,
+                OSInfo.getNativeLibFolderPathForCurrentOS() );
+        boolean hasNativeLib = hasResource( mvndnativeNativeLibraryPath + "/" + mvndnativeNativeLibraryName );
 
-        if (hasNativeLib) {
+        if ( hasNativeLib )
+        {
             // temporary library folder
             String tempFolder = getTempDir().getAbsolutePath();
             // Try extracting the library from jar
-            if (extractAndLoadLibraryFile(mvndnativeNativeLibraryPath, mvndnativeNativeLibraryName, tempFolder)) {
+            if ( extractAndLoadLibraryFile( mvndnativeNativeLibraryPath, mvndnativeNativeLibraryName, tempFolder ) )
+            {
                 loaded = true;
                 return;
-            } else {
-                triedPaths.add(mvndnativeNativeLibraryPath);
+            }
+            else
+            {
+                triedPaths.add( mvndnativeNativeLibraryPath );
             }
         }
 
         // As a last resort try from java.library.path
-        String javaLibraryPath = System.getProperty("java.library.path", "");
-        for (String ldPath : javaLibraryPath.split(File.pathSeparator)) {
-            if (ldPath.isEmpty()) {
+        String javaLibraryPath = System.getProperty( "java.library.path", "" );
+        for ( String ldPath : javaLibraryPath.split( File.pathSeparator ) )
+        {
+            if ( ldPath.isEmpty() )
+            {
                 continue;
             }
-            if (loadNativeLibrary(new File(ldPath, mvndnativeNativeLibraryName))) {
+            if ( loadNativeLibrary( new File( ldPath, mvndnativeNativeLibraryName ) ) )
+            {
                 loaded = true;
                 return;
-            } else {
-                triedPaths.add(ldPath);
+            }
+            else
+            {
+                triedPaths.add( ldPath );
             }
         }
 
-        throw new Exception(String.format("No native library found for os.name=%s, os.arch=%s, paths=[%s]",
-                OSInfo.getOSName(), OSInfo.getArchName(), join(triedPaths, File.pathSeparator)));
+        throw new Exception( String.format( "No native library found for os.name=%s, os.arch=%s, paths=[%s]",
+                OSInfo.getOSName(), OSInfo.getArchName(), join( triedPaths, File.pathSeparator ) ) );
     }
 
-    private static boolean hasResource(String path) {
-        return MvndNativeLoader.class.getResource(path) != null;
+    private static boolean hasResource( String path )
+    {
+        return MvndNativeLoader.class.getResource( path ) != null;
     }
 
     /**
      * @return The major version of the mvndnative library.
      */
-    public static int getMajorVersion() {
-        String[] c = getVersion().split("\\.");
-        return (c.length > 0) ? Integer.parseInt(c[0]) : 1;
+    public static int getMajorVersion()
+    {
+        String[] c = getVersion().split( "\\." );
+        return ( c.length > 0 ) ? Integer.parseInt( c[0] ) : 1;
     }
 
     /**
      * @return The minor version of the mvndnative library.
      */
-    public static int getMinorVersion() {
-        String[] c = getVersion().split("\\.");
-        return (c.length > 1) ? Integer.parseInt(c[1]) : 0;
+    public static int getMinorVersion()
+    {
+        String[] c = getVersion().split( "\\." );
+        return ( c.length > 1 ) ? Integer.parseInt( c[1] ) : 0;
     }
 
     /**
      * @return The version of the mvndnative library.
      */
-    public static String getVersion() {
+    public static String getVersion()
+    {
 
-        URL versionFile = MvndNativeLoader.class.getResource("/META-INF/maven/org.mvndaemon.mvnd/mvnd-native/pom.properties");
+        URL versionFile = MvndNativeLoader.class
+                .getResource( "/META-INF/maven/org.mvndaemon.mvnd/mvnd-native/pom.properties" );
 
         String version = "unknown";
-        try {
-            if (versionFile != null) {
+        try
+        {
+            if ( versionFile != null )
+            {
                 Properties versionData = new Properties();
-                versionData.load(versionFile.openStream());
-                version = versionData.getProperty("version", version);
-                version = version.trim().replaceAll("[^0-9.]", "");
+                versionData.load( versionFile.openStream() );
+                version = versionData.getProperty( "version", version );
+                version = version.trim().replaceAll( "[^0-9.]", "" );
             }
-        } catch (IOException e) {
-            System.err.println(e);
+        }
+        catch ( IOException e )
+        {
+            System.err.println( e );
         }
         return version;
     }
 
-    private static String join(List<String> list, String separator) {
+    private static String join( List<String> list, String separator )
+    {
         StringBuilder sb = new StringBuilder();
         boolean first = true;
-        for (String item : list) {
-            if (first)
+        for ( String item : list )
+        {
+            if ( first )
                 first = false;
             else
-                sb.append(separator);
+                sb.append( separator );
 
-            sb.append(item);
+            sb.append( item );
         }
         return sb.toString();
     }

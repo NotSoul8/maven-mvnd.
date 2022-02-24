@@ -25,12 +25,14 @@ import org.mvndaemon.mvnd.common.Os;
 
 @Named
 @Singleton
-@Priority(10)
-public class DefaultCacheFactory implements CacheFactory {
+@Priority( 10 )
+public class DefaultCacheFactory implements CacheFactory
+{
 
     private final CacheFactory delegate;
 
-    public DefaultCacheFactory() {
+    public DefaultCacheFactory()
+    {
         /* java.nio.file.attribute.BasicFileAttributes.fileKey() is always null on Windows
          * and we do not hold relying solely on java.nio.file.attribute.BasicFileAttributes#lastModifiedTime()
          * for sufficient. So we rather rely on WatchService on Windows */
@@ -38,7 +40,8 @@ public class DefaultCacheFactory implements CacheFactory {
     }
 
     @Override
-    public <K, V extends CacheRecord> Cache<K, V> newCache() {
+    public <K, V extends CacheRecord> Cache<K, V> newCache()
+    {
         return delegate.newCache();
     }
 

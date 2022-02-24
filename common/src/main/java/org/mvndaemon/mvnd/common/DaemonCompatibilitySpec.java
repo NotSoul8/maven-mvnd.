@@ -25,7 +25,8 @@ import java.util.function.Supplier;
  * File origin:
  * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/context/DaemonCompatibilitySpec.java
  */
-public class DaemonCompatibilitySpec {
+public class DaemonCompatibilitySpec
+{
 
     private final Path javaHome;
     private final List<String> options;
@@ -34,73 +35,90 @@ public class DaemonCompatibilitySpec {
      * @param javaHome make sure the Path is a result of {@link Path#toRealPath(java.nio.file.LinkOption...)}
      * @param options  the options
      */
-    public DaemonCompatibilitySpec(Path javaHome, List<String> options) {
-        this.javaHome = Objects.requireNonNull(javaHome, "javaHome");
-        this.options = Objects.requireNonNull(options, "options");
+    public DaemonCompatibilitySpec( Path javaHome, List<String> options )
+    {
+        this.javaHome = Objects.requireNonNull( javaHome, "javaHome" );
+        this.options = Objects.requireNonNull( options, "options" );
     }
 
-    public Path getJavaHome() {
+    public Path getJavaHome()
+    {
         return javaHome;
     }
 
-    public List<String> getOptions() {
+    public List<String> getOptions()
+    {
         return options;
     }
 
-    public Result isSatisfiedBy(DaemonInfo daemon) {
-        if (!javaHomeMatches(daemon)) {
-            return new Result(false, () -> "Java home is different.\n" + diff(daemon));
+    public Result isSatisfiedBy( DaemonInfo daemon )
+    {
+        if ( !javaHomeMatches( daemon ) )
+        {
+            return new Result( false, () -> "Java home is different.\n" + diff( daemon ) );
         }
-        if (!daemonOptsMatch(daemon)) {
-            return new Result(false, () -> "At least one daemon option is different.\n" + diff(daemon));
+        if ( !daemonOptsMatch( daemon ) )
+        {
+            return new Result( false, () -> "At least one daemon option is different.\n" + diff( daemon ) );
         }
-        return new Result(true, () -> {
-            throw new RuntimeException("No reason if DaemonCompatibilityResult.compatible == true");
-        });
+        return new Result( true, () ->
+        {
+            throw new RuntimeException( "No reason if DaemonCompatibilityResult.compatible == true" );
+        } );
     }
 
-    private String diff(DaemonInfo context) {
-        final StringBuilder sb = new StringBuilder("Wanted: ");
-        appendFields(sb);
-        sb.append("\nActual: ");
-        context.appendNonKeyFields(sb).append("id=").append(context.getId()).append('\n');
+    private String diff( DaemonInfo context )
+    {
+        final StringBuilder sb = new StringBuilder( "Wanted: " );
+        appendFields( sb );
+        sb.append( "\nActual: " );
+        context.appendNonKeyFields( sb ).append( "id=" ).append( context.getId() ).append( '\n' );
         return sb.toString();
     }
 
-    private boolean daemonOptsMatch(DaemonInfo daemon) {
-        return daemon.getOptions().containsAll(options)
+    private boolean daemonOptsMatch( DaemonInfo daemon )
+    {
+        return daemon.getOptions().containsAll( options )
                 && daemon.getOptions().size() == options.size();
     }
 
-    private boolean javaHomeMatches(DaemonInfo daemon) {
-        return javaHome.equals(Paths.get(daemon.getJavaHome()));
+    private boolean javaHomeMatches( DaemonInfo daemon )
+    {
+        return javaHome.equals( Paths.get( daemon.getJavaHome() ) );
     }
 
-    StringBuilder appendFields(StringBuilder sb) {
-        return sb.append("javaHome=").append(javaHome)
-                .append(", options=").append(options);
+    StringBuilder appendFields( StringBuilder sb )
+    {
+        return sb.append( "javaHome=" ).append( javaHome )
+                .append( ", options=" ).append( options );
     }
 
     @Override
-    public String toString() {
-        return appendFields(new StringBuilder("DaemonCompatibilitySpec{")).append('}').toString();
+    public String toString()
+    {
+        return appendFields( new StringBuilder( "DaemonCompatibilitySpec{" ) ).append( '}' ).toString();
     }
 
-    public static class Result {
+    public static class Result
+    {
+
         private final boolean compatible;
         private final Supplier<String> why;
 
-        Result(boolean compatible, Supplier<String> why) {
+        Result( boolean compatible, Supplier<String> why )
+        {
             super();
             this.compatible = compatible;
             this.why = why;
         }
 
-        public boolean isCompatible() {
+        public boolean isCompatible()
+        {
             return compatible;
         }
 
-        public String getWhy() {
+        public String getWhy()
+        {
             return why.get();
         }
     }

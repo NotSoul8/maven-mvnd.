@@ -32,13 +32,16 @@ import org.mvndaemon.mvnd.common.OptionType;
 /**
  * Combines the help message from the stock Maven with {@code mvnd}'s help message.
  */
-public class MvndHelpFormatter {
-    private static final Pattern HTML_TAGS_PATTERN = Pattern.compile("<[^>]*>");
-    private static final Pattern COLUMNS_DETECTOR_PATTERN = Pattern.compile("^[ ]+[^s]");
-    private static final Pattern WS_PATTERN = Pattern.compile("\\s+");
+public class MvndHelpFormatter
+{
 
-    static String toPlainText(String javadocText) {
-        return HTML_TAGS_PATTERN.matcher(javadocText).replaceAll("");
+    private static final Pattern HTML_TAGS_PATTERN = Pattern.compile( "<[^>]*>" );
+    private static final Pattern COLUMNS_DETECTOR_PATTERN = Pattern.compile( "^[ ]+[^s]" );
+    private static final Pattern WS_PATTERN = Pattern.compile( "\\s+" );
+
+    static String toPlainText( String javadocText )
+    {
+        return HTML_TAGS_PATTERN.matcher( javadocText ).replaceAll( "" );
     }
 
     /**
@@ -47,118 +50,141 @@ public class MvndHelpFormatter {
      * @param  cliManager
      * @return            the string containing the help message
      */
-    public static String displayHelp(CLIManager cliManager) {
+    public static String displayHelp( CLIManager cliManager )
+    {
         int terminalWidth = getTerminalWidth();
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (PrintStream out = new PrintStream(baos, false, StandardCharsets.UTF_8.name())) {
+        try ( PrintStream out = new PrintStream( baos, false, StandardCharsets.UTF_8.name() ) )
+        {
             out.println();
-            PrintWriter pw = new PrintWriter(out);
+            PrintWriter pw = new PrintWriter( out );
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp(pw, terminalWidth, "mvnd [options] [<goal(s)>] [<phase(s)>]", "\nOptions:", cliManager.options,
-                    1, 3, "\n", false);
+            formatter.printHelp( pw, terminalWidth, "mvnd [options] [<goal(s)>] [<phase(s)>]", "\nOptions:",
+                    cliManager.options,
+                    1, 3, "\n", false );
             pw.flush();
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
         }
-        final String mvnHelp = new String(baos.toByteArray(), StandardCharsets.UTF_8);
-        final Matcher m = COLUMNS_DETECTOR_PATTERN.matcher(mvnHelp);
+        catch ( UnsupportedEncodingException e )
+        {
+            throw new RuntimeException( e );
+        }
+        final String mvnHelp = new String( baos.toByteArray(), StandardCharsets.UTF_8 );
+        final Matcher m = COLUMNS_DETECTOR_PATTERN.matcher( mvnHelp );
         final String indent = m.find() ? m.group() : "                                        ";
 
         final String lineSeparator = System.lineSeparator();
-        final StringBuilder help = new StringBuilder(mvnHelp)
-                .append(lineSeparator)
-                .append("mvnd specific options:");
+        final StringBuilder help = new StringBuilder( mvnHelp )
+                .append( lineSeparator )
+                .append( "mvnd specific options:" );
 
         Environment.documentedEntries()
-                .forEach(entry -> {
+                .forEach( entry ->
+                {
                     final Environment env = entry.getEntry();
-                    help.append(lineSeparator);
+                    help.append( lineSeparator );
                     int indentPos = help.length() + indent.length();
                     int lineEnd = help.length() + terminalWidth;
-                    spaces(help, HelpFormatter.DEFAULT_LEFT_PAD);
+                    spaces( help, HelpFormatter.DEFAULT_LEFT_PAD );
                     final String property = env.getProperty();
-                    if (property != null) {
+                    if ( property != null )
+                    {
                         help
-                                .append("-D")
-                                .append(property);
-                        if (env.getType() != OptionType.VOID) {
+                                .append( "-D" )
+                                .append( property );
+                        if ( env.getType() != OptionType.VOID )
+                        {
                             help
-                                    .append("=<")
-                                    .append(env.getType().name().toLowerCase(Locale.ROOT))
-                                    .append('>');
+                                    .append( "=<" )
+                                    .append( env.getType().name().toLowerCase( Locale.ROOT ) )
+                                    .append( '>' );
 
                         }
                     }
 
                     final Set<String> opts = env.getOptions();
-                    if (!opts.isEmpty()) {
-                        if (property != null) {
-                            help.append(';');
+                    if ( !opts.isEmpty() )
+                    {
+                        if ( property != null )
+                        {
+                            help.append( ';' );
                         }
                         boolean first = true;
-                        for (String opt : opts) {
-                            if (first) {
+                        for ( String opt : opts )
+                        {
+                            if ( first )
+                            {
                                 first = false;
-                            } else {
-                                help.append(',');
                             }
-                            help.append(opt);
+                            else
+                            {
+                                help.append( ',' );
+                            }
+                            help.append( opt );
                         }
-                        if (env.getType() != OptionType.VOID) {
+                        if ( env.getType() != OptionType.VOID )
+                        {
                             help
-                                    .append(" <")
-                                    .append(env.getType().name().toLowerCase(Locale.ROOT))
-                                    .append('>');
+                                    .append( " <" )
+                                    .append( env.getType().name().toLowerCase( Locale.ROOT ) )
+                                    .append( '>' );
                         }
                     }
-                    help.append(' ');
+                    help.append( ' ' );
 
-                    spaces(help, indentPos - help.length());
-                    wrap(help, toPlainText(entry.getJavaDoc()), terminalWidth, lineEnd, indent);
+                    spaces( help, indentPos - help.length() );
+                    wrap( help, toPlainText( entry.getJavaDoc() ), terminalWidth, lineEnd, indent );
 
-                    indentedLine(help, terminalWidth, "Default", env.getDefault(), indent);
-                    indentedLine(help, terminalWidth, "Env. variable", env.getEnvironmentVariable(), indent);
+                    indentedLine( help, terminalWidth, "Default", env.getDefault(), indent );
+                    indentedLine( help, terminalWidth, "Env. variable", env.getEnvironmentVariable(), indent );
 
-                });
+                } );
 
         help
-                .append(lineSeparator)
-                .append(lineSeparator)
-                .append("mvnd value types:");
+                .append( lineSeparator )
+                .append( lineSeparator )
+                .append( "mvnd value types:" );
 
         OptionType.documentedEntries()
-                .forEach(entry -> {
+                .forEach( entry ->
+                {
                     final OptionType type = entry.getEntry();
-                    help.append(lineSeparator);
+                    help.append( lineSeparator );
                     int indentPos = help.length() + indent.length();
                     int lineEnd = help.length() + terminalWidth;
-                    spaces(help, HelpFormatter.DEFAULT_LEFT_PAD);
-                    help.append(type.name().toLowerCase(Locale.ROOT));
-                    spaces(help, indentPos - help.length());
-                    wrap(help, toPlainText(entry.getJavaDoc()), terminalWidth, lineEnd, indent);
-                });
+                    spaces( help, HelpFormatter.DEFAULT_LEFT_PAD );
+                    help.append( type.name().toLowerCase( Locale.ROOT ) );
+                    spaces( help, indentPos - help.length() );
+                    wrap( help, toPlainText( entry.getJavaDoc() ), terminalWidth, lineEnd, indent );
+                } );
 
         return help.toString();
     }
 
-    private static int getTerminalWidth() {
+    private static int getTerminalWidth()
+    {
         int terminalWidth;
-        try {
+        try
+        {
             terminalWidth = Environment.MVND_TERMINAL_WIDTH.asInt();
-        } catch (Exception e) {
+        }
+        catch ( Exception e )
+        {
             terminalWidth = 80;
         }
         return terminalWidth;
     }
 
-    private static void indentedLine(StringBuilder stringBuilder, int terminalWidth, String key, String value, String indent) {
+    private static void indentedLine( StringBuilder stringBuilder, int terminalWidth, String key, String value,
+            String indent )
+    {
         int lineEnd;
-        if (value != null) {
+        if ( value != null )
+        {
             lineEnd = stringBuilder.length() + terminalWidth;
             stringBuilder
-                    .append(System.lineSeparator())
-                    .append(indent);
-            wrap(stringBuilder, key + ": " + value, terminalWidth, lineEnd, indent);
+                    .append( System.lineSeparator() )
+                    .append( indent );
+            wrap( stringBuilder, key + ": " + value, terminalWidth, lineEnd, indent );
         }
     }
 
@@ -171,26 +197,35 @@ public class MvndHelpFormatter {
      * @param nextLineEnd   the length of the {@code stringBuilder} at which the current line should end
      * @param indent        the indentation string
      */
-    static void wrap(StringBuilder stringBuilder, String text, int lineLength, int nextLineEnd, String indent) {
-        final StringTokenizer st = new StringTokenizer(text, " \t\n\r", true);
+    static void wrap( StringBuilder stringBuilder, String text, int lineLength, int nextLineEnd, String indent )
+    {
+        final StringTokenizer st = new StringTokenizer( text, " \t\n\r", true );
         String lastWs = null;
-        while (st.hasMoreTokens()) {
+        while ( st.hasMoreTokens() )
+        {
             final String token = st.nextToken();
-            if (WS_PATTERN.matcher(token).matches()) {
+            if ( WS_PATTERN.matcher( token ).matches() )
+            {
                 lastWs = token;
-            } else {
-                if (stringBuilder.length() + token.length() + (lastWs != null ? lastWs.length() : 0) < nextLineEnd) {
-                    if (lastWs != null) {
-                        stringBuilder.append(lastWs);
+            }
+            else
+            {
+                if ( stringBuilder.length() + token.length() + ( lastWs != null ? lastWs.length() : 0 ) < nextLineEnd )
+                {
+                    if ( lastWs != null )
+                    {
+                        stringBuilder.append( lastWs );
                     }
-                    stringBuilder.append(token);
+                    stringBuilder.append( token );
 
-                } else {
+                }
+                else
+                {
                     nextLineEnd = stringBuilder.length() + lineLength;
                     stringBuilder
-                            .append(System.lineSeparator())
-                            .append(indent)
-                            .append(token);
+                            .append( System.lineSeparator() )
+                            .append( indent )
+                            .append( token );
                 }
                 lastWs = null;
             }
@@ -204,9 +239,11 @@ public class MvndHelpFormatter {
      * @param  count         the number of spaces to append
      * @return               the given {@code stringBuilder}
      */
-    static StringBuilder spaces(StringBuilder stringBuilder, int count) {
-        for (int i = 0; i < count; i++) {
-            stringBuilder.append(' ');
+    static StringBuilder spaces( StringBuilder stringBuilder, int count )
+    {
+        for ( int i = 0; i < count; i++ )
+        {
+            stringBuilder.append( ' ' );
         }
         return stringBuilder;
     }

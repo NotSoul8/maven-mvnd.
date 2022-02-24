@@ -27,8 +27,9 @@ import org.mvndaemon.mvnd.common.Os;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
 import org.mvndaemon.mvnd.junit.TestUtils;
 
-@MvndNativeTest(projectDir = "src/test/projects/delete-repo")
-public class DeleteRepoNativeIT {
+@MvndNativeTest( projectDir = "src/test/projects/delete-repo" )
+public class DeleteRepoNativeIT
+{
 
     @Inject
     Client client;
@@ -37,25 +38,29 @@ public class DeleteRepoNativeIT {
     DaemonParameters parameters;
 
     @Test
-    void buildDeleteRepoAndRebuild() throws IOException, InterruptedException {
-        Assumptions.assumeTrue(Os.current() != Os.WINDOWS,
-                "Test disabled on windows because all jar files are locked, so we can't even delete the repository");
+    void buildDeleteRepoAndRebuild() throws IOException, InterruptedException
+    {
+        Assumptions.assumeTrue( Os.current() != Os.WINDOWS,
+                "Test disabled on windows because all jar files are locked, so we can't even delete the repository" );
 
         final Path localMavenRepo = parameters.mavenRepoLocal();
 
         final TestClientOutput o1 = new TestClientOutput();
-        client.execute(o1, "clean", "install", "-e", "-B").assertSuccess();
+        client.execute( o1, "clean", "install", "-e", "-B" ).assertSuccess();
 
-        TestUtils.deleteDir(localMavenRepo, Os.current() != Os.WINDOWS);
-        if (Os.current() == Os.WINDOWS) {
+        TestUtils.deleteDir( localMavenRepo, Os.current() != Os.WINDOWS );
+        if ( Os.current() == Os.WINDOWS )
+        {
             // On windows, we're using the service watcher which polls every 2s by default
-            Thread.sleep(2500);
-        } else {
-            Thread.sleep(200);
+            Thread.sleep( 2500 );
+        }
+        else
+        {
+            Thread.sleep( 200 );
         }
 
         final TestClientOutput o2 = new TestClientOutput();
-        client.execute(o2, "clean", "install", "-e", "-B").assertSuccess();
+        client.execute( o2, "clean", "install", "-e", "-B" ).assertSuccess();
     }
 
 }

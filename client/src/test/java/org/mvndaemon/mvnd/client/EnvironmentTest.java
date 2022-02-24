@@ -30,133 +30,158 @@ import org.mvndaemon.mvnd.common.Environment;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class EnvironmentTest {
+public class EnvironmentTest
+{
 
     @Test
-    void arguments() {
-        assertEquals("foo=bar", Environment.MAVEN_DEFINE.removeCommandLineOption(list("-Dfoo=bar")));
-        assertEquals("foo=bar", Environment.MAVEN_DEFINE.removeCommandLineOption(list("-D", "foo=bar")));
-        assertEquals("foo=bar", Environment.MAVEN_DEFINE.removeCommandLineOption(list("--define", "foo=bar")));
-        assertEquals("foo=bar", Environment.MAVEN_DEFINE.removeCommandLineOption(list("--define=foo=bar")));
+    void arguments()
+    {
+        assertEquals( "foo=bar", Environment.MAVEN_DEFINE.removeCommandLineOption( list( "-Dfoo=bar" ) ) );
+        assertEquals( "foo=bar", Environment.MAVEN_DEFINE.removeCommandLineOption( list( "-D", "foo=bar" ) ) );
+        assertEquals( "foo=bar", Environment.MAVEN_DEFINE.removeCommandLineOption( list( "--define", "foo=bar" ) ) );
+        assertEquals( "foo=bar", Environment.MAVEN_DEFINE.removeCommandLineOption( list( "--define=foo=bar" ) ) );
 
-        assertEquals("foo", Environment.MAVEN_DEFINE.removeCommandLineOption(list("-D=foo")));
-        assertEquals("foo", Environment.MAVEN_DEFINE.removeCommandLineOption(list("-Dfoo")));
-        assertEquals("foo", Environment.MAVEN_DEFINE.removeCommandLineOption(list("-D", "foo")));
+        assertEquals( "foo", Environment.MAVEN_DEFINE.removeCommandLineOption( list( "-D=foo" ) ) );
+        assertEquals( "foo", Environment.MAVEN_DEFINE.removeCommandLineOption( list( "-Dfoo" ) ) );
+        assertEquals( "foo", Environment.MAVEN_DEFINE.removeCommandLineOption( list( "-D", "foo" ) ) );
 
-        assertEquals("foo=", Environment.MAVEN_DEFINE.removeCommandLineOption(list("-Dfoo=")));
+        assertEquals( "foo=", Environment.MAVEN_DEFINE.removeCommandLineOption( list( "-Dfoo=" ) ) );
 
-        assertEquals("", Environment.MAVEN_DEFINE.removeCommandLineOption(list("-D")));
-        assertEquals("", Environment.MAVEN_DEFINE.removeCommandLineOption(list("--define")));
+        assertEquals( "", Environment.MAVEN_DEFINE.removeCommandLineOption( list( "-D" ) ) );
+        assertEquals( "", Environment.MAVEN_DEFINE.removeCommandLineOption( list( "--define" ) ) );
     }
 
-    private List<String> list(String... items) {
-        return new ArrayList<>(Arrays.asList(items));
+    private List<String> list( String... items )
+    {
+        return new ArrayList<>( Arrays.asList( items ) );
     }
 
     @Test
-    void prop() {
-        try (EnvironmentResource env = new EnvironmentResource()) {
-            env.props("mvnd.home", "/maven/home/prop");
-            assertEquals("/maven/home/prop", DaemonParameters.systemProperty(Environment.MVND_HOME).asString());
+    void prop()
+    {
+        try ( EnvironmentResource env = new EnvironmentResource() )
+        {
+            env.props( "mvnd.home", "/maven/home/prop" );
+            assertEquals( "/maven/home/prop", DaemonParameters.systemProperty( Environment.MVND_HOME ).asString() );
         }
     }
 
     @Test
-    void env() {
-        try (EnvironmentResource env = new EnvironmentResource()) {
-            env.env("MVND_HOME", "/maven/home/env");
-            assertEquals("/maven/home/env", DaemonParameters.environmentVariable(Environment.MVND_HOME).asString());
+    void env()
+    {
+        try ( EnvironmentResource env = new EnvironmentResource() )
+        {
+            env.env( "MVND_HOME", "/maven/home/env" );
+            assertEquals( "/maven/home/env", DaemonParameters.environmentVariable( Environment.MVND_HOME ).asString() );
         }
     }
 
     @Test
-    void localProps() {
-        try (EnvironmentResource env = new EnvironmentResource()) {
+    void localProps()
+    {
+        try ( EnvironmentResource env = new EnvironmentResource() )
+        {
             final Properties localProps = new Properties();
-            localProps.put("mvnd.home", "/maven/home/local");
-            assertEquals(Paths.get("/maven/home/local"),
+            localProps.put( "mvnd.home", "/maven/home/local" );
+            assertEquals( Paths.get( "/maven/home/local" ),
                     DaemonParameters
-                            .environmentVariable(Environment.MVND_HOME)
+                            .environmentVariable( Environment.MVND_HOME )
                             .orSystemProperty()
-                            .orLocalProperty(path -> localProps, Paths.get("/local/properties"))
+                            .orLocalProperty( path -> localProps, Paths.get( "/local/properties" ) )
                             .orFail()
-                            .asPath());
+                            .asPath() );
         }
     }
 
     @Test
-    void envBeforeProp() {
-        try (EnvironmentResource env = new EnvironmentResource()) {
-            env.props("mvnd.home", "/maven/home/prop");
-            env.env("MVND_HOME", "/maven/home/env");
-            assertEquals("/maven/home/env",
+    void envBeforeProp()
+    {
+        try ( EnvironmentResource env = new EnvironmentResource() )
+        {
+            env.props( "mvnd.home", "/maven/home/prop" );
+            env.env( "MVND_HOME", "/maven/home/env" );
+            assertEquals( "/maven/home/env",
                     DaemonParameters
-                            .environmentVariable(Environment.MVND_HOME)
+                            .environmentVariable( Environment.MVND_HOME )
                             .orSystemProperty()
-                            .asString());
+                            .asString() );
         }
     }
 
     @Test
-    void fail() {
-        try (EnvironmentResource env = new EnvironmentResource()) {
-            try {
-                assertEquals("/maven/home/env",
+    void fail()
+    {
+        try ( EnvironmentResource env = new EnvironmentResource() )
+        {
+            try
+            {
+                assertEquals( "/maven/home/env",
                         DaemonParameters
-                                .environmentVariable(Environment.MVND_HOME)
+                                .environmentVariable( Environment.MVND_HOME )
                                 .orSystemProperty()
                                 .orFail()
-                                .asString());
-                Assertions.fail("IllegalStateException expected");
-            } catch (IllegalStateException e) {
+                                .asString() );
+                Assertions.fail( "IllegalStateException expected" );
+            }
+            catch ( IllegalStateException e )
+            {
                 assertEquals(
                         "Could not get value for Environment.MVND_HOME from any of the following sources: environment variable MVND_HOME, system property mvnd.home",
-                        e.getMessage());
+                        e.getMessage() );
             }
         }
     }
 
     @Test
-    void cygwin() {
-        assertEquals("C:\\jdk-11.0.2\\", Environment.cygpath("/cygdrive/c/jdk-11.0.2/"));
+    void cygwin()
+    {
+        assertEquals( "C:\\jdk-11.0.2\\", Environment.cygpath( "/cygdrive/c/jdk-11.0.2/" ) );
     }
 
     @Test
-    void emptyBooleanEnvValueIsTrue() {
+    void emptyBooleanEnvValueIsTrue()
+    {
         final String EMPTY_STRING = "";
-        final EnvValue envVal = new EnvValue(Environment.MVND_NO_BUFERING,
-                new ValueSource(sb -> sb.append("envValueAsBoolean"), () -> EMPTY_STRING));
-        assertEquals(true, envVal.asBoolean());
+        final EnvValue envVal = new EnvValue( Environment.MVND_NO_BUFERING,
+                new ValueSource( sb -> sb.append( "envValueAsBoolean" ), () -> EMPTY_STRING ) );
+        assertEquals( true, envVal.asBoolean() );
     }
 
-    static class EnvironmentResource implements AutoCloseable {
+    static class EnvironmentResource implements AutoCloseable
+    {
 
         private final Properties props = new Properties();
         private final Map<String, String> env = new HashMap<>();
 
-        public EnvironmentResource() {
+        public EnvironmentResource()
+        {
             DaemonParameters.EnvValue.env = env;
-            Environment.setProperties(props);
+            Environment.setProperties( props );
         }
 
-        public void props(String... props) {
+        public void props( String... props )
+        {
             int i = 0;
-            while (i < props.length) {
-                this.props.setProperty(props[i++], props[i++]);
+            while ( i < props.length )
+            {
+                this.props.setProperty( props[i++], props[i++] );
             }
         }
 
-        public void env(String... env) {
+        public void env( String... env )
+        {
             int i = 0;
-            while (i < env.length) {
-                this.env.put(env[i++], env[i++]);
+            while ( i < env.length )
+            {
+                this.env.put( env[i++], env[i++] );
             }
         }
 
         @Override
-        public void close() {
+        public void close()
+        {
             DaemonParameters.EnvValue.env = System.getenv();
-            Environment.setProperties(System.getProperties());
+            Environment.setProperties( System.getProperties() );
         }
 
     }

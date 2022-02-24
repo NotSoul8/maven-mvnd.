@@ -29,48 +29,50 @@ import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.Environment.OptionOrigin;
 import org.mvndaemon.mvnd.common.IoUtils;
 
-public class CompletionGeneratorTest {
+public class CompletionGeneratorTest
+{
 
     @Test
-    void generate() throws IOException {
+    void generate() throws IOException
+    {
 
-        String template = IoUtils.readResource(Completion.class.getClassLoader(),
-                "completion-templates/mvnd-bash-completion.bash");
+        String template = IoUtils.readResource( Completion.class.getClassLoader(),
+                "completion-templates/mvnd-bash-completion.bash" );
 
-        final String shortOpts = Stream.of(Environment.values())
-                .filter(env -> !env.isInternal())
-                .flatMap(env -> env.getOptionMap().entrySet().stream())
-                .filter(optEntry -> optEntry.getValue() == OptionOrigin.mvnd)
-                .map(Map.Entry::getKey)
-                .filter(opt -> !opt.startsWith("--"))
+        final String shortOpts = Stream.of( Environment.values() )
+                .filter( env -> !env.isInternal() )
+                .flatMap( env -> env.getOptionMap().entrySet().stream() )
+                .filter( optEntry -> optEntry.getValue() == OptionOrigin.mvnd )
+                .map( Map.Entry::getKey )
+                .filter( opt -> !opt.startsWith( "--" ) )
                 .sorted()
-                .collect(Collectors.joining("|"));
+                .collect( Collectors.joining( "|" ) );
 
-        final String longOpts = Stream.of(Environment.values())
-                .filter(env -> !env.isInternal())
-                .flatMap(env -> env.getOptionMap().entrySet().stream())
-                .filter(optEntry -> optEntry.getValue() == OptionOrigin.mvnd)
-                .map(Map.Entry::getKey)
-                .filter(opt -> opt.startsWith("--"))
+        final String longOpts = Stream.of( Environment.values() )
+                .filter( env -> !env.isInternal() )
+                .flatMap( env -> env.getOptionMap().entrySet().stream() )
+                .filter( optEntry -> optEntry.getValue() == OptionOrigin.mvnd )
+                .map( Map.Entry::getKey )
+                .filter( opt -> opt.startsWith( "--" ) )
                 .sorted()
-                .collect(Collectors.joining("|"));
+                .collect( Collectors.joining( "|" ) );
 
-        final String props = Stream.of(Environment.values())
-                .filter(env -> !env.isInternal())
-                .map(Environment::getProperty)
-                .filter(Objects::nonNull)
+        final String props = Stream.of( Environment.values() )
+                .filter( env -> !env.isInternal() )
+                .map( Environment::getProperty )
+                .filter( Objects::nonNull )
                 .sorted()
-                .map(prop -> "-D" + prop)
-                .collect(Collectors.joining("|"));
+                .map( prop -> "-D" + prop )
+                .collect( Collectors.joining( "|" ) );
 
-        template = template.replace("%mvnd_opts%", shortOpts);
-        template = template.replace("%mvnd_long_opts%", longOpts);
-        template = template.replace("%mvnd_properties%", props);
+        template = template.replace( "%mvnd_opts%", shortOpts );
+        template = template.replace( "%mvnd_long_opts%", longOpts );
+        template = template.replace( "%mvnd_properties%", props );
 
-        final Path baseDir = Paths.get(System.getProperty("project.basedir", "."));
+        final Path baseDir = Paths.get( System.getProperty( "project.basedir", "." ) );
 
-        final byte[] bytes = template.getBytes(StandardCharsets.UTF_8);
-        Files.write(baseDir.resolve("../dist/src/main/distro/bin/mvnd-bash-completion.bash"), bytes);
+        final byte[] bytes = template.getBytes( StandardCharsets.UTF_8 );
+        Files.write( baseDir.resolve( "../dist/src/main/distro/bin/mvnd-bash-completion.bash" ), bytes );
 
     }
 

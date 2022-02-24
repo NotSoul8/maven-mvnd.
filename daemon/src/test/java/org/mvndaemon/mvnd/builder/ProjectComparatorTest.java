@@ -26,49 +26,52 @@ import org.junit.jupiter.api.Test;
 
 import static org.mvndaemon.mvnd.builder.ProjectComparator.id;
 
-public class ProjectComparatorTest extends AbstractSmartBuilderTest {
+public class ProjectComparatorTest extends AbstractSmartBuilderTest
+{
 
     @Test
-    public void testPriorityQueueOrder() {
-        MavenProject a = newProject("a"), b = newProject("b"), c = newProject("c");
-        TestProjectDependencyGraph graph = new TestProjectDependencyGraph(a, b, c);
-        graph.addDependency(b, a);
-        DependencyGraph<MavenProject> dp = DependencyGraph.fromMaven(graph);
+    public void testPriorityQueueOrder()
+    {
+        MavenProject a = newProject( "a" ), b = newProject( "b" ), c = newProject( "c" );
+        TestProjectDependencyGraph graph = new TestProjectDependencyGraph( a, b, c );
+        graph.addDependency( b, a );
+        DependencyGraph<MavenProject> dp = DependencyGraph.fromMaven( graph );
 
-        Comparator<MavenProject> cmp = ProjectComparator.create0(dp, new HashMap<>(), ProjectComparator::id);
+        Comparator<MavenProject> cmp = ProjectComparator.create0( dp, new HashMap<>(), ProjectComparator::id );
 
-        Queue<MavenProject> queue = new PriorityQueue<>(3, cmp);
-        queue.add(a);
-        queue.add(b);
-        queue.add(c);
+        Queue<MavenProject> queue = new PriorityQueue<>( 3, cmp );
+        queue.add( a );
+        queue.add( b );
+        queue.add( c );
 
-        Assertions.assertEquals(a, queue.poll());
-        Assertions.assertEquals(c, queue.poll());
-        Assertions.assertEquals(b, queue.poll());
+        Assertions.assertEquals( a, queue.poll() );
+        Assertions.assertEquals( c, queue.poll() );
+        Assertions.assertEquals( b, queue.poll() );
     }
 
     @Test
-    public void testPriorityQueueOrder_historicalServiceTimes() {
-        MavenProject a = newProject("a"), b = newProject("b"), c = newProject("c");
-        TestProjectDependencyGraph graph = new TestProjectDependencyGraph(a, b, c);
-        graph.addDependency(b, a);
-        DependencyGraph<MavenProject> dp = DependencyGraph.fromMaven(graph);
+    public void testPriorityQueueOrder_historicalServiceTimes()
+    {
+        MavenProject a = newProject( "a" ), b = newProject( "b" ), c = newProject( "c" );
+        TestProjectDependencyGraph graph = new TestProjectDependencyGraph( a, b, c );
+        graph.addDependency( b, a );
+        DependencyGraph<MavenProject> dp = DependencyGraph.fromMaven( graph );
 
         HashMap<String, AtomicLong> serviceTimes = new HashMap<>();
-        serviceTimes.put(id(a), new AtomicLong(1L));
-        serviceTimes.put(id(b), new AtomicLong(1L));
-        serviceTimes.put(id(c), new AtomicLong(3L));
+        serviceTimes.put( id( a ), new AtomicLong( 1L ) );
+        serviceTimes.put( id( b ), new AtomicLong( 1L ) );
+        serviceTimes.put( id( c ), new AtomicLong( 3L ) );
 
-        Comparator<MavenProject> cmp = ProjectComparator.create0(dp, serviceTimes, ProjectComparator::id);
+        Comparator<MavenProject> cmp = ProjectComparator.create0( dp, serviceTimes, ProjectComparator::id );
 
-        Queue<MavenProject> queue = new PriorityQueue<>(3, cmp);
-        queue.add(a);
-        queue.add(b);
-        queue.add(c);
+        Queue<MavenProject> queue = new PriorityQueue<>( 3, cmp );
+        queue.add( a );
+        queue.add( b );
+        queue.add( c );
 
-        Assertions.assertEquals(c, queue.poll());
-        Assertions.assertEquals(a, queue.poll());
-        Assertions.assertEquals(b, queue.poll());
+        Assertions.assertEquals( c, queue.poll() );
+        Assertions.assertEquals( a, queue.poll() );
+        Assertions.assertEquals( b, queue.poll() );
     }
 
 }

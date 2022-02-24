@@ -40,35 +40,45 @@ import org.mvndaemon.mvnd.cache.CacheRecord;
 
 @Singleton
 @Named
-@Priority(10)
-public class InvalidatingPluginDescriptorCache extends DefaultPluginDescriptorCache {
+@Priority( 10 )
+public class InvalidatingPluginDescriptorCache extends DefaultPluginDescriptorCache
+{
 
     @FunctionalInterface
-    public interface PluginDescriptorSupplier {
+    public interface PluginDescriptorSupplier
+    {
+
         PluginDescriptor load()
                 throws PluginResolutionException, PluginDescriptorParsingException, InvalidPluginDescriptorException;
     }
 
-    protected static class Record implements CacheRecord {
+    protected static class Record implements CacheRecord
+    {
 
         private final PluginDescriptor descriptor;
 
-        public Record(PluginDescriptor descriptor) {
+        public Record( PluginDescriptor descriptor )
+        {
             this.descriptor = descriptor;
         }
 
         @Override
-        public Stream<Path> getDependencyPaths() {
-            return Optional.ofNullable(descriptor.getArtifacts()).orElse(Collections.emptyList())
-                    .stream().map(artifact -> artifact.getFile().toPath());
+        public Stream<Path> getDependencyPaths()
+        {
+            return Optional.ofNullable( descriptor.getArtifacts() ).orElse( Collections.emptyList() )
+                    .stream().map( artifact -> artifact.getFile().toPath() );
         }
 
         @Override
-        public void invalidate() {
+        public void invalidate()
+        {
             ClassRealm realm = descriptor.getClassRealm();
-            try {
-                realm.getWorld().disposeRealm(realm.getId());
-            } catch (NoSuchRealmException e) {
+            try
+            {
+                realm.getWorld().disposeRealm( realm.getId() );
+            }
+            catch ( NoSuchRealmException e )
+            {
                 // ignore
             }
         }
@@ -77,53 +87,70 @@ public class InvalidatingPluginDescriptorCache extends DefaultPluginDescriptorCa
     final Cache<Key, Record> cache;
 
     @Inject
-    public InvalidatingPluginDescriptorCache(CacheFactory cacheFactory) {
+    public InvalidatingPluginDescriptorCache( CacheFactory cacheFactory )
+    {
         this.cache = cacheFactory.newCache();
     }
 
     @Override
-    public Key createKey(Plugin plugin, List<RemoteRepository> repositories, RepositorySystemSession session) {
-        return super.createKey(plugin, repositories, session);
+    public Key createKey( Plugin plugin, List<RemoteRepository> repositories, RepositorySystemSession session )
+    {
+        return super.createKey( plugin, repositories, session );
     }
 
     @Override
-    public PluginDescriptor get(Key key) {
-        Record r = cache.get(key);
-        return r != null ? clone(r.descriptor) : null;
+    public PluginDescriptor get( Key key )
+    {
+        Record r = cache.get( key );
+        return r != null ? clone( r.descriptor ) : null;
     }
 
-    public PluginDescriptor get(Key key, PluginDescriptorSupplier supplier)
-            throws PluginDescriptorParsingException, PluginResolutionException, InvalidPluginDescriptorException {
-        try {
-            Record r = cache.computeIfAbsent(key, k -> {
-                try {
-                    return new Record(clone(supplier.load()));
-                } catch (PluginDescriptorParsingException | PluginResolutionException | InvalidPluginDescriptorException e) {
-                    throw new RuntimeException(e);
+    public PluginDescriptor get( Key key, PluginDescriptorSupplier supplier )
+            throws PluginDescriptorParsingException, PluginResolutionException, InvalidPluginDescriptorException
+    {
+        try
+        {
+            Record r = cache.computeIfAbsent( key, k ->
+            {
+                try
+                {
+                    return new Record( clone( supplier.load() ) );
                 }
-            });
-            return clone(r.descriptor);
-        } catch (RuntimeException e) {
-            if (e.getCause() instanceof PluginDescriptorParsingException) {
-                throw (PluginDescriptorParsingException) e.getCause();
+                catch ( PluginDescriptorParsingException | PluginResolutionException
+                        | InvalidPluginDescriptorException e )
+                {
+                    throw new RuntimeException( e );
+                }
+            } );
+            return clone( r.descriptor );
+        }
+        catch ( RuntimeException e )
+        {
+            if ( e.getCause() instanceof PluginDescriptorParsingException )
+            {
+                throw ( PluginDescriptorParsingException ) e.getCause();
             }
-            if (e.getCause() instanceof PluginResolutionException) {
-                throw (PluginResolutionException) e.getCause();
+            if ( e.getCause() instanceof PluginResolutionException )
+            {
+                throw ( PluginResolutionException ) e.getCause();
             }
-            if (e.getCause() instanceof InvalidPluginDescriptorException) {
-                throw (InvalidPluginDescriptorException) e.getCause();
+            if ( e.getCause() instanceof InvalidPluginDescriptorException )
+            {
+                throw ( InvalidPluginDescriptorException ) e.getCause();
             }
             throw e;
         }
     }
 
     @Override
-    public void put(Key key, PluginDescriptor descriptor) {
-        cache.put(key, new Record(clone(descriptor)));
+    public void put( Key key, PluginDescriptor descriptor )
+    {
+        cache.put( key, new Record( clone( descriptor ) ) );
     }
 
     @Override
-    public void flush() {
+    public void flush()
+    {
         cache.clear();
     }
 }

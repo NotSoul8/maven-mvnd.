@@ -38,102 +38,126 @@ import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 /**
  * Sends events back to the client.
  */
-public class ClientDispatcher extends BuildEventListener {
-    private final Collection<Message> queue;
-    private static final Pattern TRAILING_EOLS_PATTERN = Pattern.compile("[\r\n]+$");
+public class ClientDispatcher extends BuildEventListener
+{
 
-    public ClientDispatcher(Collection<Message> queue) {
+    private final Collection<Message> queue;
+    private static final Pattern TRAILING_EOLS_PATTERN = Pattern.compile( "[\r\n]+$" );
+
+    public ClientDispatcher( Collection<Message> queue )
+    {
         this.queue = queue;
     }
 
-    public void sessionStarted(ExecutionEvent event) {
+    public void sessionStarted( ExecutionEvent event )
+    {
         final MavenSession session = event.getSession();
         final int degreeOfConcurrency = session.getRequest().getDegreeOfConcurrency();
-        final DependencyGraph<MavenProject> dependencyGraph = DependencyGraph.fromMaven(session);
-        session.getRequest().getData().put(DependencyGraph.class.getName(), dependencyGraph);
+        final DependencyGraph<MavenProject> dependencyGraph = DependencyGraph.fromMaven( session );
+        session.getRequest().getData().put( DependencyGraph.class.getName(), dependencyGraph );
 
-        final int maxThreads = degreeOfConcurrency == 1 ? 1 : dependencyGraph.computeMaxWidth(degreeOfConcurrency, 1000);
+        final int maxThreads = degreeOfConcurrency == 1 ? 1
+                : dependencyGraph.computeMaxWidth( degreeOfConcurrency, 1000 );
         final List<MavenProject> projects = session.getProjects();
-        final int _90thArtifactIdLengthPercentile = artifactIdLength90thPercentile(projects);
-        queue.add(new BuildStarted(getCurrentProject(session).getArtifactId(), projects.size(), maxThreads,
-                _90thArtifactIdLengthPercentile));
+        final int _90thArtifactIdLengthPercentile = artifactIdLength90thPercentile( projects );
+        queue.add( new BuildStarted( getCurrentProject( session ).getArtifactId(), projects.size(), maxThreads,
+                _90thArtifactIdLengthPercentile ) );
     }
 
-    static int artifactIdLength90thPercentile(List<MavenProject> projects) {
-        if (projects.size() == 1) {
-            return projects.get(0).getArtifactId().length();
+    static int artifactIdLength90thPercentile( List<MavenProject> projects )
+    {
+        if ( projects.size() == 1 )
+        {
+            return projects.get( 0 ).getArtifactId().length();
         }
         Map<Integer, Integer> frequencyDistribution = new TreeMap<>();
-        for (MavenProject p : projects) {
-            frequencyDistribution.compute(p.getArtifactId().length(),
-                    (k, v) -> (v == null) ? Integer.valueOf(1) : Integer.valueOf(v.intValue() + 1));
+        for ( MavenProject p : projects )
+        {
+            frequencyDistribution.compute( p.getArtifactId().length(),
+                    ( k, v ) -> ( v == null ) ? Integer.valueOf( 1 ) : Integer.valueOf( v.intValue() + 1 ) );
         }
-        int _90PercCount = Math.round(0.9f * projects.size());
+        int _90PercCount = Math.round( 0.9f * projects.size() );
         int cnt = 0;
-        for (Entry<Integer, Integer> en : frequencyDistribution.entrySet()) {
+        for ( Entry<Integer, Integer> en : frequencyDistribution.entrySet() )
+        {
             cnt += en.getValue().intValue();
-            if (cnt >= _90PercCount) {
+            if ( cnt >= _90PercCount )
+            {
                 return en.getKey().intValue();
             }
         }
-        throw new IllegalStateException("Could not compute the 90th percentile of the projects length from " + projects);
+        throw new IllegalStateException(
+                "Could not compute the 90th percentile of the projects length from " + projects );
     }
 
     private final Map<String, Boolean> projects = new ConcurrentHashMap<>();
 
-    public void projectStarted(String projectId) {
-        projects.put(projectId, Boolean.TRUE);
-        queue.add(Message.projectStarted(projectId));
+    public void projectStarted( String projectId )
+    {
+        projects.put( projectId, Boolean.TRUE );
+        queue.add( Message.projectStarted( projectId ) );
     }
 
-    public void projectLogMessage(String projectId, String event) {
-        if (projectId != null) {
-            Boolean b = projects.get(projectId);
-            if (b != Boolean.TRUE) {
+    public void projectLogMessage( String projectId, String event )
+    {
+        if ( projectId != null )
+        {
+            Boolean b = projects.get( projectId );
+            if ( b != Boolean.TRUE )
+            {
             }
         }
-        queue.add(projectId == null ? Message.log(trimTrailingEols(event)) : Message.log(projectId, trimTrailingEols(event)));
+        queue.add( projectId == null ? Message.log( trimTrailingEols( event ) )
+                : Message.log( projectId, trimTrailingEols( event ) ) );
     }
 
     @Override
-    public void projectFinished(String projectId) {
-        projects.put(projectId, Boolean.FALSE);
-        queue.add(Message.projectStopped(projectId));
+    public void projectFinished( String projectId )
+    {
+        projects.put( projectId, Boolean.FALSE );
+        queue.add( Message.projectStopped( projectId ) );
     }
 
-    public void executionFailure(String projectId, boolean halted, String exception) {
-        projects.put(projectId, Boolean.FALSE);
-        queue.add(Message.executionFailure(projectId, halted, exception));
+    public void executionFailure( String projectId, boolean halted, String exception )
+    {
+        projects.put( projectId, Boolean.FALSE );
+        queue.add( Message.executionFailure( projectId, halted, exception ) );
     }
 
-    public void mojoStarted(ExecutionEvent event) {
+    public void mojoStarted( ExecutionEvent event )
+    {
         final MojoExecution execution = event.getMojoExecution();
-        queue.add(Message.mojoStarted(
+        queue.add( Message.mojoStarted(
                 event.getProject().getArtifactId(),
                 execution.getGroupId(),
                 execution.getArtifactId(),
                 execution.getVersion(),
                 execution.getGoal(),
-                execution.getExecutionId()));
+                execution.getExecutionId() ) );
     }
 
-    public void finish(int exitCode) throws Exception {
-        queue.add(new Message.BuildFinished(exitCode));
-        queue.add(Message.BareMessage.STOP_SINGLETON);
+    public void finish( int exitCode ) throws Exception
+    {
+        queue.add( new Message.BuildFinished( exitCode ) );
+        queue.add( Message.BareMessage.STOP_SINGLETON );
     }
 
-    public void fail(Throwable t) throws Exception {
-        queue.add(new BuildException(t));
-        queue.add(Message.BareMessage.STOP_SINGLETON);
+    public void fail( Throwable t ) throws Exception
+    {
+        queue.add( new BuildException( t ) );
+        queue.add( Message.BareMessage.STOP_SINGLETON );
     }
 
-    public void log(String msg) {
-        queue.add(Message.log(trimTrailingEols(msg)));
+    public void log( String msg )
+    {
+        queue.add( Message.log( trimTrailingEols( msg ) ) );
     }
 
-    public void transfer(String projectId, TransferEvent e) {
+    public void transfer( String projectId, TransferEvent e )
+    {
         final int event;
-        switch (e.getType()) {
+        switch ( e.getType() )
+        {
         case INITIATED:
             event = Message.TRANSFER_INITIATED;
             break;
@@ -153,10 +177,11 @@ public class ClientDispatcher extends BuildEventListener {
             event = Message.TRANSFER_FAILED;
             break;
         default:
-            throw new IllegalStateException("Unexpected " + EventType.class.getSimpleName() + ": " + e.getType());
+            throw new IllegalStateException( "Unexpected " + EventType.class.getSimpleName() + ": " + e.getType() );
         }
         final int requestType;
-        switch (e.getRequestType()) {
+        switch ( e.getRequestType() )
+        {
         case GET:
             requestType = Message.TransferEvent.GET;
             break;
@@ -167,7 +192,8 @@ public class ClientDispatcher extends BuildEventListener {
             requestType = Message.TransferEvent.PUT;
             break;
         default:
-            throw new IllegalStateException("Unexpected " + RequestType.class.getSimpleName() + ": " + e.getRequestType());
+            throw new IllegalStateException(
+                    "Unexpected " + RequestType.class.getSimpleName() + ": " + e.getRequestType() );
         }
         String repositoryId = e.getResource().getRepositoryId();
         String repositoryUrl = e.getResource().getRepositoryUrl();
@@ -175,25 +201,28 @@ public class ClientDispatcher extends BuildEventListener {
         long contentLength = e.getResource().getContentLength();
         long transferredBytes = e.getTransferredBytes();
         String exception = e.getException() != null ? e.getException().toString() : null;
-        queue.add(Message.transfer(projectId, event, requestType, repositoryId, repositoryUrl, resourceName,
-                contentLength, transferredBytes, exception));
+        queue.add( Message.transfer( projectId, event, requestType, repositoryId, repositoryUrl, resourceName,
+                contentLength, transferredBytes, exception ) );
     }
 
-    private MavenProject getCurrentProject(MavenSession mavenSession) {
+    private MavenProject getCurrentProject( MavenSession mavenSession )
+    {
         // Workaround for https://issues.apache.org/jira/browse/MNG-6979
         // MavenSession.getCurrentProject() does not return the correct value in some cases
         String executionRootDirectory = mavenSession.getExecutionRootDirectory();
-        if (executionRootDirectory == null) {
+        if ( executionRootDirectory == null )
+        {
             return mavenSession.getCurrentProject();
         }
         return mavenSession.getProjects().stream()
-                .filter(p -> (p.getFile() != null && executionRootDirectory.equals(p.getFile().getParent())))
+                .filter( p -> ( p.getFile() != null && executionRootDirectory.equals( p.getFile().getParent() ) ) )
                 .findFirst()
-                .orElse(mavenSession.getCurrentProject());
+                .orElse( mavenSession.getCurrentProject() );
     }
 
-    static String trimTrailingEols(String message) {
-        return message == null ? null : TRAILING_EOLS_PATTERN.matcher(message).replaceFirst("");
+    static String trimTrailingEols( String message )
+    {
+        return message == null ? null : TRAILING_EOLS_PATTERN.matcher( message ).replaceFirst( "" );
     }
 
 }

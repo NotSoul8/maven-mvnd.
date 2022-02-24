@@ -34,113 +34,136 @@ import org.mvndaemon.mvnd.logging.smart.ProjectBuildLogAppender;
  * @author Jason van Zyl
  */
 public class Slf4jLogger
-        implements Logger {
+        implements Logger
+{
 
     private org.slf4j.Logger logger;
     private String projectId;
 
-    public Slf4jLogger(org.slf4j.Logger logger) {
+    public Slf4jLogger( org.slf4j.Logger logger )
+    {
         this.logger = logger;
         this.projectId = ProjectBuildLogAppender.getProjectId();
     }
 
-    public void debug(String message) {
+    public void debug( String message )
+    {
         setMdc();
-        logger.debug(message);
+        logger.debug( message );
     }
 
-    public void debug(String message, Throwable throwable) {
+    public void debug( String message, Throwable throwable )
+    {
         setMdc();
-        logger.debug(message, throwable);
+        logger.debug( message, throwable );
     }
 
-    public boolean isDebugEnabled() {
+    public boolean isDebugEnabled()
+    {
         return logger.isDebugEnabled();
     }
 
-    public void info(String message) {
+    public void info( String message )
+    {
         setMdc();
-        logger.info(message);
+        logger.info( message );
     }
 
-    public void info(String message, Throwable throwable) {
+    public void info( String message, Throwable throwable )
+    {
         setMdc();
-        logger.info(message, throwable);
+        logger.info( message, throwable );
     }
 
-    public boolean isInfoEnabled() {
+    public boolean isInfoEnabled()
+    {
         return logger.isInfoEnabled();
     }
 
-    public void warn(String message) {
+    public void warn( String message )
+    {
         setMdc();
-        logger.warn(message);
+        logger.warn( message );
     }
 
-    public void warn(String message, Throwable throwable) {
+    public void warn( String message, Throwable throwable )
+    {
         setMdc();
-        logger.warn(message, throwable);
+        logger.warn( message, throwable );
     }
 
-    public boolean isWarnEnabled() {
+    public boolean isWarnEnabled()
+    {
         return logger.isWarnEnabled();
     }
 
-    public void error(String message) {
+    public void error( String message )
+    {
         setMdc();
-        logger.error(message);
+        logger.error( message );
     }
 
-    public void error(String message, Throwable throwable) {
+    public void error( String message, Throwable throwable )
+    {
         setMdc();
-        logger.error(message, throwable);
+        logger.error( message, throwable );
     }
 
-    public boolean isErrorEnabled() {
+    public boolean isErrorEnabled()
+    {
         return logger.isErrorEnabled();
     }
 
-    public void fatalError(String message) {
+    public void fatalError( String message )
+    {
         setMdc();
-        logger.error(message);
+        logger.error( message );
     }
 
-    public void fatalError(String message, Throwable throwable) {
+    public void fatalError( String message, Throwable throwable )
+    {
         setMdc();
-        logger.error(message, throwable);
+        logger.error( message, throwable );
     }
 
-    public boolean isFatalErrorEnabled() {
+    public boolean isFatalErrorEnabled()
+    {
         return logger.isErrorEnabled();
     }
 
     /**
      * <b>Warning</b>: ignored (always return <code>0 == Logger.LEVEL_DEBUG</code>).
      */
-    public int getThreshold() {
+    public int getThreshold()
+    {
         return 0;
     }
 
     /**
      * <b>Warning</b>: ignored.
      */
-    public void setThreshold(int threshold) {
+    public void setThreshold( int threshold )
+    {
     }
 
     /**
      * <b>Warning</b>: ignored (always return <code>null</code>).
      */
-    public Logger getChildLogger(String name) {
+    public Logger getChildLogger( String name )
+    {
         return null;
     }
 
-    public String getName() {
+    public String getName()
+    {
         return logger.getName();
     }
 
-    private void setMdc() {
-        if (projectId != null && ProjectBuildLogAppender.getProjectId() == null) {
-            ProjectBuildLogAppender.setProjectId(projectId);
+    private void setMdc()
+    {
+        if ( projectId != null && ProjectBuildLogAppender.getProjectId() == null )
+        {
+            ProjectBuildLogAppender.setProjectId( projectId );
         }
     }
 

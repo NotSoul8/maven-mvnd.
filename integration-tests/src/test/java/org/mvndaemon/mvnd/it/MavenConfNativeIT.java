@@ -25,8 +25,9 @@ import org.mvndaemon.mvnd.junit.MvndNativeTest;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MvndNativeTest(projectDir = "src/test/projects/maven-conf")
-public class MavenConfNativeIT {
+@MvndNativeTest( projectDir = "src/test/projects/maven-conf" )
+public class MavenConfNativeIT
+{
 
     @Inject
     Client client;
@@ -35,13 +36,14 @@ public class MavenConfNativeIT {
     DaemonParameters parameters;
 
     @Test
-    void version() throws IOException, InterruptedException {
+    void version() throws IOException, InterruptedException
+    {
         final TestClientOutput o = new TestClientOutput();
-        client.execute(o, "org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate",
-                "-Dexpression=maven.conf", "-q", "-DforceStdout", "--raw-streams").assertSuccess();
-        String conf = parameters.mvndHome().resolve("mvn/conf").toString();
-        assertTrue(o.getMessages().stream()
-                .anyMatch(m -> m.toString().contains(conf)), "Output should contain " + conf);
+        client.execute( o, "org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate",
+                "-Dexpression=maven.conf", "-q", "-DforceStdout", "--raw-streams" ).assertSuccess();
+        String conf = parameters.mvndHome().resolve( "mvn/conf" ).toString();
+        assertTrue( o.getMessages().stream()
+                .anyMatch( m -> m.toString().contains( conf ) ), "Output should contain " + conf );
     }
 
 }

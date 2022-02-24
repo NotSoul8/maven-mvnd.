@@ -30,42 +30,49 @@ import org.mvndaemon.mvnd.builder.ProjectExecutorService.ProjectRunnable;
 
 import static org.mvndaemon.mvnd.builder.ProjectComparator.id;
 
-public class ProjectExecutorServiceTest extends AbstractSmartBuilderTest {
+public class ProjectExecutorServiceTest extends AbstractSmartBuilderTest
+{
 
     @Test
-    public void testBuildOrder() throws Exception {
-        final MavenProject a = newProject("a");
-        final MavenProject b = newProject("b");
-        final MavenProject c = newProject("c");
-        TestProjectDependencyGraph graph = new TestProjectDependencyGraph(a, b, c);
-        graph.addDependency(b, a);
-        DependencyGraph<MavenProject> dp = DependencyGraph.fromMaven(graph);
+    public void testBuildOrder() throws Exception
+    {
+        final MavenProject a = newProject( "a" );
+        final MavenProject b = newProject( "b" );
+        final MavenProject c = newProject( "c" );
+        TestProjectDependencyGraph graph = new TestProjectDependencyGraph( a, b, c );
+        graph.addDependency( b, a );
+        DependencyGraph<MavenProject> dp = DependencyGraph.fromMaven( graph );
 
         HashMap<String, AtomicLong> serviceTimes = new HashMap<>();
-        serviceTimes.put(id(a), new AtomicLong(1L));
-        serviceTimes.put(id(b), new AtomicLong(1L));
-        serviceTimes.put(id(c), new AtomicLong(3L));
+        serviceTimes.put( id( a ), new AtomicLong( 1L ) );
+        serviceTimes.put( id( b ), new AtomicLong( 1L ) );
+        serviceTimes.put( id( c ), new AtomicLong( 3L ) );
 
-        Comparator<MavenProject> cmp = ProjectComparator.create0(dp, serviceTimes, ProjectComparator::id);
+        Comparator<MavenProject> cmp = ProjectComparator.create0( dp, serviceTimes, ProjectComparator::id );
 
-        PausibleProjectExecutorService executor = new PausibleProjectExecutorService(1, cmp);
+        PausibleProjectExecutorService executor = new PausibleProjectExecutorService( 1, cmp );
 
         final List<MavenProject> executed = new ArrayList<>();
 
-        class TestProjectRunnable implements ProjectRunnable {
+        class TestProjectRunnable implements ProjectRunnable
+        {
+
             private final MavenProject project;
 
-            TestProjectRunnable(MavenProject project) {
+            TestProjectRunnable( MavenProject project )
+            {
                 this.project = project;
             }
 
             @Override
-            public void run() {
-                executed.add(project);
+            public void run()
+            {
+                executed.add( project );
             }
 
             @Override
-            public MavenProject getProject() {
+            public MavenProject getProject()
+            {
                 return project;
             }
         }
@@ -75,57 +82,73 @@ public class ProjectExecutorServiceTest extends AbstractSmartBuilderTest {
         // the subsequent tasks are queued and thus queue order can be asserted
 
         // this one gets stuck on the worker thread
-        executor.submitAll(Collections.singleton(new TestProjectRunnable(a)));
+        executor.submitAll( Collections.singleton( new TestProjectRunnable( a ) ) );
 
         // these are queued and ordered
-        executor.submitAll(Arrays.asList(new TestProjectRunnable(a), new TestProjectRunnable(b),
-                new TestProjectRunnable(c)));
+        executor.submitAll( Arrays.asList( new TestProjectRunnable( a ), new TestProjectRunnable( b ),
+                new TestProjectRunnable( c ) ) );
 
         executor.resume();
         executor.awaitShutdown();
 
-        Assertions.assertEquals(Arrays.asList(a, c, a, b), executed);
+        Assertions.assertEquals( Arrays.asList( a, c, a, b ), executed );
     }
 
     // copy&paste from ThreadPoolExecutor javadoc (use of Guava is a nice touch there)
-    private static class PausibleProjectExecutorService extends org.mvndaemon.mvnd.builder.ProjectExecutorService {
+    private static class PausibleProjectExecutorService extends org.mvndaemon.mvnd.builder.ProjectExecutorService
+    {
 
         private final Monitor monitor = new Monitor();
         private boolean isPaused = true;
-        private final Monitor.Guard paused = new Monitor.Guard(monitor) {
+        private final Monitor.Guard paused = new Monitor.Guard( monitor )
+        {
+
             @Override
-            public boolean isSatisfied() {
+            public boolean isSatisfied()
+            {
                 return isPaused;
             }
         };
 
-        private final Monitor.Guard notPaused = new Monitor.Guard(monitor) {
+        private final Monitor.Guard notPaused = new Monitor.Guard( monitor )
+        {
+
             @Override
-            public boolean isSatisfied() {
+            public boolean isSatisfied()
+            {
                 return !isPaused;
             }
         };
 
-        public PausibleProjectExecutorService(int degreeOfConcurrency,
-                Comparator<MavenProject> projectComparator) {
-            super(degreeOfConcurrency, projectComparator);
+        public PausibleProjectExecutorService( int degreeOfConcurrency,
+                Comparator<MavenProject> projectComparator )
+        {
+            super( degreeOfConcurrency, projectComparator );
         }
 
         @Override
-        protected void beforeExecute(Thread t, Runnable r) {
-            monitor.enterWhenUninterruptibly(notPaused);
-            try {
-                monitor.waitForUninterruptibly(notPaused);
-            } finally {
+        protected void beforeExecute( Thread t, Runnable r )
+        {
+            monitor.enterWhenUninterruptibly( notPaused );
+            try
+            {
+                monitor.waitForUninterruptibly( notPaused );
+            }
+            finally
+            {
                 monitor.leave();
             }
         }
 
-        public void resume() {
-            monitor.enterIf(paused);
-            try {
+        public void resume()
+        {
+            monitor.enterIf( paused );
+            try
+            {
                 isPaused = false;
-            } finally {
+            }
+            finally
+            {
                 monitor.leave();
             }
         }

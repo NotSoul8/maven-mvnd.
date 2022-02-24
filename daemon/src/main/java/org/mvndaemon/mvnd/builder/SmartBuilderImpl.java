@@ -41,9 +41,10 @@ import org.slf4j.LoggerFactory;
  *
  * @author Brian Toal
  */
-class SmartBuilderImpl {
+class SmartBuilderImpl
+{
 
-    private final Logger logger = LoggerFactory.getLogger(SmartBuilder.class);
+    private final Logger logger = LoggerFactory.getLogger( SmartBuilder.class );
 
     // global components
     private final LifecycleModuleBuilder lifecycleModuleBuilder;
@@ -61,9 +62,10 @@ class SmartBuilderImpl {
     //
     private final ReactorBuildStats stats;
 
-    SmartBuilderImpl(LifecycleModuleBuilder lifecycleModuleBuilder, MavenSession session,
+    SmartBuilderImpl( LifecycleModuleBuilder lifecycleModuleBuilder, MavenSession session,
             ReactorContext reactorContext, TaskSegment taskSegment,
-            Set<MavenProject> projects, DependencyGraph<MavenProject> graph) {
+            Set<MavenProject> projects, DependencyGraph<MavenProject> graph )
+    {
         this.lifecycleModuleBuilder = lifecycleModuleBuilder;
         this.rootSession = session;
         this.reactorContext = reactorContext;
@@ -71,47 +73,55 @@ class SmartBuilderImpl {
 
         this.degreeOfConcurrency = session.getRequest().getDegreeOfConcurrency();
 
-        final Comparator<MavenProject> projectComparator = ProjectComparator.create(graph);
+        final Comparator<MavenProject> projectComparator = ProjectComparator.create( graph );
 
-        this.reactorBuildQueue = new ReactorBuildQueue(projects, graph);
-        this.executor = new ProjectExecutorService(degreeOfConcurrency, projectComparator);
+        this.reactorBuildQueue = new ReactorBuildQueue( projects, graph );
+        this.executor = new ProjectExecutorService( degreeOfConcurrency, projectComparator );
 
-        this.stats = ReactorBuildStats.create(projects);
+        this.stats = ReactorBuildStats.create( projects );
     }
 
-    private static String projectGA(MavenProject project) {
+    private static String projectGA( MavenProject project )
+    {
         return project.getGroupId() + ":" + project.getArtifactId();
     }
 
-    public ReactorBuildStats build() throws ExecutionException, InterruptedException {
+    public ReactorBuildStats build() throws ExecutionException, InterruptedException
+    {
         stats.recordStart();
 
         Set<MavenProject> rootProjects = reactorBuildQueue.getRootProjects();
 
         // this is the main build loop
-        submitAll(rootProjects);
+        submitAll( rootProjects );
         long timstampSubmit = System.nanoTime();
         int submittedCount = rootProjects.size();
-        while (submittedCount > 0) {
+        while ( submittedCount > 0 )
+        {
             Set<MavenProject> bottlenecks = null;
-            if (submittedCount < degreeOfConcurrency) {
+            if ( submittedCount < degreeOfConcurrency )
+            {
                 bottlenecks = reactorBuildQueue.getReadyProjects();
             }
 
-            try {
+            try
+            {
                 MavenProject completedProject = executor.take();
-                if (bottlenecks != null) {
-                    stats.recordBottlenecks(bottlenecks, degreeOfConcurrency,
-                            System.nanoTime() - timstampSubmit);
+                if ( bottlenecks != null )
+                {
+                    stats.recordBottlenecks( bottlenecks, degreeOfConcurrency,
+                            System.nanoTime() - timstampSubmit );
                 }
-                logCompleted(completedProject);
-                Set<MavenProject> readyProjects = reactorBuildQueue.onProjectFinish(completedProject);
-                submitAll(readyProjects);
+                logCompleted( completedProject );
+                Set<MavenProject> readyProjects = reactorBuildQueue.onProjectFinish( completedProject );
+                submitAll( readyProjects );
                 timstampSubmit = System.nanoTime();
-                submittedCount += (readyProjects.size() - 1);
+                submittedCount += ( readyProjects.size() - 1 );
 
                 logBuildQueueStatus();
-            } catch (ExecutionException e) {
+            }
+            catch ( ExecutionException e )
+            {
                 // we get here when unhandled exception or error occurred on the worker thread
                 // this can be low-level system problem, like OOME, or runtime exception in maven code
                 // there is no meaningful recovery, so we shutdown and rethrow the exception
@@ -125,84 +135,108 @@ class SmartBuilderImpl {
         return stats;
     }
 
-    private void logBuildQueueStatus() {
+    private void logBuildQueueStatus()
+    {
         int blockedCount = reactorBuildQueue.getBlockedCount();
         int finishedCount = reactorBuildQueue.getFinishedCount();
         int readyCount = reactorBuildQueue.getReadyCount();
         String runningProjects = "";
-        if (readyCount < degreeOfConcurrency && blockedCount > 0) {
+        if ( readyCount < degreeOfConcurrency && blockedCount > 0 )
+        {
             runningProjects = reactorBuildQueue.getReadyProjects().stream()
-                    .map(SmartBuilderImpl::projectGA)
-                    .collect(Collectors.joining(" ", "[", "]"));
+                    .map( SmartBuilderImpl::projectGA )
+                    .collect( Collectors.joining( " ", "[", "]" ) );
         }
-        logger.debug("Builder state: blocked={} finished={} ready-or-running={} {}", blockedCount,
-                finishedCount, readyCount, runningProjects);
+        logger.debug( "Builder state: blocked={} finished={} ready-or-running={} {}", blockedCount,
+                finishedCount, readyCount, runningProjects );
     }
 
-    private void logCompleted(MavenProject project) {
-        BuildSummary buildSummary = rootSession.getResult().getBuildSummary(project);
+    private void logCompleted( MavenProject project )
+    {
+        BuildSummary buildSummary = rootSession.getResult().getBuildSummary( project );
         String message = "SKIPPED";
-        if (buildSummary instanceof BuildSuccess) {
+        if ( buildSummary instanceof BuildSuccess )
+        {
             message = "SUCCESS";
-        } else if (buildSummary instanceof BuildFailure) {
+        }
+        else if ( buildSummary instanceof BuildFailure )
+        {
             message = "FAILURE";
-        } else if (buildSummary != null) {
-            logger.warn("Unexpected project build summary class {}", buildSummary.getClass());
+        }
+        else if ( buildSummary != null )
+        {
+            logger.warn( "Unexpected project build summary class {}", buildSummary.getClass() );
             message = "UNKNOWN";
         }
-        logger.debug("{} build of project {}:{}", message, project.getGroupId(), project.getArtifactId());
+        logger.debug( "{} build of project {}:{}", message, project.getGroupId(), project.getArtifactId() );
     }
 
-    private void shutdown() {
+    private void shutdown()
+    {
         executor.shutdown();
     }
 
-    public void cancel() {
+    public void cancel()
+    {
         executor.cancel();
     }
 
-    private void submitAll(Set<MavenProject> readyProjects) {
+    private void submitAll( Set<MavenProject> readyProjects )
+    {
         List<ProjectBuildTask> tasks = new ArrayList<>();
-        for (MavenProject project : readyProjects) {
-            tasks.add(new ProjectBuildTask(project));
-            logger.debug("Ready {}:{}", project.getGroupId(), project.getArtifactId());
+        for ( MavenProject project : readyProjects )
+        {
+            tasks.add( new ProjectBuildTask( project ) );
+            logger.debug( "Ready {}:{}", project.getGroupId(), project.getArtifactId() );
         }
-        executor.submitAll(tasks);
+        executor.submitAll( tasks );
     }
 
-    /* package */void buildProject(MavenProject project) {
-        logger.debug("STARTED build of project {}:{}", project.getGroupId(), project.getArtifactId());
+    /* package */void buildProject( MavenProject project )
+    {
+        logger.debug( "STARTED build of project {}:{}", project.getGroupId(), project.getArtifactId() );
 
-        try {
+        try
+        {
             MavenSession copiedSession = rootSession.clone();
-            lifecycleModuleBuilder.buildProject(copiedSession, rootSession, reactorContext, project,
-                    taskSegment);
-        } catch (RuntimeException ex) {
+            lifecycleModuleBuilder.buildProject( copiedSession, rootSession, reactorContext, project,
+                    taskSegment );
+        }
+        catch ( RuntimeException ex )
+        {
             // preserve the xml stack trace, and the java cause chain
             rootSession.getResult()
-                    .addException(new RuntimeException(project.getName() + ": " + ex.getMessage(), ex));
+                    .addException( new RuntimeException( project.getName() + ": " + ex.getMessage(), ex ) );
         }
     }
 
-    class ProjectBuildTask implements ProjectRunnable {
+    class ProjectBuildTask implements ProjectRunnable
+    {
+
         private final MavenProject project;
 
-        ProjectBuildTask(MavenProject project) {
+        ProjectBuildTask( MavenProject project )
+        {
             this.project = project;
         }
 
         @Override
-        public void run() {
+        public void run()
+        {
             final long start = System.nanoTime();
-            try {
-                buildProject(project);
-            } finally {
-                stats.recordServiceTime(project, System.nanoTime() - start);
+            try
+            {
+                buildProject( project );
+            }
+            finally
+            {
+                stats.recordServiceTime( project, System.nanoTime() - start );
             }
         }
 
         @Override
-        public MavenProject getProject() {
+        public MavenProject getProject()
+        {
             return project;
         }
     }

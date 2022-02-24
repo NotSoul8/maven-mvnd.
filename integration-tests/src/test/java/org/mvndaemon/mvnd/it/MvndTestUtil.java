@@ -24,26 +24,36 @@ import java.util.Properties;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
-public class MvndTestUtil {
+public class MvndTestUtil
+{
 
-    private MvndTestUtil() {
+    private MvndTestUtil()
+    {
     }
 
-    public static Properties properties(Path pomXmlPath) {
-        try (Reader runtimeReader = Files.newBufferedReader(pomXmlPath, StandardCharsets.UTF_8)) {
+    public static Properties properties( Path pomXmlPath )
+    {
+        try ( Reader runtimeReader = Files.newBufferedReader( pomXmlPath, StandardCharsets.UTF_8 ) )
+        {
             final MavenXpp3Reader rxppReader = new MavenXpp3Reader();
-            return rxppReader.read(runtimeReader).getProperties();
-        } catch (IOException | XmlPullParserException e) {
-            throw new RuntimeException("Could not read or parse " + pomXmlPath);
+            return rxppReader.read( runtimeReader ).getProperties();
+        }
+        catch ( IOException | XmlPullParserException e )
+        {
+            throw new RuntimeException( "Could not read or parse " + pomXmlPath );
         }
     }
 
-    public static String version(Path pomXmlPath) {
-        try (Reader runtimeReader = Files.newBufferedReader(pomXmlPath, StandardCharsets.UTF_8)) {
+    public static String version( Path pomXmlPath )
+    {
+        try ( Reader runtimeReader = Files.newBufferedReader( pomXmlPath, StandardCharsets.UTF_8 ) )
+        {
             final MavenXpp3Reader rxppReader = new MavenXpp3Reader();
-            return rxppReader.read(runtimeReader).getVersion();
-        } catch (IOException | XmlPullParserException e) {
-            throw new RuntimeException("Could not read or parse " + pomXmlPath);
+            return rxppReader.read( runtimeReader ).getVersion();
+        }
+        catch ( IOException | XmlPullParserException e )
+        {
+            throw new RuntimeException( "Could not read or parse " + pomXmlPath );
         }
     }
 

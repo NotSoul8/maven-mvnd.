@@ -29,8 +29,9 @@ import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
 
-@MvndNativeTest(projectDir = "src/test/projects/invoker")
-public class InvokerNativeIT {
+@MvndNativeTest( projectDir = "src/test/projects/invoker" )
+public class InvokerNativeIT
+{
 
     @Inject
     Client client;
@@ -39,33 +40,42 @@ public class InvokerNativeIT {
     DaemonParameters parameters;
 
     @Test
-    void cleanInstall() throws IOException, InterruptedException {
+    void cleanInstall() throws IOException, InterruptedException
+    {
 
-        final Path helloPath = parameters.multiModuleProjectDirectory().resolve("target/it/invoke-hello/target/hello.txt");
-        try {
-            Files.deleteIfExists(helloPath);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not delete " + helloPath);
+        final Path helloPath = parameters.multiModuleProjectDirectory()
+                .resolve( "target/it/invoke-hello/target/hello.txt" );
+        try
+        {
+            Files.deleteIfExists( helloPath );
         }
-        final Path logPath = parameters.multiModuleProjectDirectory().resolve("target/it/invoke-hello/build.log");
-        try {
-            Files.deleteIfExists(logPath);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not delete " + helloPath);
+        catch ( IOException e )
+        {
+            throw new RuntimeException( "Could not delete " + helloPath );
+        }
+        final Path logPath = parameters.multiModuleProjectDirectory().resolve( "target/it/invoke-hello/build.log" );
+        try
+        {
+            Files.deleteIfExists( logPath );
+        }
+        catch ( IOException e )
+        {
+            throw new RuntimeException( "Could not delete " + helloPath );
         }
 
         final TestClientOutput output = new TestClientOutput();
-        client.execute(output, "clean", "verify", "-e", "-Dmvnd.log.level=DEBUG").assertSuccess();
+        client.execute( output, "clean", "verify", "-e", "-Dmvnd.log.level=DEBUG" ).assertSuccess();
 
-        Assertions.assertThat(helloPath).exists();
-        Assertions.assertThat(helloPath).usingCharset(StandardCharsets.UTF_8).hasContent("Hello");
+        Assertions.assertThat( helloPath ).exists();
+        Assertions.assertThat( helloPath ).usingCharset( StandardCharsets.UTF_8 ).hasContent( "Hello" );
 
-        Assertions.assertThat(logPath).exists();
-        final List<String> logLines = Files.readAllLines(logPath, StandardCharsets.UTF_8);
-        Assertions.assertThat(logLines.size()).isGreaterThan(0);
+        Assertions.assertThat( logPath ).exists();
+        final List<String> logLines = Files.readAllLines( logPath, StandardCharsets.UTF_8 );
+        Assertions.assertThat( logLines.size() ).isGreaterThan( 0 );
 
-        final String lastLine = logLines.get(logLines.size() - 1);
-        Assertions.assertThat(lastLine).matches(Pattern.compile("\\QFinished post-build script: \\E.*verify.groovy$"));
+        final String lastLine = logLines.get( logLines.size() - 1 );
+        Assertions.assertThat( lastLine )
+                .matches( Pattern.compile( "\\QFinished post-build script: \\E.*verify.groovy$" ) );
 
     }
 }

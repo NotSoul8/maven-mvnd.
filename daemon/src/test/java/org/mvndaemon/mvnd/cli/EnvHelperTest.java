@@ -31,45 +31,49 @@ import org.mvndaemon.mvnd.common.Os;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class EnvHelperTest {
+public class EnvHelperTest
+{
 
     @Test
-    void testSetEnv() throws Exception {
+    void testSetEnv() throws Exception
+    {
         List<String> log = new ArrayList<>();
         String id = "Aa" + UUID.randomUUID();
-        assertNull(System.getenv(id));
-        assertNull(System.getenv().get(id));
-        Map<String, String> env = new HashMap<>(System.getenv());
-        env.put(id, id);
-        EnvHelper.environment(System.getProperty("user.dir"), env, log::add);
-        assertEquals(Collections.emptyList(), log);
-        assertEquals(id, System.getenv(id));
-        assertEquals(id, System.getenv().get(id));
-        assertEquals(Os.current() == Os.WINDOWS ? id : null, System.getenv(id.toLowerCase(Locale.ROOT)));
-        assertNull(System.getenv().get(id.toLowerCase(Locale.ROOT)));
-        assertEquals(Os.current() == Os.WINDOWS ? id : null, System.getenv(id.toUpperCase(Locale.ROOT)));
-        assertNull(System.getenv().get(id.toUpperCase(Locale.ROOT)));
-        env.remove(id);
-        EnvHelper.environment(System.getProperty("user.dir"), env, log::add);
-        assertEquals(Collections.emptyList(), log);
-        assertNull(System.getenv(id));
-        assertNull(System.getenv().get(id));
+        assertNull( System.getenv( id ) );
+        assertNull( System.getenv().get( id ) );
+        Map<String, String> env = new HashMap<>( System.getenv() );
+        env.put( id, id );
+        EnvHelper.environment( System.getProperty( "user.dir" ), env, log::add );
+        assertEquals( Collections.emptyList(), log );
+        assertEquals( id, System.getenv( id ) );
+        assertEquals( id, System.getenv().get( id ) );
+        assertEquals( Os.current() == Os.WINDOWS ? id : null, System.getenv( id.toLowerCase( Locale.ROOT ) ) );
+        assertNull( System.getenv().get( id.toLowerCase( Locale.ROOT ) ) );
+        assertEquals( Os.current() == Os.WINDOWS ? id : null, System.getenv( id.toUpperCase( Locale.ROOT ) ) );
+        assertNull( System.getenv().get( id.toUpperCase( Locale.ROOT ) ) );
+        env.remove( id );
+        EnvHelper.environment( System.getProperty( "user.dir" ), env, log::add );
+        assertEquals( Collections.emptyList(), log );
+        assertNull( System.getenv( id ) );
+        assertNull( System.getenv().get( id ) );
     }
 
     @Test
-    void testChdir() throws Exception {
-        File d = new File("target/tstDir").getAbsoluteFile();
+    void testChdir() throws Exception
+    {
+        File d = new File( "target/tstDir" ).getAbsoluteFile();
         d.mkdirs();
-        EnvHelper.chDir(d.toString());
-        assertEquals(new File(d, "test").getAbsolutePath(), new File("test").getAbsolutePath());
-        assertEquals(d.toPath().resolve("test").toAbsolutePath().toString(),
-                Paths.get("test").toAbsolutePath().toString());
+        EnvHelper.chDir( d.toString() );
+        assertEquals( new File( d, "test" ).getAbsolutePath(), new File( "test" ).getAbsolutePath() );
+        assertEquals( d.toPath().resolve( "test" ).toAbsolutePath().toString(),
+                Paths.get( "test" ).toAbsolutePath().toString() );
     }
 
     @Test
     @Disabled
-    void testCygwin() throws Exception {
-        assertEquals("/cygdrive/c/work/tmp/", EnvHelper.toCygwin("C:\\work\\tmp\\"));
+    void testCygwin() throws Exception
+    {
+        assertEquals( "/cygdrive/c/work/tmp/", EnvHelper.toCygwin( "C:\\work\\tmp\\" ) );
     }
 
 }

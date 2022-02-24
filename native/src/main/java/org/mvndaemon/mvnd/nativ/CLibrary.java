@@ -23,17 +23,19 @@ package org.mvndaemon.mvnd.nativ;
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  * @see    MvndNativeLoader
  */
-@SuppressWarnings("unused")
-public class CLibrary {
+@SuppressWarnings( "unused" )
+public class CLibrary
+{
 
-    static {
+    static
+    {
         MvndNativeLoader.initialize();
     }
 
-    public static native int setenv(String name, String value);
+    public static native int setenv( String name, String value );
 
-    public static native int chdir(String path);
+    public static native int chdir( String path );
 
-    public static native int getOsxMemoryInfo(long[] totalAndAvailMem);
+    public static native int getOsxMemoryInfo( long[] totalAndAvailMem );
 
 }

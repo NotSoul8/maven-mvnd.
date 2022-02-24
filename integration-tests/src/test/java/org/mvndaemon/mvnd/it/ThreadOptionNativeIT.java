@@ -23,8 +23,9 @@ import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
 
-@MvndNativeTest(projectDir = "src/test/projects/multi-module")
-public class ThreadOptionNativeIT {
+@MvndNativeTest( projectDir = "src/test/projects/multi-module" )
+public class ThreadOptionNativeIT
+{
 
     @Inject
     Client client;
@@ -33,51 +34,57 @@ public class ThreadOptionNativeIT {
     DaemonParameters parameters;
 
     @Test
-    void minusTSpace2() throws IOException, InterruptedException {
+    void minusTSpace2() throws IOException, InterruptedException
+    {
         final TestClientOutput output = new TestClientOutput();
 
-        client.execute(output, "-T", "2", "verify").assertSuccess();
+        client.execute( output, "-T", "2", "verify" ).assertSuccess();
 
-        output.assertContainsMatchingSubsequence("Using the SmartBuilder implementation with a thread count of 2");
+        output.assertContainsMatchingSubsequence( "Using the SmartBuilder implementation with a thread count of 2" );
     }
 
     @Test
-    void minusT2() throws IOException, InterruptedException {
+    void minusT2() throws IOException, InterruptedException
+    {
         final TestClientOutput output = new TestClientOutput();
 
-        client.execute(output, "-T2", "verify").assertSuccess();
+        client.execute( output, "-T2", "verify" ).assertSuccess();
 
-        output.assertContainsMatchingSubsequence("Using the SmartBuilder implementation with a thread count of 2");
+        output.assertContainsMatchingSubsequence( "Using the SmartBuilder implementation with a thread count of 2" );
     }
 
     @Test
-    void minusThreadsSpace2() throws IOException, InterruptedException {
+    void minusThreadsSpace2() throws IOException, InterruptedException
+    {
         final TestClientOutput output = new TestClientOutput();
 
-        client.execute(output, "--threads", "2", "verify").assertSuccess();
+        client.execute( output, "--threads", "2", "verify" ).assertSuccess();
 
-        output.assertContainsMatchingSubsequence("Using the SmartBuilder implementation with a thread count of 2");
+        output.assertContainsMatchingSubsequence( "Using the SmartBuilder implementation with a thread count of 2" );
     }
 
     @Test
-    void minusThreads2() throws IOException, InterruptedException {
+    void minusThreads2() throws IOException, InterruptedException
+    {
         final TestClientOutput output = new TestClientOutput();
 
-        client.execute(output, "--threads=2", "verify").assertSuccess();
+        client.execute( output, "--threads=2", "verify" ).assertSuccess();
 
-        output.assertContainsMatchingSubsequence("Using the SmartBuilder implementation with a thread count of 2");
+        output.assertContainsMatchingSubsequence( "Using the SmartBuilder implementation with a thread count of 2" );
     }
 
     @Test
-    void mvndThreads() throws IOException, InterruptedException {
+    void mvndThreads() throws IOException, InterruptedException
+    {
         final TestClientOutput output = new TestClientOutput();
 
-        client.execute(output, "-Dmvnd.threads=2", "verify").assertSuccess();
+        client.execute( output, "-Dmvnd.threads=2", "verify" ).assertSuccess();
 
-        output.assertContainsMatchingSubsequence("Using the SmartBuilder implementation with a thread count of 2");
+        output.assertContainsMatchingSubsequence( "Using the SmartBuilder implementation with a thread count of 2" );
     }
 
-    protected boolean isNative() {
+    protected boolean isNative()
+    {
         return true;
     }
 }

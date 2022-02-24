@@ -30,8 +30,9 @@ import org.mvndaemon.mvnd.junit.TestRegistry;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MvndTest(projectDir = "src/test/projects/environment")
-public class EnvironmentTest {
+@MvndTest( projectDir = "src/test/projects/environment" )
+public class EnvironmentTest
+{
 
     @Inject
     TestRegistry registry;
@@ -43,32 +44,35 @@ public class EnvironmentTest {
     TestParameters parameters;
 
     @Test
-    void cleanInstall() throws IOException, InterruptedException {
-        assertDaemonRegistrySize(0);
+    void cleanInstall() throws IOException, InterruptedException
+    {
+        assertDaemonRegistrySize( 0 );
         /* Install the dependencies */
-        for (String artifactDir : Arrays.asList("project/prj1", "project/prj2")) {
-            Path dir = parameters.getTestDir().resolve(artifactDir);
-            final Client cl = clientFactory.newClient(parameters.cd(dir));
+        for ( String artifactDir : Arrays.asList( "project/prj1", "project/prj2" ) )
+        {
+            Path dir = parameters.getTestDir().resolve( artifactDir );
+            final Client cl = clientFactory.newClient( parameters.cd( dir ) );
             final TestClientOutput output = new TestClientOutput();
-            cl.execute(output, "org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate",
-                    "-Dexpression=user.dir", "-e").assertSuccess();
-            assertDaemonRegistrySize(1);
+            cl.execute( output, "org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate",
+                    "-Dexpression=user.dir", "-e" ).assertSuccess();
+            assertDaemonRegistrySize( 1 );
             /* Wait, till the existing instance becomes idle so that the next iteration does not start a new instance */
-            registry.awaitIdle(registry.getAll().get(0).getId());
+            registry.awaitIdle( registry.getAll().get( 0 ).getId() );
 
             String pathStr = dir.toAbsolutePath().toString();
-            assertTrue(output.getMessages().stream()
-                    .anyMatch(m -> m.toString().contains(pathStr)), "Output should contain " + pathStr);
-            assertTrue(output.getMessages().stream()
-                    .noneMatch(m -> m.toString().contains("Environment mismatch")));
+            assertTrue( output.getMessages().stream()
+                    .anyMatch( m -> m.toString().contains( pathStr ) ), "Output should contain " + pathStr );
+            assertTrue( output.getMessages().stream()
+                    .noneMatch( m -> m.toString().contains( "Environment mismatch" ) ) );
         }
-        assertDaemonRegistrySize(1);
+        assertDaemonRegistrySize( 1 );
     }
 
-    private void assertDaemonRegistrySize(int size) {
-        Assertions.assertThat(registry.getAll().size())
-                .as("Daemon registry size should be " + size)
-                .isEqualTo(size);
+    private void assertDaemonRegistrySize( int size )
+    {
+        Assertions.assertThat( registry.getAll().size() )
+                .as( "Daemon registry size should be " + size )
+                .isEqualTo( size );
     }
 
 }

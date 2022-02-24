@@ -23,20 +23,22 @@ import org.mvndaemon.mvnd.common.Message;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ServerTest {
+public class ServerTest
+{
 
     @Test
-    void testMessageOrdering() {
-        BlockingQueue<Message> messages = new PriorityBlockingQueue<>(64, Message.getMessageComparator());
-        messages.addAll(Arrays.asList(
-                Message.projectStopped("projectId"),
-                Message.projectStarted("projectId"),
-                Message.log("projectId", "message"),
-                Message.executionFailure("projectId", true, "error")));
+    void testMessageOrdering()
+    {
+        BlockingQueue<Message> messages = new PriorityBlockingQueue<>( 64, Message.getMessageComparator() );
+        messages.addAll( Arrays.asList(
+                Message.projectStopped( "projectId" ),
+                Message.projectStarted( "projectId" ),
+                Message.log( "projectId", "message" ),
+                Message.executionFailure( "projectId", true, "error" ) ) );
 
-        assertEquals(Message.PROJECT_STARTED, messages.remove().getType());
-        assertEquals(Message.EXECUTION_FAILURE, messages.remove().getType());
-        assertEquals(Message.PROJECT_LOG_MESSAGE, messages.remove().getType());
-        assertEquals(Message.PROJECT_STOPPED, messages.remove().getType());
+        assertEquals( Message.PROJECT_STARTED, messages.remove().getType() );
+        assertEquals( Message.EXECUTION_FAILURE, messages.remove().getType() );
+        assertEquals( Message.PROJECT_LOG_MESSAGE, messages.remove().getType() );
+        assertEquals( Message.PROJECT_STOPPED, messages.remove().getType() );
     }
 }

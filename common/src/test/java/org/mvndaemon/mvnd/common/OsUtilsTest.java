@@ -18,15 +18,18 @@ package org.mvndaemon.mvnd.common;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class OsUtilsTest {
+public class OsUtilsTest
+{
+
     @Test
-    void kbTohumanReadable() {
-        Assertions.assertEquals("0k", OsUtils.kbTohumanReadable(0));
-        Assertions.assertEquals("1001k", OsUtils.kbTohumanReadable(1001));
-        Assertions.assertEquals("1m", OsUtils.kbTohumanReadable(1024));
-        Assertions.assertEquals("1023m", OsUtils.kbTohumanReadable(1024 * 1024 - 1));
-        Assertions.assertEquals("1g", OsUtils.kbTohumanReadable(1024 * 1024));
-        Assertions.assertEquals("1t", OsUtils.kbTohumanReadable(1024 * 1024 * 1024));
+    void kbTohumanReadable()
+    {
+        Assertions.assertEquals( "0k", OsUtils.kbTohumanReadable( 0 ) );
+        Assertions.assertEquals( "1001k", OsUtils.kbTohumanReadable( 1001 ) );
+        Assertions.assertEquals( "1m", OsUtils.kbTohumanReadable( 1024 ) );
+        Assertions.assertEquals( "1023m", OsUtils.kbTohumanReadable( 1024 * 1024 - 1 ) );
+        Assertions.assertEquals( "1g", OsUtils.kbTohumanReadable( 1024 * 1024 ) );
+        Assertions.assertEquals( "1t", OsUtils.kbTohumanReadable( 1024 * 1024 * 1024 ) );
     }
 
 }

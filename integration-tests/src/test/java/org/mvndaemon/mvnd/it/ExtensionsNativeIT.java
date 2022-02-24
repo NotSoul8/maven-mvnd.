@@ -28,8 +28,9 @@ import org.mvndaemon.mvnd.junit.TestRegistry;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MvndNativeTest(projectDir = "src/test/projects/extensions")
-public class ExtensionsNativeIT {
+@MvndNativeTest( projectDir = "src/test/projects/extensions" )
+public class ExtensionsNativeIT
+{
 
     @Inject
     Client client;
@@ -41,27 +42,29 @@ public class ExtensionsNativeIT {
     TestRegistry registry;
 
     @Test
-    void version() throws IOException, InterruptedException {
+    void version() throws IOException, InterruptedException
+    {
         registry.killAll();
-        assertDaemonRegistrySize(0);
+        assertDaemonRegistrySize( 0 );
 
         final TestClientOutput o = new TestClientOutput();
-        client.execute(o, "-v").assertSuccess();
-        assertDaemonRegistrySize(1);
+        client.execute( o, "-v" ).assertSuccess();
+        assertDaemonRegistrySize( 1 );
         DaemonInfo daemon = registry.getAll().iterator().next();
-        assertTrue(daemon.getOptions().contains(
-                "mvnd.coreExtensions=fr.jcgay.maven:maven-profiler:3.0"));
+        assertTrue( daemon.getOptions().contains(
+                "mvnd.coreExtensions=fr.jcgay.maven:maven-profiler:3.0" ) );
 
-        registry.awaitIdle(daemon.getId());
+        registry.awaitIdle( daemon.getId() );
 
-        client.execute(o, "-v").assertSuccess();
-        assertDaemonRegistrySize(1);
+        client.execute( o, "-v" ).assertSuccess();
+        assertDaemonRegistrySize( 1 );
     }
 
-    private void assertDaemonRegistrySize(int size) {
-        Assertions.assertThat(registry.getAll().size())
-                .as("Daemon registry size should be " + size)
-                .isEqualTo(size);
+    private void assertDaemonRegistrySize( int size )
+    {
+        Assertions.assertThat( registry.getAll().size() )
+                .as( "Daemon registry size should be " + size )
+                .isEqualTo( size );
     }
 
 }

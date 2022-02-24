@@ -22,7 +22,8 @@ import java.security.ProtectionDomain;
 import javassist.ClassPool;
 import javassist.CtClass;
 
-public class Agent {
+public class Agent
+{
 
     public static final String START_WITH_PIPES = "if (redirects != null\n"
             + "         && redirects[1] == ProcessBuilder$Redirect.INHERIT\n"
@@ -34,31 +35,43 @@ public class Agent {
             + "   return p;\n"
             + "}";
 
-    public static void premain(String args, Instrumentation instrumentation) throws Exception {
-        instrumentation.addTransformer(new ClassFileTransformer() {
+    public static void premain( String args, Instrumentation instrumentation ) throws Exception
+    {
+        instrumentation.addTransformer( new ClassFileTransformer()
+        {
+
             @Override
-            public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
-                    ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-                if ("java/lang/ProcessBuilder".equals(className)) {
-                    try {
+            public byte[] transform( ClassLoader loader, String className, Class<?> classBeingRedefined,
+                    ProtectionDomain protectionDomain, byte[] classfileBuffer ) throws IllegalClassFormatException
+            {
+                if ( "java/lang/ProcessBuilder".equals( className ) )
+                {
+                    try
+                    {
                         ClassPool pool = ClassPool.getDefault();
-                        CtClass clazz = pool.get("java.lang.ProcessBuilder");
-                        pool.importPackage("org.mvndaemon.mvnd.pump");
-                        clazz.getDeclaredMethod("start",
-                                new CtClass[] { clazz.getClassPool().get("java.lang.ProcessBuilder$Redirect[]") })
-                                .insertBefore(START_WITH_PIPES);
+                        CtClass clazz = pool.get( "java.lang.ProcessBuilder" );
+                        pool.importPackage( "org.mvndaemon.mvnd.pump" );
+                        clazz.getDeclaredMethod( "start",
+                                new CtClass[]
+                        { clazz.getClassPool().get( "java.lang.ProcessBuilder$Redirect[]" )
+                        } )
+                                .insertBefore( START_WITH_PIPES );
                         byte[] data = clazz.toBytecode();
                         clazz.detach();
                         return data;
-                    } catch (Throwable e) {
-                        System.err.println(e);
-                        throw new IllegalClassFormatException(e.toString());
                     }
-                } else {
+                    catch ( Throwable e )
+                    {
+                        System.err.println( e );
+                        throw new IllegalClassFormatException( e.toString() );
+                    }
+                }
+                else
+                {
                     return classfileBuffer;
                 }
             }
-        });
+        } );
     }
 
 }

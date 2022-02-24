@@ -21,7 +21,8 @@ import java.util.stream.Stream;
 /**
  * Data stored in a {@link Cache} depending on the state of a collection of files.
  */
-public interface CacheRecord {
+public interface CacheRecord
+{
 
     /**
      * @return a {@link Stream} of file (not directory) {@link Path}s whose modification or deletion causes invalidation

@@ -23,31 +23,37 @@ import java.nio.channels.ByteChannel;
  * Trivial ByteChannel wrapper to avoid the read/write synchronization which
  * happens when the channel implements SelectableChannel.
  */
-public class ByteChannelWrapper implements ByteChannel {
+public class ByteChannelWrapper implements ByteChannel
+{
 
     private final ByteChannel socket;
 
-    public ByteChannelWrapper(ByteChannel socket) {
+    public ByteChannelWrapper( ByteChannel socket )
+    {
         this.socket = socket;
     }
 
     @Override
-    public int read(ByteBuffer dst) throws IOException {
-        return socket.read(dst);
+    public int read( ByteBuffer dst ) throws IOException
+    {
+        return socket.read( dst );
     }
 
     @Override
-    public int write(ByteBuffer src) throws IOException {
-        return socket.write(src);
+    public int write( ByteBuffer src ) throws IOException
+    {
+        return socket.write( src );
     }
 
     @Override
-    public boolean isOpen() {
+    public boolean isOpen()
+    {
         return socket.isOpen();
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() throws IOException
+    {
         socket.close();
     }
 }

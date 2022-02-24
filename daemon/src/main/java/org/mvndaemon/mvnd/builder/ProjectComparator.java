@@ -49,51 +49,60 @@ import org.apache.maven.project.MavenProject;
  * File origin:
  * https://github.com/takari/takari-smart-builder/blob/takari-smart-builder-0.6.1/src/main/java/io/takari/maven/builder/smart/ProjectComparator.java
  */
-class ProjectComparator {
+class ProjectComparator
+{
 
-    public static Comparator<MavenProject> create(DependencyGraph<MavenProject> graph) {
-        return create0(graph, Collections.emptyMap(), ProjectComparator::id);
+    public static Comparator<MavenProject> create( DependencyGraph<MavenProject> graph )
+    {
+        return create0( graph, Collections.emptyMap(), ProjectComparator::id );
     }
 
-    static <K> Comparator<K> create0(DependencyGraph<K> dependencyGraph,
+    static <K> Comparator<K> create0( DependencyGraph<K> dependencyGraph,
             Map<String, AtomicLong> historicalServiceTimes,
-            Function<K, String> toKey) {
-        final long defaultServiceTime = average(historicalServiceTimes.values());
+            Function<K, String> toKey )
+    {
+        final long defaultServiceTime = average( historicalServiceTimes.values() );
 
         final Map<K, Long> serviceTimes = new HashMap<>();
 
         final Set<K> rootProjects = new HashSet<>();
-        dependencyGraph.getProjects().forEach(project -> {
-            long serviceTime = getServiceTime(historicalServiceTimes, project, defaultServiceTime, toKey);
-            serviceTimes.put(project, serviceTime);
-            if (dependencyGraph.isRoot(project)) {
-                rootProjects.add(project);
+        dependencyGraph.getProjects().forEach( project ->
+        {
+            long serviceTime = getServiceTime( historicalServiceTimes, project, defaultServiceTime, toKey );
+            serviceTimes.put( project, serviceTime );
+            if ( dependencyGraph.isRoot( project ) )
+            {
+                rootProjects.add( project );
             }
-        });
+        } );
 
-        final Map<K, Long> projectWeights = calculateWeights(dependencyGraph, serviceTimes, rootProjects);
+        final Map<K, Long> projectWeights = calculateWeights( dependencyGraph, serviceTimes, rootProjects );
 
-        return Comparator.comparingLong((ToLongFunction<K>) projectWeights::get)
-                .thenComparing(toKey, String::compareTo)
+        return Comparator.comparingLong( ( ToLongFunction<K> ) projectWeights::get )
+                .thenComparing( toKey, String::compareTo )
                 .reversed();
     }
 
-    private static long average(Collection<AtomicLong> values) {
-        return (long) (values.stream().mapToLong(AtomicLong::longValue)
-                .average().orElse(1.0d));
+    private static long average( Collection<AtomicLong> values )
+    {
+        return ( long ) ( values.stream().mapToLong( AtomicLong::longValue )
+                .average().orElse( 1.0d ) );
     }
 
-    private static <K> long getServiceTime(Map<String, AtomicLong> serviceTimes, K project,
-            long defaultServiceTime, Function<K, String> toKey) {
-        AtomicLong serviceTime = serviceTimes.get(toKey.apply(project));
+    private static <K> long getServiceTime( Map<String, AtomicLong> serviceTimes, K project,
+            long defaultServiceTime, Function<K, String> toKey )
+    {
+        AtomicLong serviceTime = serviceTimes.get( toKey.apply( project ) );
         return serviceTime != null ? serviceTime.longValue() : defaultServiceTime;
     }
 
-    private static <K> Map<K, Long> calculateWeights(DependencyGraph<K> dependencyGraph,
-            Map<K, Long> serviceTimes, Collection<K> rootProjects) {
+    private static <K> Map<K, Long> calculateWeights( DependencyGraph<K> dependencyGraph,
+            Map<K, Long> serviceTimes, Collection<K> rootProjects )
+    {
         Map<K, Long> weights = new HashMap<>();
-        for (K rootProject : rootProjects) {
-            calculateWeights(dependencyGraph, serviceTimes, rootProject, weights);
+        for ( K rootProject : rootProjects )
+        {
+            calculateWeights( dependencyGraph, serviceTimes, rootProject, weights );
         }
         return weights;
     }
@@ -102,25 +111,31 @@ class ProjectComparator {
      * Returns the maximum sum of build time along a path from the project to an exit project. An
      * "exit project" is a project without downstream dependencies.
      */
-    private static <K> long calculateWeights(DependencyGraph<K> dependencyGraph,
-            Map<K, Long> serviceTimes, K project, Map<K, Long> weights) {
-        long weight = serviceTimes.get(project)
-                + dependencyGraph.getDownstreamProjects(project)
-                        .mapToLong(successor -> {
+    private static <K> long calculateWeights( DependencyGraph<K> dependencyGraph,
+            Map<K, Long> serviceTimes, K project, Map<K, Long> weights )
+    {
+        long weight = serviceTimes.get( project )
+                + dependencyGraph.getDownstreamProjects( project )
+                        .mapToLong( successor ->
+                        {
                             long successorWeight;
-                            if (weights.containsKey(successor)) {
-                                successorWeight = weights.get(successor);
-                            } else {
-                                successorWeight = calculateWeights(dependencyGraph, serviceTimes, successor, weights);
+                            if ( weights.containsKey( successor ) )
+                            {
+                                successorWeight = weights.get( successor );
+                            }
+                            else
+                            {
+                                successorWeight = calculateWeights( dependencyGraph, serviceTimes, successor, weights );
                             }
                             return successorWeight;
-                        })
-                        .max().orElse(0);
-        weights.put(project, weight);
+                        } )
+                        .max().orElse( 0 );
+        weights.put( project, weight );
         return weight;
     }
 
-    static String id(MavenProject project) {
+    static String id( MavenProject project )
+    {
         return project.getGroupId() +
                 ':' + project.getArtifactId() +
                 ':' + project.getVersion();

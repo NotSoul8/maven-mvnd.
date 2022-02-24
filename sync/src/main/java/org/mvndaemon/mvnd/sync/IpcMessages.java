@@ -18,7 +18,8 @@ package org.mvndaemon.mvnd.sync;
 /**
  * Constants used for the inter-process communication protocol.
  */
-public class IpcMessages {
+public class IpcMessages
+{
 
     public static final String REQUEST_CONTEXT = "request-context";
     public static final String REQUEST_ACQUIRE = "request-acquire";

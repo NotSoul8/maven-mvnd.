@@ -33,28 +33,36 @@ import org.mvndaemon.mvnd.cache.CacheFactory;
 
 @Singleton
 @Named
-@Priority(10)
-public class InvalidatingExtensionRealmCache extends DefaultExtensionRealmCache {
+@Priority( 10 )
+public class InvalidatingExtensionRealmCache extends DefaultExtensionRealmCache
+{
 
-    protected static class Record implements org.mvndaemon.mvnd.cache.CacheRecord {
+    protected static class Record implements org.mvndaemon.mvnd.cache.CacheRecord
+    {
 
         final CacheRecord record;
 
-        public Record(CacheRecord record) {
+        public Record( CacheRecord record )
+        {
             this.record = record;
         }
 
         @Override
-        public Stream<Path> getDependencyPaths() {
-            return record.getArtifacts().stream().map(artifact -> artifact.getFile().toPath());
+        public Stream<Path> getDependencyPaths()
+        {
+            return record.getArtifacts().stream().map( artifact -> artifact.getFile().toPath() );
         }
 
         @Override
-        public void invalidate() {
+        public void invalidate()
+        {
             ClassRealm realm = record.getRealm();
-            try {
-                realm.getWorld().disposeRealm(realm.getId());
-            } catch (NoSuchRealmException e) {
+            try
+            {
+                realm.getWorld().disposeRealm( realm.getId() );
+            }
+            catch ( NoSuchRealmException e )
+            {
                 // ignore
             }
         }
@@ -63,32 +71,37 @@ public class InvalidatingExtensionRealmCache extends DefaultExtensionRealmCache 
     final Cache<Key, Record> cache;
 
     @Inject
-    public InvalidatingExtensionRealmCache(CacheFactory cacheFactory) {
+    public InvalidatingExtensionRealmCache( CacheFactory cacheFactory )
+    {
         cache = cacheFactory.newCache();
     }
 
     @Override
-    public CacheRecord get(Key key) {
-        Record r = cache.get(key);
+    public CacheRecord get( Key key )
+    {
+        Record r = cache.get( key );
         return r != null ? r.record : null;
     }
 
     @Override
-    public CacheRecord put(Key key, ClassRealm extensionRealm, ExtensionDescriptor extensionDescriptor,
-            List<Artifact> artifacts) {
-        CacheRecord record = super.put(key, extensionRealm, extensionDescriptor, artifacts);
-        super.cache.remove(key);
-        cache.put(key, new Record(record));
+    public CacheRecord put( Key key, ClassRealm extensionRealm, ExtensionDescriptor extensionDescriptor,
+            List<Artifact> artifacts )
+    {
+        CacheRecord record = super.put( key, extensionRealm, extensionDescriptor, artifacts );
+        super.cache.remove( key );
+        cache.put( key, new Record( record ) );
         return record;
     }
 
     @Override
-    public void flush() {
+    public void flush()
+    {
         cache.clear();
     }
 
     @Override
-    public void register(MavenProject project, Key key, CacheRecord record) {
+    public void register( MavenProject project, Key key, CacheRecord record )
+    {
     }
 
 }
