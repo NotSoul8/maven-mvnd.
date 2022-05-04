@@ -76,6 +76,7 @@
         </artifact>
         <artifact id="org.mvndaemon.mvnd:mvnd-agent:${project.version}"/>
         <artifact id="org.mvndaemon.mvnd:mvnd-helper-agent:${project.version}"/>
+        <artifact id="org.apache.maven.extensions:maven-build-cache-extension:${maven.build.cache.version}"/>
     </artifactSet>
 
     <fileSet to="/">

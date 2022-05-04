@@ -57,8 +57,9 @@
         <jline.version>3.21.0</jline.version>
         <junit.jupiter.version>5.7.2</junit.jupiter.version>
         <logback.version>1.2.10</logback.version>
-        <maven.version>3.8.5</maven.version>
-        <maven.resolver.version>1.7.3</maven.resolver.version>
+        <maven.version>3.9.0-SNAPSHOT</maven.version>
+        <maven.resolver.version>1.8.0</maven.resolver.version>
+        <maven.build.cache.version>1.0.0-SNAPSHOT</maven.build.cache.version>
         <slf4j.version>1.7.35</slf4j.version>
         <sisu.version>0.3.5</sisu.version>
 
@@ -296,6 +297,20 @@
 
         </dependencies>
     </dependencyManagement>
+
+    <repositories>
+        <repository>
+            <id>apache.snapshots</id>
+            <name>Apache Development Snapshot Repository</name>
+            <url>https://repository.apache.org/content/repositories/snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <build>
         <pluginManagement>

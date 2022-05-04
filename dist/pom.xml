@@ -47,6 +47,11 @@
             <groupId>org.mvndaemon.mvnd</groupId>
             <artifactId>mvnd-daemon</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.maven.extensions</groupId>
+            <artifactId>maven-build-cache-extension</artifactId>
+            <version>${maven.build.cache.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
